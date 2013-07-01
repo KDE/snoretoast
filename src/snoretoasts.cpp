@@ -164,6 +164,7 @@ HRESULT SnoreToasts::SetTextValues()
         hr = m_toastXml->GetElementsByTagName(StringReferenceWrapper(L"text").Get(), &nodeList);
         if (SUCCEEDED(hr))
         {
+            //create the title
             ComPtr<IXmlNode> textNode;
             hr = nodeList->Item(0, &textNode);
             if (SUCCEEDED(hr))
@@ -171,10 +172,33 @@ HRESULT SnoreToasts::SetTextValues()
                 hr = setNodeValueString(StringReferenceWrapper(m_title).Get(), textNode.Get());
                 if (SUCCEEDED(hr))
                 {
+
+                    std::wstring lineOne;
+                    std::wstring lineTwo;
+                    size_t maxlength = 35;
+                    if(m_body.length()>maxlength)
+                    {
+                        size_t pos = m_body.rfind(L" ",maxlength);
+                        lineOne = m_body.substr(0,pos);
+                        lineTwo = m_body.substr(pos+1);
+                    }
+                    else
+                    {
+                        lineOne = m_body;
+                    }
+
                     hr = nodeList->Item(1, &textNode);
                     if (SUCCEEDED(hr))
                     {
-                        hr = setNodeValueString(StringReferenceWrapper(m_body).Get(), textNode.Get());
+                        hr = setNodeValueString(StringReferenceWrapper(lineOne).Get(), textNode.Get());
+                        if (SUCCEEDED(hr) && lineTwo.length()>0)
+                        {
+                            hr = nodeList->Item(2, &textNode);
+                            if (SUCCEEDED(hr))
+                            {
+                                hr = setNodeValueString(StringReferenceWrapper(lineTwo).Get(), textNode.Get());
+                            }
+                        }
                     }
                 }
             }

@@ -44,8 +44,6 @@
 
 #include <string>
 
-#define LINE_LENGTH 15 // How many characters we'll allot for each line of a toast
-
 
 class SnoreToasts
 {
