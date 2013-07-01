@@ -44,8 +44,8 @@ SnoreToasts::SnoreToasts(const std::wstring &title, const std::wstring &body, co
 
 SnoreToasts::~SnoreToasts()
 {
-    //    delete m_toastManager;
-    //    delete m_toastXml;
+    m_toastManager->Release();
+    m_toastXml->Release();
 }
 
 HRESULT SnoreToasts::initialize()
