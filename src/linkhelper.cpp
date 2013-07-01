@@ -80,11 +80,7 @@ HRESULT LinkHelper::setPropertyForExisitingShortcut()
             hr = persistFile.Get()->Load(m_shortcutPath.c_str(), STGM_READWRITE);
             if (SUCCEEDED(hr))
             {
-                hr = shellLink.Get()->Resolve(0, 0);//TODO
-                if (SUCCEEDED(hr))
-                {
-                    hr = setPropertyForShortcut(shellLink,persistFile.Get());
-                }
+                hr = setPropertyForShortcut(shellLink,persistFile.Get());
             }
         }
     }
