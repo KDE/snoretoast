@@ -70,7 +70,14 @@ HRESULT SnoreToasts::initialize()
         hr = GetActivationFactory(StringReferenceWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &m_toastManager);
         if (SUCCEEDED(hr))
         {
-            hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText04, &m_toastXml);
+            if(m_image.length()>0)
+            {
+                hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText04, &m_toastXml);
+            }
+            else
+            {
+                hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastText04, &m_toastXml);
+            }
         }
     }
     return hr;
@@ -86,7 +93,10 @@ SnoreToasts::USER_ACTION SnoreToasts::displayToast()
 
     if(SUCCEEDED(hr))
     {
-        hr = setImageSrc();
+        if(m_image.length()>0)
+        {
+            hr = setImageSrc();
+        }
         if(SUCCEEDED(hr))
         {
             hr = SetTextValues();
@@ -159,15 +169,15 @@ HRESULT SnoreToasts::SetTextValues()
             if (SUCCEEDED(hr))
             {
                 hr = setNodeValueString(StringReferenceWrapper(m_title).Get(), textNode.Get());
+                if (SUCCEEDED(hr))
+                {
+                    hr = nodeList->Item(1, &textNode);
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = setNodeValueString(StringReferenceWrapper(m_body).Get(), textNode.Get());
+                    }
+                }
             }
-
-            hr = nodeList->Item(1, &textNode);
-            if (SUCCEEDED(hr))
-            {
-                hr = setNodeValueString(StringReferenceWrapper(m_body).Get(), textNode.Get());
-            }
-
-
         }
     }
     return hr;
