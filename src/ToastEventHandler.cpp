@@ -20,16 +20,20 @@
 #include "snoretoasts.h"
 #include "ToastEventHandler.h"
 
+#include <sstream>
 #include <iostream>
 
 using namespace ABI::Windows::UI::Notifications;
 
 ToastEventHandler::ToastEventHandler() :
     m_ref(1),
-    m_event(CreateEventW(NULL,TRUE,FALSE,L"ToastEvent")),
     m_action(SnoreToasts::Success)
 {
+    std::wstringstream eventName;
+    eventName << L"ToastEvent"
+              << GetCurrentProcessId();
 
+    m_event = CreateEventW(NULL,TRUE,FALSE,eventName.str().c_str());
 }
 
 ToastEventHandler::~ToastEventHandler()

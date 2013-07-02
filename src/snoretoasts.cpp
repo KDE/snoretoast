@@ -43,7 +43,7 @@ SnoreToasts::~SnoreToasts()
 
 
 
-HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait)
+void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait)
 {
     HRESULT hr = S_OK;
     m_title = title;
@@ -128,7 +128,7 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
             }
         }
     }
-    return SUCCEEDED(hr);
+    m_action = SUCCEEDED(hr)?Success:Failed;
 }
 
 SnoreToasts::USER_ACTION SnoreToasts::userAction()

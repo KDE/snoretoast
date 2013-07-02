@@ -61,7 +61,7 @@ public:
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
 
-    HRESULT displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
+    void displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
     USER_ACTION userAction();
 
     void setSound(const std::wstring &soundFile);
