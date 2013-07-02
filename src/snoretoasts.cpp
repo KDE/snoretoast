@@ -19,7 +19,6 @@
 */
 #include "snoretoasts.h"
 #include "ToastEventHandler.h"
-#include "linkhelper.h"
 
 #include <sstream>
 #include <iostream>
@@ -29,17 +28,10 @@ using namespace ABI::Windows::UI::Notifications;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace Windows::Foundation;
 
-SnoreToasts::SnoreToasts(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait):
-    m_title(title),
-    m_body(body),
-    m_image(image),
-    m_appID(L"Snore.DesktopToasts"),
-    m_wait(wait),
-    m_action(Success),
-    m_createShortcut(true)
+SnoreToasts::SnoreToasts(const std::wstring &appID):
+    m_appID(appID),
+    m_action(Success)
 {
-
-
 }
 
 SnoreToasts::~SnoreToasts()
@@ -48,48 +40,28 @@ SnoreToasts::~SnoreToasts()
     m_toastXml->Release();
 }
 
-HRESULT SnoreToasts::initialize()
+
+
+HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait)
 {
     HRESULT hr = S_OK;
+    m_title = title;
+    m_body = body;
+    m_image = image;
+    m_wait = wait;
 
-    if(m_createShortcut)
+    hr = GetActivationFactory(StringReferenceWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &m_toastManager);
+    if (SUCCEEDED(hr))
     {
-        LinkHelper helper(m_shortcut,m_appID);
-        if(m_shortcut.length()>0)
+        if(m_image.length()>0)
         {
-            hr = helper.setPropertyForExisitingShortcut();
+            hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText04, &m_toastXml);
         }
         else
         {
-            hr = helper.tryCreateShortcut();
+            hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastText04, &m_toastXml);
         }
     }
-
-    if (SUCCEEDED(hr))
-    {
-        hr = GetActivationFactory(StringReferenceWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &m_toastManager);
-        if (SUCCEEDED(hr))
-        {
-            if(m_image.length()>0)
-            {
-                hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText04, &m_toastXml);
-            }
-            else
-            {
-                hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastText04, &m_toastXml);
-            }
-        }
-    }
-    return hr;
-}
-
-
-
-// Display the toast using classic COM. Note that is also possible to create and display the toast using the new C++ /ZW options (using handles,
-// COM wrappers, etc.)
-SnoreToasts::USER_ACTION SnoreToasts::displayToast()
-{
-    HRESULT hr = initialize();
 
     if(SUCCEEDED(hr))
     {
@@ -99,7 +71,7 @@ SnoreToasts::USER_ACTION SnoreToasts::displayToast()
         }
         if(SUCCEEDED(hr))
         {
-            hr = SetTextValues();
+            hr = setTextValues();
             if(SUCCEEDED(hr))
             {
 
@@ -107,19 +79,17 @@ SnoreToasts::USER_ACTION SnoreToasts::displayToast()
             }
         }
     }
-    return SUCCEEDED(hr)?userAction():Failed;
+    return SUCCEEDED(hr);
 }
 
 SnoreToasts::USER_ACTION SnoreToasts::userAction()
 {
+    if(m_eventHanlder.Get() != NULL)
+    {
+        WaitForSingleObject(m_eventHanlder.Get()->event(),INFINITE);
+        m_action = m_eventHanlder.Get()->userAction();
+    }
     return m_action;
-}
-
-void SnoreToasts::setShortcutPath(const std::wstring &path, const std::wstring &id, bool setupShortcut)
-{
-    m_shortcut = path;
-    m_appID = id;
-    m_createShortcut = setupShortcut;
 }
 
 
@@ -155,7 +125,7 @@ HRESULT SnoreToasts::setImageSrc()
 }
 
 // Set the values of each of the text nodes
-HRESULT SnoreToasts::SetTextValues()
+HRESULT SnoreToasts::setTextValues()
 {
     HRESULT hr = S_OK;
     if (SUCCEEDED(hr))
@@ -175,7 +145,7 @@ HRESULT SnoreToasts::SetTextValues()
 
                     std::wstring lineOne;
                     std::wstring lineTwo;
-                    size_t maxlength = 35;
+                    size_t maxlength = 30;
                     if(m_body.length()>maxlength)
                     {
                         size_t pos = m_body.rfind(L" ",maxlength);
@@ -207,7 +177,29 @@ HRESULT SnoreToasts::SetTextValues()
     return hr;
 }
 
-HRESULT SnoreToasts::setNodeValueString(const HSTRING inputString,  IXmlNode *node)
+HRESULT SnoreToasts::setEventHandler(ComPtr<IToastNotification> toast)
+{
+    // Register the event handlers
+    EventRegistrationToken activatedToken, dismissedToken, failedToken;
+    ComPtr<ToastEventHandler> eventHandler(new ToastEventHandler());
+
+    HRESULT hr = toast->add_Activated(eventHandler.Get(), &activatedToken);
+    if (SUCCEEDED(hr))
+    {
+        hr = toast->add_Dismissed(eventHandler.Get(), &dismissedToken);
+        if (SUCCEEDED(hr))
+        {
+            hr = toast->add_Failed(eventHandler.Get(), &failedToken);
+            if (SUCCEEDED(hr))
+            {
+                m_eventHanlder = eventHandler;
+            }
+        }
+    }
+    return hr;
+}
+
+HRESULT SnoreToasts::setNodeValueString(const HSTRING &inputString,  IXmlNode *node)
 {
     ComPtr<IXmlText> inputText;
 
@@ -242,27 +234,13 @@ HRESULT SnoreToasts::createToast()
             hr = factory->CreateToastNotification(m_toastXml, &toast);
             if (SUCCEEDED(hr))
             {
-                // Register the event handlers
-                EventRegistrationToken activatedToken, dismissedToken, failedToken;
-                ComPtr<ToastEventHandler> eventHandler(new ToastEventHandler());
-
-                hr = toast->add_Activated(eventHandler.Get(), &activatedToken);
+                if(m_wait)
+                {
+                    hr = setEventHandler(toast);
+                }
                 if (SUCCEEDED(hr))
                 {
-                    hr = toast->add_Dismissed(eventHandler.Get(), &dismissedToken);
-                    if (SUCCEEDED(hr))
-                    {
-                        hr = toast->add_Failed(eventHandler.Get(), &failedToken);
-                        if (SUCCEEDED(hr))
-                        {
-                            hr = notifier->Show(toast.Get());
-                            if(SUCCEEDED(hr) && m_wait)
-                            {
-                                WaitForSingleObject(eventHandler.Get()->event(),INFINITE);
-                                m_action = eventHandler.Get()->userAction();
-                            }
-                        }
-                    }
+                    hr = notifier->Show(toast.Get());
                 }
             }
         }

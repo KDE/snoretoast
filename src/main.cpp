@@ -18,6 +18,7 @@
     along with SnarlNetworkBridge.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "snoretoasts.h"
+#include "linkhelper.h"
 
 #include <string>
 #include <iostream>
@@ -45,7 +46,7 @@ void help()
                << std::endl
                << L"The folowing arguments are only avalible in SnoreToast:" << std::endl
                << L"[-s] <shorcut path> <appID>\t| Set the path of your applications shortcut and the AppID." << std::endl
-               << L"[-ns] \t\t\t| Dont setup the shortcuts, use this if your application already has a shortcut installed." << std::endl
+               << L"[-a] <appID>\t\t| Dpn't create a shortcut but use the provided app id." << std::endl
                << L"[-v] \t\t\t| Print the version an copying information." << std::endl
                << std::endl
                << L"?\t\t\t| Print these intructions. Same as no args." << std::endl
@@ -83,8 +84,8 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
     std::wstring body;
     std::wstring image;
     std::wstring shortcut ;
-    std::wstring appID ;
-    bool setAppProperty = true;
+    std::wstring appID = L"Snore.DesktopToasts";
+    bool setupShortcut = true;
     bool  wait = false;
     bool showHelp = false;
 
@@ -147,10 +148,9 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
         }
         else  if(arg == L"-s")
         {
-            if (i + 2 < len)
+            if (i + 1 < len)
             {
                 shortcut = in[i + 1];
-                appID = in[i + 2];
             }
             else
             {
@@ -159,9 +159,19 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
                 showHelp = true;
             }
         }
-        else  if(arg == L"-ns")
+        else  if(arg == L"-a")
         {
-            setAppProperty = true;
+            if (i + 1 < len)
+            {
+                appID = in[i + 1];
+                setupShortcut = false;
+            }
+            else
+            {
+                std::wcout << L"Missing argument to -a.\n"
+                              L"Supply argument as -a Your.APP.ID" << std::endl;
+                showHelp = true;
+            }
         }
         else  if(arg == L"-w")
         {
@@ -176,12 +186,24 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
     hr = (!showHelp && title.length() > 0  && body.length() > 0)?S_OK:E_FAIL;
     if(SUCCEEDED(hr))
     {
-        SnoreToasts app(title,body,image,wait);
-        if(shortcut.length()>0)
+        if(setupShortcut)
         {
-            app.setShortcutPath(shortcut,appID,setAppProperty);
+            LinkHelper helper(shortcut,appID);
+            if(shortcut.length()>0)
+            {
+                hr = helper.setPropertyForExisitingShortcut();
+            }
+            else
+            {
+                hr = helper.tryCreateShortcut();
+            }
         }
-        return app.displayToast();
+        if(SUCCEEDED(hr))
+        {
+            SnoreToasts app(appID);
+            app.displayToast(title,body,image,wait);
+            return app.userAction();
+        }
     }
     else
     {
@@ -199,16 +221,15 @@ int main()
     int argc;
     wchar_t **argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
+    SnoreToasts::USER_ACTION action = SnoreToasts::Success;
 
     HRESULT hr = Initialize(RO_INIT_MULTITHREADED);
     if (SUCCEEDED(hr))
     {
-        {
-            hr = parse(argv,argc);
-        }
+        action = parse(argv,argc);
         Uninitialize();
     }
 
-    return SUCCEEDED(hr);
+    return action;
 }
 

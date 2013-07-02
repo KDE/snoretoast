@@ -44,6 +44,7 @@
 
 #include <string>
 
+class ToastEventHandler;
 
 class SnoreToasts
 {
@@ -57,39 +58,34 @@ public:
         Dismissed,
         Timeout
     };
-    SnoreToasts(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
+    SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
 
-    USER_ACTION displayToast();
+    HRESULT displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
     USER_ACTION userAction();
 
-    void setShortcutPath(const std::wstring &path,const std::wstring &id, bool setupShortcut);
 
 
 
 private:
-
-    HRESULT initialize();
-
-
     HRESULT createToast();
     HRESULT setImageSrc();
-    HRESULT SetTextValues();
-    HRESULT setNodeValueString(const HSTRING onputString,
-            ABI::Windows::Data::Xml::Dom::IXmlNode *node
-            );
+    HRESULT setTextValues();
+    HRESULT setEventHandler(Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
+    HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node );
 
     std::wstring m_title;
     std::wstring m_body;
     std::wstring m_image;
-    std::wstring m_shortcut;
     std::wstring m_appID;
     bool m_wait;
-    bool m_createShortcut;
+
     SnoreToasts::USER_ACTION m_action;
 
     ABI::Windows::Data::Xml::Dom::IXmlDocument *m_toastXml;
     ABI::Windows::UI::Notifications::IToastNotificationManagerStatics *m_toastManager;
+
+    Microsoft::WRL::ComPtr<ToastEventHandler> m_eventHanlder;
 
 
 
