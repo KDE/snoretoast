@@ -30,7 +30,8 @@ using namespace Windows::Foundation;
 
 SnoreToasts::SnoreToasts(const std::wstring &appID):
     m_appID(appID),
-    m_action(Success)
+    m_action(Success),
+    m_sound(L"Notification.Default")
 {
 }
 
@@ -61,21 +62,69 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
         {
             hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastText04, &m_toastXml);
         }
+
+        if(SUCCEEDED(hr))
+        {
+            ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNodeList> rootList;
+            hr = m_toastXml->GetElementsByTagName(StringReferenceWrapper(L"toast").Get(),&rootList);
+
+            if(SUCCEEDED(hr))
+            {
+                ComPtr<IXmlNode> root;
+                hr = rootList->Item(0, &root);
+                if(SUCCEEDED(hr))
+                {
+
+                    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> audioElement;
+                    hr = m_toastXml->CreateElement(StringReferenceWrapper(L"audio").Get(), &audioElement);
+                    if(SUCCEEDED(hr))
+                    {
+                        ComPtr<IXmlNode> audioNodeTmp;
+                        hr = audioElement.As(&audioNodeTmp);
+                        if(SUCCEEDED(hr))
+                        {
+                            ComPtr<IXmlNode> audioNode;
+                            hr = root->AppendChild(audioNodeTmp.Get(),&audioNode);
+                            if(SUCCEEDED(hr))
+                            {
+
+                                ComPtr<IXmlNamedNodeMap> attributes;
+
+                                hr = audioNode->get_Attributes(&attributes);
+                                if(SUCCEEDED(hr))
+                                {
+                                    hr = addAttribute(L"src",attributes.Get());
+                                    if(SUCCEEDED(hr))
+                                    {
+                                        addAttribute(L"silent",attributes.Get());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+//    printXML();
 
     if(SUCCEEDED(hr))
     {
         if(m_image.length()>0)
         {
-            hr = setImageSrc();
+            hr = setImage();
         }
         if(SUCCEEDED(hr))
         {
-            hr = setTextValues();
+		  hr = setSound();
             if(SUCCEEDED(hr))
             {
-
-                hr = createToast();
+                hr = setTextValues();
+                if(SUCCEEDED(hr))
+                {
+//                    printXML();
+                    hr = createToast();
+                }
             }
         }
     }
@@ -92,9 +141,19 @@ SnoreToasts::USER_ACTION SnoreToasts::userAction()
     return m_action;
 }
 
+void SnoreToasts::setSound(const std::wstring &soundFile)
+{
+    m_sound = soundFile;
+}
+
+void SnoreToasts::setSilent(bool silent)
+{
+    m_silent = silent;
+}
+
 
 // Set the value of the "src" attribute of the "image" node
-HRESULT SnoreToasts::setImageSrc()
+HRESULT SnoreToasts::setImage()
 {
     HRESULT hr = S_OK;
 
@@ -117,6 +176,47 @@ HRESULT SnoreToasts::setImageSrc()
                 if (SUCCEEDED(hr))
                 {
                     hr = setNodeValueString(StringReferenceWrapper(m_image).Get(), srcAttribute.Get());
+                }
+            }
+        }
+    }
+    return hr;
+}
+
+HRESULT SnoreToasts::setSound()
+{
+    HRESULT hr = S_OK;
+    ComPtr<IXmlNodeList> nodeList;
+    hr = m_toastXml->GetElementsByTagName( StringReferenceWrapper(L"audio").Get(), &nodeList);
+    if (SUCCEEDED(hr))
+    {
+        ComPtr<IXmlNode> audioNode;
+        hr = nodeList->Item(0, &audioNode);
+        if (SUCCEEDED(hr))
+        {
+            ComPtr<IXmlNamedNodeMap> attributes;
+
+            hr = audioNode->get_Attributes(&attributes);
+            if (SUCCEEDED(hr))
+            {
+                ComPtr<IXmlNode> srcAttribute;
+
+                hr = attributes->GetNamedItem(StringReferenceWrapper(L"src").Get(), &srcAttribute);
+                if (SUCCEEDED(hr))
+                {
+					std::wstring sound(L"ms-winsoundevent:");
+					sound.append(m_sound);
+                    hr = setNodeValueString(StringReferenceWrapper(sound).Get(), srcAttribute.Get());
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = attributes->GetNamedItem(StringReferenceWrapper(L"silent").Get(), &srcAttribute);
+                        if (SUCCEEDED(hr))
+                        {
+                            hr = setNodeValueString(StringReferenceWrapper(m_silent?L"true":L"false").Get(), srcAttribute.Get());
+                        }
+
+                    }
+
                 }
             }
         }
@@ -217,6 +317,37 @@ HRESULT SnoreToasts::setNodeValueString(const HSTRING &inputString,  IXmlNode *n
     }
 
     return hr;
+}
+
+HRESULT SnoreToasts::addAttribute(const std::wstring &name,IXmlNamedNodeMap *attributeMap)
+{
+    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
+    HRESULT hr = m_toastXml->CreateAttribute(StringReferenceWrapper(name).Get(),&srcAttribute);
+
+    if (SUCCEEDED(hr))
+    {
+        ComPtr<IXmlNode> node;
+        hr = srcAttribute.As(&node);
+        if (SUCCEEDED(hr))
+        {
+            ComPtr<IXmlNode> pNode;
+            hr = attributeMap->SetNamedItem(node.Get(),&pNode);
+        }
+    }
+    return hr;
+}
+
+void SnoreToasts::printXML()
+{
+    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNodeSerializer> s;
+    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> ss(m_toastXml);
+    ss.As(&s);
+    HSTRING string;
+    s->GetXml(&string);
+    PCWSTR str = WindowsGetStringRawBuffer(string,NULL);
+    std::wcout << L"------------------------" << std::endl
+               << str << std::endl
+               <<  L"------------------------" << std::endl;
 }
 
 // Create and display the toast

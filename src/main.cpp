@@ -39,14 +39,16 @@ void help()
                << L"toast <string>|[-t <string>][-m <string>][-p <string>][-s <string> <string>][-w][-ns]" << std::endl
                << std::endl
                << L"---- Args ----" << std::endl
-               << L"[-t] <title string>\t\t| Displayed on the first line of the toast." << std::endl
+               << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
                << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
-               << L"[-p] <image URI>\t\t| Display toast with an image" << std::endl
+               << L"[-p] <image URI>\t| Display toast with an image" << std::endl
                << L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
                << std::endl
                << L"The folowing arguments are only avalible in SnoreToast:" << std::endl
-               << L"[-s] <shorcut path> <appID>\t| Set the path of your applications shortcut and the AppID." << std::endl
-               << L"[-a] <appID>\t\t| Dpn't create a shortcut but use the provided app id." << std::endl
+               << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
+               << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
+               << L"[-shortcut] <path>\t| Set the path of your applications shortcut." << std::endl
+               << L"[-appID] <appID>\t| Dpn't create a shortcut but use the provided app id." << std::endl
                << L"[-v] \t\t\t| Print the version an copying information." << std::endl
                << std::endl
                << L"?\t\t\t| Print these intructions. Same as no args." << std::endl
@@ -80,11 +82,14 @@ void version()
 SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
 {
     HRESULT hr = S_OK;
+
+    std::wstring appID = L"Snore.DesktopToasts";
     std::wstring title;
     std::wstring body;
     std::wstring image;
     std::wstring shortcut ;
-    std::wstring appID = L"Snore.DesktopToasts";
+    std::wstring sound(L"Notification.Default");
+    bool silent = false;
     bool setupShortcut = true;
     bool  wait = false;
     bool showHelp = false;
@@ -146,7 +151,28 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
                 showHelp = true;
             }
         }
+        else  if(arg == L"-w")
+        {
+            wait = true;
+        }
         else  if(arg == L"-s")
+        {
+            if (i + 1 < len)
+            {
+                sound = in[i + 1];
+            }
+            else
+            {
+                std::wcout << L"Missing argument to -s.\n"
+                              L"Supply argument as -s \"sound name\" " << std::endl;
+                showHelp = true;
+            }
+        }
+        else  if(arg == L"-silent")
+        {
+            silent = true;
+        }
+        else  if(arg == L"-shortcut")
         {
             if (i + 1 < len)
             {
@@ -159,7 +185,7 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
                 showHelp = true;
             }
         }
-        else  if(arg == L"-a")
+        else  if(arg == L"-appID")
         {
             if (i + 1 < len)
             {
@@ -172,10 +198,6 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
                               L"Supply argument as -a Your.APP.ID" << std::endl;
                 showHelp = true;
             }
-        }
-        else  if(arg == L"-w")
-        {
-            wait = true;
         }
         else  if(arg == L"-v")
         {
@@ -201,6 +223,8 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
         if(SUCCEEDED(hr))
         {
             SnoreToasts app(appID);
+            app.setSilent(silent);
+            app.setSound(sound);
             app.displayToast(title,body,image,wait);
             return app.userAction();
         }

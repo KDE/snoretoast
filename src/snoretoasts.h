@@ -64,20 +64,31 @@ public:
     HRESULT displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
     USER_ACTION userAction();
 
+    void setSound(const std::wstring &soundFile);
+    void setSilent(bool silent);
+
 
 
 
 private:
     HRESULT createToast();
-    HRESULT setImageSrc();
+    HRESULT setImage();
+    HRESULT setSound();
     HRESULT setTextValues();
     HRESULT setEventHandler(Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
     HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node );
+    HRESULT addAttribute(const std::wstring &name,ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
+
+	void printXML();
+
+
+    std::wstring m_appID;
 
     std::wstring m_title;
     std::wstring m_body;
     std::wstring m_image;
-    std::wstring m_appID;
+    std::wstring m_sound;
+    bool m_silent;
     bool m_wait;
 
     SnoreToasts::USER_ACTION m_action;
