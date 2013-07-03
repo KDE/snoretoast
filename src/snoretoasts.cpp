@@ -366,21 +366,33 @@ HRESULT SnoreToasts::createToast()
     HRESULT hr = m_toastManager->CreateToastNotifierWithId(StringReferenceWrapper(m_appID).Get(), &notifier);
     if (SUCCEEDED(hr))
     {
-        ComPtr<IToastNotificationFactory> factory;
-        hr = GetActivationFactory(StringReferenceWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &factory);
-        if (SUCCEEDED(hr))
+
+        NotificationSetting setting = NotificationSetting_DisabledForUser;
+        notifier->get_Setting(&setting);
+        if(setting != NotificationSetting_Enabled)
         {
-            ComPtr<IToastNotification> toast;
-            hr = factory->CreateToastNotification(m_toastXml, &toast);
+            std::wcout << L"Notifications are disabled" << std::endl;
+            hr = E_FAIL;
+        }
+
+        if(SUCCEEDED(hr) )
+        {
+            ComPtr<IToastNotificationFactory> factory;
+            hr = GetActivationFactory(StringReferenceWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &factory);
             if (SUCCEEDED(hr))
             {
-                if(m_wait)
-                {
-                    hr = setEventHandler(toast);
-                }
+                ComPtr<IToastNotification> toast;
+                hr = factory->CreateToastNotification(m_toastXml, &toast);
                 if (SUCCEEDED(hr))
                 {
-                    hr = notifier->Show(toast.Get());
+                    if(m_wait)
+                    {
+                        hr = setEventHandler(toast);
+                    }
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = notifier->Show(toast.Get());
+                    }
                 }
             }
         }

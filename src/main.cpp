@@ -83,7 +83,7 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
 {
     HRESULT hr = S_OK;
 
-    std::wstring appID(L"Snore.DesktopToasts");
+    std::wstring appID;
     std::wstring title;
     std::wstring body;
     std::wstring image;
@@ -210,6 +210,7 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
     {
         if(appID.length() == 0)
         {
+			appID = L"Snore.DesktopToasts";
             hr = LinkHelper::tryCreateShortcut(appID);
         }
         if(SUCCEEDED(hr))
