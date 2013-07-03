@@ -29,11 +29,11 @@ ToastEventHandler::ToastEventHandler() :
     m_ref(1),
     m_action(SnoreToasts::Success)
 {
-    std::wstringstream eventName;
-    eventName << L"ToastEvent"
-              << GetCurrentProcessId();
-
-    m_event = CreateEventW(NULL,TRUE,FALSE,eventName.str().c_str());
+    SECURITY_ATTRIBUTES attributes;
+    ZeroMemory(&attributes);
+    attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
+    attributes.bInheritHandle = FALSE;
+    m_event = CreateEventW(&attributes,TRUE,FALSE,L"SnoreToastEvent");
 }
 
 ToastEventHandler::~ToastEventHandler()

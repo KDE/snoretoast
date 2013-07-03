@@ -36,9 +36,9 @@ void help()
                << L"This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts" << std::endl
                << std::endl
                << L"---- Usage ----" << std::endl
-               << L"toast <string>|[-t <string>][-m <string>][-p <string>][-s <string> <string>][-w][-ns]" << std::endl
+               << L"toast [Options]" << std::endl
                << std::endl
-               << L"---- Args ----" << std::endl
+               << L"---- Options ----" << std::endl
                << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
                << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
                << L"[-p] <image URI>\t| Display toast with an image" << std::endl

@@ -106,7 +106,7 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             }
         }
     }
-//    printXML();
+    //    printXML();
 
     if(SUCCEEDED(hr))
     {
@@ -116,13 +116,13 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
         }
         if(SUCCEEDED(hr))
         {
-		  hr = setSound();
+            hr = setSound();
             if(SUCCEEDED(hr))
             {
                 hr = setTextValues();
                 if(SUCCEEDED(hr))
                 {
-//                    printXML();
+                    //                    printXML();
                     hr = createToast();
                 }
             }
@@ -204,8 +204,17 @@ HRESULT SnoreToasts::setSound()
                 hr = attributes->GetNamedItem(StringReferenceWrapper(L"src").Get(), &srcAttribute);
                 if (SUCCEEDED(hr))
                 {
-					std::wstring sound(L"ms-winsoundevent:");
-					sound.append(m_sound);
+                    std::wstring sound;
+                    if(m_sound.find(L"ms-winsoundevent:") == std::wstring::npos)
+                    {
+                        sound = L"ms-winsoundevent:";
+                        sound.append(m_sound);
+                    }
+                    else
+                    {
+                        sound = m_sound;
+                    }
+
                     hr = setNodeValueString(StringReferenceWrapper(sound).Get(), srcAttribute.Get());
                     if (SUCCEEDED(hr))
                     {
