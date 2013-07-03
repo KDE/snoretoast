@@ -24,13 +24,13 @@
 class LinkHelper
 {
 public:
-    LinkHelper(const std::wstring &shortcutPath, const std::wstring &appID);
-    HRESULT tryCreateShortcut();
-    HRESULT installShortcut();
-    HRESULT setPropertyForExisitingShortcut();
-    HRESULT setPropertyForShortcut(Microsoft::WRL::ComPtr<IShellLinkW> shellLink, IPersistFile *persistFile);
+    static HRESULT tryCreateShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID);
+    static HRESULT tryCreateShortcut(const std::wstring &appID);
 
 private:
-    std::wstring m_shortcutPath;
-    std::wstring m_appID;
+    static HRESULT installShortcut(const std::wstring &shortcutPath,const std::wstring &exePath, const std::wstring &appID);
+    static HRESULT mkdirs(const std::wstring &basepath, const std::wstring &dirs);
+
+
+
 };

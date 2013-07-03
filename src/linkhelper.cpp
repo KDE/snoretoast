@@ -22,107 +22,71 @@
 #include <propvarutil.h>
 
 #include <iostream>
+#include <sstream>
 
 using namespace Microsoft::WRL;
 
 
-LinkHelper::LinkHelper(const std::wstring &shortcutPath, const std::wstring &appID):
-    m_shortcutPath(shortcutPath),
-    m_appID(appID)
-{
-    if(shortcutPath.length()<=0)
-    {
 
-        wchar_t buffer[MAX_PATH];
-        DWORD charWritten = GetEnvironmentVariable(L"APPDATA",buffer , MAX_PATH);
-        HRESULT hr = charWritten > 0 ? S_OK : E_INVALIDARG;
-        if (SUCCEEDED(hr))
+HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath,const std::wstring &exePath, const std::wstring &appID)
+{
+    HRESULT hr = S_OK;
+
+    std::wstringstream path;
+    std::wstring lnkName;
+    wchar_t buffer[MAX_PATH];
+
+    if (GetEnvironmentVariable(L"APPDATA",buffer , MAX_PATH)>0)
+    {
+        path << buffer
+                     << L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
+
+    }
+
+    lnkName = shortcutPath;
+
+    if(shortcutPath.rfind(L".lnk") == std::wstring::npos)
+    {
+        lnkName.append(L".lnk");
+    }
+	hr = mkdirs(path.str(),lnkName);
+    if(SUCCEEDED(hr))
+    {
+        path << lnkName;
+
+        DWORD attributes = GetFileAttributes(path.str().c_str());
+        bool fileExists = attributes < 0xFFFFFFF;
+
+        if (!fileExists)
         {
-            m_shortcutPath = buffer;
-            m_shortcutPath.append(L"\\Microsoft\\Windows\\Start Menu\\Programs\\SnoreToast.lnk");
+            hr = installShortcut(path.str(),exePath,appID);
         }
-
-    }
-}
-
-
-
-HRESULT LinkHelper::tryCreateShortcut()
-{
-    HRESULT hr = S_OK;
-    DWORD attributes = GetFileAttributes(m_shortcutPath.c_str());
-    bool fileExists = attributes < 0xFFFFFFF;
-
-    if (!fileExists)
-    {
-        hr = installShortcut();
-    }
-    else
-    {
-        hr = S_FALSE;
-    }
-    return hr;
-}
-
-HRESULT LinkHelper::setPropertyForExisitingShortcut()
-{
-
-    HRESULT hr = S_OK;
-    ComPtr<IShellLink> shellLink;
-    hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
-
-    if (SUCCEEDED(hr))
-    {
-        ComPtr<IPersistFile> persistFile;
-        hr = shellLink.As(&persistFile);
-        if (SUCCEEDED(hr))
+        else
         {
-            hr = persistFile.Get()->Load(m_shortcutPath.c_str(), STGM_READWRITE);
-            if (SUCCEEDED(hr))
-            {
-                hr = setPropertyForShortcut(shellLink,persistFile.Get());
-            }
+            hr = S_FALSE;
         }
     }
     return hr;
 }
 
-HRESULT LinkHelper::setPropertyForShortcut(ComPtr<IShellLink> shellLink,IPersistFile *persistFile)
+HRESULT LinkHelper::tryCreateShortcut(const std::wstring &appID)
 {
-    HRESULT hr = S_OK;
-    ComPtr<IPropertyStore> propertyStore;
-
-    hr = shellLink.As(&propertyStore);
-    if (SUCCEEDED(hr))
+    wchar_t buffer[MAX_PATH];
+    if(GetModuleFileNameEx(GetCurrentProcess(), nullptr, buffer,MAX_PATH)>0)
     {
-        PROPVARIANT appIdPropVar;
-        hr = InitPropVariantFromString(m_appID.c_str(), &appIdPropVar);
-        if (SUCCEEDED(hr))
-        {
-            hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
-            if (SUCCEEDED(hr))
-            {
-                hr = propertyStore->Commit();
-                if (SUCCEEDED(hr))
-                {
-                    hr = persistFile->Save(m_shortcutPath.c_str(), TRUE);
-                }
-            }
-            PropVariantClear(&appIdPropVar);
-        }
+        return tryCreateShortcut(L"SnoreToast.lnk",buffer,appID);
     }
-    return hr;
+    return E_FAIL;
 }
+
+
 
 
 // Install the shortcut
-HRESULT LinkHelper::installShortcut()
+HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath,const std::wstring &exePath, const std::wstring &appID)
 {
-    wchar_t exePath[MAX_PATH];
-
-    DWORD charWritten = GetModuleFileNameEx(GetCurrentProcess(), nullptr, exePath, ARRAYSIZE(exePath));
-
-    HRESULT hr = charWritten > 0 ? S_OK : E_FAIL;
+    std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << std::endl;
+    HRESULT hr = S_OK;
 
     if (SUCCEEDED(hr))
     {
@@ -131,21 +95,64 @@ HRESULT LinkHelper::installShortcut()
 
         if (SUCCEEDED(hr))
         {
-            hr = shellLink->SetPath(exePath);
+            hr = shellLink->SetPath(exePath.c_str());
             if (SUCCEEDED(hr))
             {
                 hr = shellLink->SetArguments(L"");
                 if (SUCCEEDED(hr))
                 {
-                    ComPtr<IPersistFile> persistFile;
-                    hr = shellLink.As(&persistFile);
+                    ComPtr<IPropertyStore> propertyStore;
+
+                    hr = shellLink.As(&propertyStore);
                     if (SUCCEEDED(hr))
                     {
-                        hr = setPropertyForShortcut(shellLink,persistFile.Get());
+                        PROPVARIANT appIdPropVar;
+                        hr = InitPropVariantFromString(appID.c_str(), &appIdPropVar);
+                        if (SUCCEEDED(hr))
+                        {
+                            hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+                            if (SUCCEEDED(hr))
+                            {
+                                hr = propertyStore->Commit();
+                                if (SUCCEEDED(hr))
+                                {
+                                    ComPtr<IPersistFile> persistFile;
+                                    hr = shellLink.As(&persistFile);
+                                    if (SUCCEEDED(hr))
+                                    {
+                                        hr = persistFile->Save(shortcutPath.c_str(), TRUE);
+                                    }
+                                }
+                            }
+                            PropVariantClear(&appIdPropVar);
+                        }
                     }
                 }
             }
         }
+    }
+    return hr;
+}
+
+HRESULT LinkHelper::mkdirs(const std::wstring &basepath,const std::wstring &dirs)
+{
+    HRESULT hr = S_OK;
+    size_t pos;
+    size_t oldPos = 0;
+    size_t last_pos = dirs.rfind(L"\\");
+    if(last_pos == std::wstring::npos)
+    {
+        return hr;
+    }
+    while(SUCCEEDED(hr) && (pos = dirs.find(L"\\",oldPos)) <= last_pos)
+    {
+        std::wcout << L"mkdir" << basepath << dirs.substr(0,pos) <<std::endl;
+        hr = _wmkdir((basepath + dirs.substr(0,pos)).c_str()) != ENOENT?S_OK:E_FAIL;
+		if(oldPos == pos)
+		{
+			break;
+		}
+        oldPos = pos;
     }
     return hr;
 }

@@ -47,8 +47,8 @@ void help()
                << L"The folowing arguments are only avalible in SnoreToast:" << std::endl
                << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
                << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
-               << L"[-shortcut] <path>\t| Set the path of your applications shortcut." << std::endl
-               << L"[-appID] <appID>\t| Dpn't create a shortcut but use the provided app id." << std::endl
+               << L"[-install] <path> <path to aplication> <APP.ID>\t| Set the path of your applications shortcut." << std::endl
+               << L"[-appID] <App.ID>\t| Dpn't create a shortcut but use the provided app id." << std::endl
                << L"[-v] \t\t\t| Print the version an copying information." << std::endl
                << std::endl
                << L"?\t\t\t| Print these intructions. Same as no args." << std::endl
@@ -83,14 +83,12 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
 {
     HRESULT hr = S_OK;
 
-    std::wstring appID = L"Snore.DesktopToasts";
+    std::wstring appID(L"Snore.DesktopToasts");
     std::wstring title;
     std::wstring body;
     std::wstring image;
-    std::wstring shortcut ;
     std::wstring sound(L"Notification.Default");
     bool silent = false;
-    bool setupShortcut = true;
     bool  wait = false;
     bool showHelp = false;
 
@@ -172,30 +170,32 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
         {
             silent = true;
         }
-        else  if(arg == L"-shortcut")
-        {
-            if (i + 1 < len)
-            {
-                shortcut = in[i + 1];
-            }
-            else
-            {
-                std::wcout << L"Missing argument to -s.\n"
-                              L"Supply argument as -s \"path to your shortcut\" Your.APP.ID" << std::endl;
-                showHelp = true;
-            }
-        }
         else  if(arg == L"-appID")
         {
             if (i + 1 < len)
             {
                 appID = in[i + 1];
-                setupShortcut = false;
             }
             else
             {
                 std::wcout << L"Missing argument to -a.\n"
                               L"Supply argument as -a Your.APP.ID" << std::endl;
+                showHelp = true;
+            }
+        }
+        else  if(arg == L"-install")
+        {
+            if (i + 3 < len)
+            {
+                std::wstring shortcut(in[i + 1]) ;
+                std::wstring exe(in[i + 2]);
+                appID = in[i + 3];
+                return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut,exe,appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
+            }
+            else
+            {
+                std::wcout << L"Missing argument to -install.\n"
+                              L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\"" << std::endl;
                 showHelp = true;
             }
         }
@@ -208,17 +208,9 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
     hr = (!showHelp && title.length() > 0  && body.length() > 0)?S_OK:E_FAIL;
     if(SUCCEEDED(hr))
     {
-        if(setupShortcut)
+        if(appID.length() == 0)
         {
-            LinkHelper helper(shortcut,appID);
-            if(shortcut.length()>0)
-            {
-                hr = helper.setPropertyForExisitingShortcut();
-            }
-            else
-            {
-                hr = helper.tryCreateShortcut();
-            }
+            hr = LinkHelper::tryCreateShortcut(appID);
         }
         if(SUCCEEDED(hr))
         {
