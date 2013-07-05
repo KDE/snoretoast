@@ -9,38 +9,39 @@ If your application does not have a shortcut in the startmenu yet please use the
 
 
 ----------------------------------------------------------
-Welcome to SnoreToast.
-Provide toast with a message and display it via the graphical notification system.
-This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts
 
----- Usage ----
-toast [Options]
+    Welcome to SnoreToast.
+    Provide toast with a message and display it via the graphical notification system.
+    This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts
 
----- Options ----
-[-t] <title string>     | Displayed on the first line of the toast.
-[-m] <message string>   | Displayed on the remaining lines, wrapped.
-[-p] <image URI>        | Display toast with an image
-[-w]                    | Wait for toast to expire or activate.
+    ---- Usage ----
+    toast [Options]
 
-The folowing arguments are only avalible in SnoreToast:
-[-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
-[-silent]               | Don't play a sound file when showing the notifications.
-[-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
+    ---- Options ----
+    [-t] <title string>     | Displayed on the first line of the toast.
+    [-m] <message string>   | Displayed on the remaining lines, wrapped.
+    [-p] <image URI>        | Display toast with an image
+    [-w]                    | Wait for toast to expire or activate.
 
-[-install] <path> <path to aplication> <APP.ID> | Set the path of your applications shortcut.
-[-v]                    | Print the version and copying information.
+    The folowing arguments are only avalible in SnoreToast:
+    [-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
+    [-silent]               | Don't play a sound file when showing the notifications.
+    [-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
 
-?                       | Print these instructions. Same as no args.
-Exit Status     :  Exit Code
-Failed          : -1
-Success         :  0
-Hidden          :  1
-Dismissed       :  2
-Timeout         :  3
+    [-install] <path> <path to aplication> <APP.ID> | Set the path of your applications shortcut.
+    [-v]                    | Print the version and copying information.
 
----- Image Notes ----
-Images must be .png with:
-        maximum dimensions of 1024x1024
-        size <= 200kb
-These limitations are due to the Toast notification system.
-This should go without saying, but windows style paths are required.
+    ?                       | Print these instructions. Same as no args.
+    Exit Status     :  Exit Code
+    Failed          : -1
+    Success         :  0
+    Hidden          :  1
+    Dismissed       :  2
+    Timeout         :  3
+
+    ---- Image Notes ----
+    Images must be .png with:
+            maximum dimensions of 1024x1024
+            size <= 200kb
+    These limitations are due to the Toast notification system.
+    This should go without saying, but windows style paths are required.
