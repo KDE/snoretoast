@@ -31,8 +31,7 @@ using namespace Windows::Foundation;
 void help()
 {
     std::wcout << L"Welcome to SnoreToast." << std::endl
-               << L"Provide toast with a message and display it-" << std::endl
-               << L"via the graphical notification system." << std::endl
+               << L"Provide toast with a message and display it via the graphical notification system." << std::endl
                << L"This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts" << std::endl
                << std::endl
                << L"---- Usage ----" << std::endl
@@ -47,17 +46,18 @@ void help()
                << L"The folowing arguments are only avalible in SnoreToast:" << std::endl
                << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
                << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
-               << L"[-install] <path> <path to aplication> <APP.ID>\t| Set the path of your applications shortcut." << std::endl
-               << L"[-appID] <App.ID>\t| Dpn't create a shortcut but use the provided app id." << std::endl
-               << L"[-v] \t\t\t| Print the version an copying information." << std::endl
+               << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
                << std::endl
-               << L"?\t\t\t| Print these intructions. Same as no args." << std::endl
+               << L"[-install] <path> <path to aplication> <APP.ID>\t| Set the path of your applications shortcut." << std::endl
+               << L"[-v] \t\t\t| Print the version and copying information." << std::endl
+               << std::endl
+               << L"?\t\t\t| Print these instructions. Same as no args." << std::endl
                << L"Exit Status\t:  Exit Code" << std::endl
                << L"Failed\t\t: -1"
                << std::endl
                << "Success\t\t:  0" << std::endl
                << "Hidden\t\t:  1" << std::endl
-               << "Dismissed\t\t:  2" << std::endl
+               << "Dismissed\t:  2" << std::endl
                << "Timeout\t\t:  3" << std::endl
                << std::endl
                << L"---- Image Notes ----" << std::endl
@@ -210,7 +210,7 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
     {
         if(appID.length() == 0)
         {
-			appID = L"Snore.DesktopToasts";
+            appID = L"Snore.DesktopToasts";
             hr = LinkHelper::tryCreateShortcut(appID);
         }
         if(SUCCEEDED(hr))
