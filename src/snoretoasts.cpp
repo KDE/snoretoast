@@ -56,11 +56,11 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
     {
         if(m_image.length()>0)
         {
-            hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText04, &m_toastXml);
+            hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText02, &m_toastXml);
         }
         else
         {
-            hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastText04, &m_toastXml);
+            hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastText02, &m_toastXml);
         }
 
         if(SUCCEEDED(hr))
@@ -252,32 +252,10 @@ HRESULT SnoreToasts::setTextValues()
                 if (SUCCEEDED(hr))
                 {
 
-                    std::wstring lineOne;
-                    std::wstring lineTwo;
-                    size_t maxlength = 30;
-                    if(m_body.length()>maxlength)
-                    {
-                        size_t pos = m_body.rfind(L" ",maxlength);
-                        lineOne = m_body.substr(0,pos);
-                        lineTwo = m_body.substr(pos+1);
-                    }
-                    else
-                    {
-                        lineOne = m_body;
-                    }
-
                     hr = nodeList->Item(1, &textNode);
                     if (SUCCEEDED(hr))
                     {
-                        hr = setNodeValueString(StringReferenceWrapper(lineOne).Get(), textNode.Get());
-                        if (SUCCEEDED(hr) && lineTwo.length()>0)
-                        {
-                            hr = nodeList->Item(2, &textNode);
-                            if (SUCCEEDED(hr))
-                            {
-                                hr = setNodeValueString(StringReferenceWrapper(lineTwo).Get(), textNode.Get());
-                            }
-                        }
+                        hr = setNodeValueString(StringReferenceWrapper(m_body).Get(), textNode.Get());
                     }
                 }
             }
