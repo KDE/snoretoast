@@ -1,21 +1,20 @@
 /*
-    VSD prints debugging messages of applications and their
-    sub-processes to console and supports logging of their output.
+    SnoreToast is capable to invoke Windows 8 toast notifications.
     Copyright (C) 2013  Patrick von Reth <vonreth@kde.org>
 
 
-    VSD is free software: you can redistribute it and/or modify
+    SnoreToast is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    VSD is distributed in the hope that it will be useful,
+    SnoreToast is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
-    along with SnarlNetworkBridge.  If not, see <http://www.gnu.org/licenses/>.
+    along with SnoreToast.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "snoretoasts.h"
 #include "ToastEventHandler.h"
