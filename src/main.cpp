@@ -127,19 +127,12 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[],int len)
             if (i + 1 < len)
             {
                 std::wstring path = in[i + 1];
-                if(path.at(1) == ':' )//abspath
+                if(path.substr(0,8) != L"file:///")
                 {
                     image = L"file:///";
-                    image.append(path);
+                    path = _wfullpath(nullptr, path.c_str(), MAX_PATH);
                 }
-                else if(path.substr(0,4) == L"http")//url not working?
-                {
-                    image = path;
-                }
-                else
-                {
-                    image = _wfullpath(nullptr, in[i + 1], MAX_PATH);
-                }
+                image.append(path);
             }
             else
             {
