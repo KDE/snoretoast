@@ -348,7 +348,25 @@ HRESULT SnoreToasts::createToast()
         notifier->get_Setting(&setting);
         if(setting != NotificationSetting_Enabled)
         {
-            std::wcout << L"Notifications are disabled" << std::endl;
+            std::wcout << L"Notifications are disabled" << std::endl << L"Reason: ";
+
+            switch(setting)
+            {
+            case NotificationSetting_DisabledForApplication:
+                std::wcout << L"DisabledForApplication";
+                break;
+            case NotificationSetting_DisabledForUser:
+                std::wcout << L"DisabledForUser";
+                break;
+            case NotificationSetting_DisabledByGroupPolicy:
+                std::wcout << L"DisabledByGroupPolicy";
+                break;
+            case NotificationSetting_DisabledByManifest:
+                std::wcout << L"DisabledByManifest";
+                break;
+            }
+            std::wcout << std::endl;
+
             hr = E_FAIL;
         }
 
