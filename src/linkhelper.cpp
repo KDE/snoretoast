@@ -145,7 +145,6 @@ HRESULT LinkHelper::mkdirs(const std::wstring &basepath,const std::wstring &dirs
     }
     while(SUCCEEDED(hr) && (pos = dirs.find(L"\\",oldPos)) <= last_pos)
     {
-        std::wcout << L"mkdir" << basepath << dirs.substr(0,pos) <<std::endl;
         hr = _wmkdir((basepath + dirs.substr(0,pos)).c_str()) != ENOENT?S_OK:E_FAIL;
 		if(oldPos == pos)
 		{

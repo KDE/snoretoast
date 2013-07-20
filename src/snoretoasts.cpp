@@ -345,33 +345,6 @@ HRESULT SnoreToasts::createToast()
     HRESULT hr = m_toastManager->CreateToastNotifierWithId(StringReferenceWrapper(m_appID).Get(), &notifier);
     if (SUCCEEDED(hr))
     {
-
-        NotificationSetting setting = NotificationSetting_Enabled;
-        notifier->get_Setting(&setting);
-        if(setting != NotificationSetting_Enabled)
-        {
-            std::wcout << L"Notifications are disabled" << std::endl << L"Reason: ";
-
-            switch(setting)
-            {
-            case NotificationSetting_DisabledForApplication:
-                std::wcout << L"DisabledForApplication";
-                break;
-            case NotificationSetting_DisabledForUser:
-                std::wcout << L"DisabledForUser";
-                break;
-            case NotificationSetting_DisabledByGroupPolicy:
-                std::wcout << L"DisabledByGroupPolicy";
-                break;
-            case NotificationSetting_DisabledByManifest:
-                std::wcout << L"DisabledByManifest";
-                break;
-            }
-            std::wcout << std::endl;
-
-            hr = E_FAIL;
-        }
-
         if(SUCCEEDED(hr) )
         {
             ComPtr<IToastNotificationFactory> factory;
@@ -384,7 +357,33 @@ HRESULT SnoreToasts::createToast()
                 {
                     if(m_wait)
                     {
-                        hr = setEventHandler(toast);
+                        NotificationSetting setting = NotificationSetting_Enabled;
+                        notifier->get_Setting(&setting);
+                        if(setting == NotificationSetting_Enabled)
+                        {
+                            hr = setEventHandler(toast);
+                        }
+                        {
+                            std::wcout << L"Notifications are disabled" << std::endl
+                                       << L"Reason: ";
+
+                            switch(setting)
+                            {
+                            case NotificationSetting_DisabledForApplication:
+                                std::wcout << L"DisabledForApplication";
+                                break;
+                            case NotificationSetting_DisabledForUser:
+                                std::wcout << L"DisabledForUser";
+                                break;
+                            case NotificationSetting_DisabledByGroupPolicy:
+                                std::wcout << L"DisabledByGroupPolicy";
+                                break;
+                            case NotificationSetting_DisabledByManifest:
+                                std::wcout << L"DisabledByManifest";
+                                break;
+                            }
+                            std::wcout << std::endl;
+                        }
                     }
                     if (SUCCEEDED(hr))
                     {
