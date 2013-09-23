@@ -363,6 +363,7 @@ HRESULT SnoreToasts::createToast()
                         {
                             hr = setEventHandler(toast);
                         }
+						else
                         {
                             std::wcout << L"Notifications are disabled" << std::endl
                                        << L"Reason: ";
