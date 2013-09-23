@@ -69,7 +69,7 @@ void help()
 
 void version()
 {
-    std::wcout << L"SnoreToast version 0.1" << std::endl
+    std::wcout << L"SnoreToast version 0.2" << std::endl
                << L"Copyright (C) 2013  Patrick von Reth <vonreth@kde.org>" << std::endl
                << L"SnoreToast is free software: you can redistribute it and/or modify" << std::endl
                << L"it under the terms of the GNU Lesser General Public License as published by" << std::endl
