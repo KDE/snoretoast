@@ -7,7 +7,6 @@ If your application already has a shortcut in the startmenu, which provides an a
 
 If your application does not have a shortcut in the startmenu yet please use the --install parameter, for example "snoretoast.exe --install "MyApp\MyApp.lnk" "C:\myApp.exe" "My.APP_ID" " the appID provided here has to be passed to snoretoast with the parameter --appID.
 
-Lates binary v0.2 can be found here https://github.com/TheOneRing/Snoretoast/raw/master/bin/SnoreToast.exe
 
 ----------------------------------------------------------
 
