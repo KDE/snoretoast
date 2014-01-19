@@ -95,6 +95,8 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification* /* sender */, 
 IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification* /* sender */, _In_ IToastFailedEventArgs* /* e */)
 {
     std::wcout << L"The toast encountered an error." << std::endl;
+	std::wcout << L"Please make sure that the app id is set correctly." << std::endl;
+	std::wcout << L"Command Line: " << GetCommandLineW() << std::endl;
     m_action = SnoreToasts::Failed;
     SetEvent(m_event);
     return S_OK;
