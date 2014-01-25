@@ -24,13 +24,20 @@
 
 using namespace ABI::Windows::UI::Notifications;
 
-ToastEventHandler::ToastEventHandler() :
-    m_ref(1),
-    m_action(SnoreToasts::Success)
+ToastEventHandler::ToastEventHandler(const std::wstring &id) :
+m_ref(1),
+m_action(SnoreToasts::Hidden)
 {
-    std::wstringstream eventName;
-    eventName << L"ToastEvent"
-              << GetCurrentProcessId();
+	std::wstringstream eventName;
+	eventName << L"ToastEvent";
+	if (!id.empty())
+	{
+		eventName << id;
+	}
+	else
+	{
+		eventName << GetCurrentProcessId();
+	}
 
     m_event = CreateEventW(NULL,TRUE,FALSE,eventName.str().c_str());
 }

@@ -62,9 +62,11 @@ public:
 
     void displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
     USER_ACTION userAction();
+	bool closeNotification();
 
     void setSound(const std::wstring &soundFile);
     void setSilent(bool silent);
+	void setId(const std::wstring &id);
 
 
 
@@ -87,13 +89,16 @@ private:
     std::wstring m_body;
     std::wstring m_image;
     std::wstring m_sound;
+	std::wstring m_id;
     bool m_silent;
     bool m_wait;
 
     SnoreToasts::USER_ACTION m_action;
 
-    ABI::Windows::Data::Xml::Dom::IXmlDocument *m_toastXml;
-    ABI::Windows::UI::Notifications::IToastNotificationManagerStatics *m_toastManager;
+	Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> m_toastXml;
+	Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics> m_toastManager;
+	Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotifier> m_notifier;
+	Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> m_notification;
 
     Microsoft::WRL::ComPtr<ToastEventHandler> m_eventHanlder;
 

@@ -27,7 +27,7 @@ class ToastEventHandler :
     public Microsoft::WRL::Implements<DesktopToastActivatedEventHandler, DesktopToastDismissedEventHandler, DesktopToastFailedEventHandler>
 {
 public:
-    ToastEventHandler::ToastEventHandler();
+	ToastEventHandler::ToastEventHandler(const std::wstring &id);
     ~ToastEventHandler();
 
     HANDLE event();
