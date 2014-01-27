@@ -101,7 +101,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 
 	auto nextArg = [&](std::vector<wchar_t*>::const_iterator &it, const std::wstring &helpText)-> std::wstring
 	{
-		if (it + 1 != args.cend())
+		if (it != args.cend())
 		{
 			return *it++;
 		}
@@ -117,7 +117,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 	auto it = args.cbegin();
 	while(it != args.end())
 	{
-		std::wstring arg(*it++);
+		std::wstring arg(nextArg(it,L""));
 		std::transform(arg.begin(), arg.end(), arg.begin(), [](int i) -> int { return ::tolower(i); });
 		if (arg == L"-m")
 		{
