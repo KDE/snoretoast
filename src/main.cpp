@@ -25,6 +25,7 @@
 #include <roapi.h>
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 using namespace Windows::Foundation;
 
@@ -82,7 +83,8 @@ void version()
 
 }
 
-SnoreToasts::USER_ACTION parse(wchar_t *in[], int len)
+
+SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 {
 	HRESULT hr = S_OK;
 
@@ -94,59 +96,52 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[], int len)
 	std::wstring sound(L"Notification.Default");
 	bool silent = false;
 	bool  wait = false;
-	bool showHelp = false;
 	bool closeNotify = false;
 
 
-
-	for (int i = 0; i < len; ++i)
+	auto nextArg = [&](std::vector<wchar_t*>::const_iterator &it, const std::wstring &helpText)-> std::wstring
 	{
-		std::wstring arg(in[i]);
+		if (it + 1 != args.end())
+		{
+			return *it++;
+		}
+		else
+		{
+			std::wcout << helpText << std::endl;
+			help();
+			exit(SnoreToasts::Failed);
+			return L"";
+		}
+	};
+
+
+	for (auto it = args.cbegin(); it != args.end(); ++it)
+	{
+
+
+		std::wstring arg(nextArg(it, L""));
 		std::transform(arg.begin(), arg.end(), arg.begin(), [](int i) -> int { return ::tolower(i); });
 		if (arg == L"-m")
 		{
-			if (i + 1 < len)
-			{
-				body = in[i + 1];
-			}
-			else
-			{
-				std::wcout << L"Missing argument to -m.\n"
-					L"Supply argument as -m \"message string\"" << std::endl;
-				showHelp = true;
-			}
+
+			body = nextArg(it, L"Missing argument to -m.\n"
+				L"Supply argument as -m \"message string\"");
 		}
 		else if (arg == L"-t")
 		{
-			if (i + 1 < len)
-			{
-				title = in[i + 1];
-			}
-			else
-			{
-				std::wcout << L"Missing argument to -t.\n"
-					L"Supply argument as -t \"bold title string\"" << std::endl;
-				showHelp = true;
-			}
+			title = nextArg(it, L"Missing argument to -t.\n"
+				L"Supply argument as -t \"bold title string\"");
 		}
 		else if (arg == L"-p")
 		{
-			if (i + 1 < len)
+			std::wstring path = nextArg(it, L"Missing argument to -p."
+				L"Supply argument as -p \"image path\"");
+			if (path.substr(0, 8) != L"file:///")
 			{
-				std::wstring path = in[i + 1];
-				if (path.substr(0, 8) != L"file:///")
-				{
-					image = L"file:///";
-					path = _wfullpath(nullptr, path.c_str(), MAX_PATH);
-				}
-				image.append(path);
+				image = L"file:///";
+				path = _wfullpath(nullptr, path.c_str(), MAX_PATH);
 			}
-			else
-			{
-				std::wcout << L"Missing argument to -p."
-					L"Supply argument as -p \"image path\"" << std::endl;
-				showHelp = true;
-			}
+			image.append(path);
 		}
 		else  if (arg == L"-w")
 		{
@@ -154,29 +149,13 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[], int len)
 		}
 		else  if (arg == L"-s")
 		{
-			if (i + 1 < len)
-			{
-				sound = in[i + 1];
-			}
-			else
-			{
-				std::wcout << L"Missing argument to -s.\n"
-					L"Supply argument as -s \"sound name\" " << std::endl;
-				showHelp = true;
-			}
+			sound = nextArg(it, L"Missing argument to -s.\n"
+				L"Supply argument as -s \"sound name\"");
 		}
 		else if (arg == L"-id")
 		{
-			if (i + 1 < len)
-			{
-				id = in[i + 1];
-			}
-			else
-			{
-				std::wcout << L"Missing argument to -id.\n"
-					L"Supply argument as -id \"id\" " << std::endl;
-				showHelp = true;
-			}
+			id = nextArg(it, L"Missing argument to -id.\n"
+				L"Supply argument as -id \"id\"");
 		}
 		else  if (arg == L"-silent")
 		{
@@ -184,35 +163,18 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[], int len)
 		}
 		else  if (arg == L"-appid")
 		{
-			if (i + 1 < len)
-			{
-				appID = in[i + 1];
-			}
-			else
-			{
-				std::wcout << L"Missing argument to -a.\n"
-					L"Supply argument as -a \"Your.APP.ID\"" << std::endl;
-				showHelp = true;
-			}
+			appID = nextArg(it, L"Missing argument to -a.\n"
+				L"Supply argument as -a \"Your.APP.ID\"");
 		}
 		else  if (arg == L"-install")
 		{
-			if (i + 2 < len)
-			{
-				std::wstring shortcut(in[i + 1]);
-				std::wstring exe(in[i + 2]);
-				if (i + 3 < len)
-				{
-					appID = in[i + 3];
-				}
-				return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
-			}
-			else
-			{
-				std::wcout << L"Missing argument to -install.\n"
-					L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\"" << std::endl;
-				showHelp = true;
-			}
+			std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
+				L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\""));
+
+			std::wstring exe(nextArg(it, L"Missing argument to -install.\n"
+				L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\""));
+
+			return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
 		}
 		else if (arg == L"-close")
 		{
@@ -244,7 +206,7 @@ SnoreToasts::USER_ACTION parse(wchar_t *in[], int len)
 	}
 	else
 	{
-		hr = (!showHelp && title.length() > 0 && body.length() > 0) ? S_OK : E_FAIL;
+		hr = (title.length() > 0 && body.length() > 0) ? S_OK : E_FAIL;
 		if (SUCCEEDED(hr))
 		{
 			if (appID.length() == 0)
@@ -284,7 +246,8 @@ int main()
 	HRESULT hr = Initialize(RO_INIT_MULTITHREADED);
 	if (SUCCEEDED(hr))
 	{
-		action = parse(argv, argc);
+
+		action = parse(std::vector<wchar_t*>(argv, argv + argc));
 		Uninitialize();
 	}
 
