@@ -101,7 +101,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 
 	auto nextArg = [&](std::vector<wchar_t*>::const_iterator &it, const std::wstring &helpText)-> std::wstring
 	{
-		if (it + 1 != args.end())
+		if (it + 1 != args.cend())
 		{
 			return *it++;
 		}
@@ -114,12 +114,10 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 		}
 	};
 
-
-	for (auto it = args.cbegin(); it != args.end(); ++it)
+	auto it = args.cbegin();
+	while(it != args.end())
 	{
-
-
-		std::wstring arg(nextArg(it, L""));
+		std::wstring arg(*it++);
 		std::transform(arg.begin(), arg.end(), arg.begin(), [](int i) -> int { return ::tolower(i); });
 		if (arg == L"-m")
 		{
@@ -202,7 +200,6 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 			std::wcout << L"Close only works if an -id id was provided." << std::endl;
 			help();
 		}
-
 	}
 	else
 	{
