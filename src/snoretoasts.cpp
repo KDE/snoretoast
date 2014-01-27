@@ -139,9 +139,9 @@ SnoreToasts::USER_ACTION SnoreToasts::userAction()
 		if (m_action == SnoreToasts::Hidden)
 		{
 			m_notifier->Hide(m_notification.Get());
-			ResetEvent(event);
-			WaitForSingleObject(event, INFINITE);
+			std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
 		}
+		CloseHandle(event);
 	}
 	return m_action;
 }
