@@ -161,8 +161,8 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 		}
 		else  if (arg == L"-appid")
 		{
-			appID = nextArg(it, L"Missing argument to -a.\n"
-				L"Supply argument as -a \"Your.APP.ID\"");
+			appID = nextArg(it, L"Missing argument to -appID.\n"
+				L"Supply argument as -appID \"Your.APP.ID\"");
 		}
 		else  if (arg == L"-install")
 		{
@@ -172,10 +172,15 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 			std::wstring exe(nextArg(it, L"Missing argument to -install.\n"
 				L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\""));
 
+			appID = nextArg(it, L"Missing argument to -install.\n"
+				L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\"");
+
 			return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
 		}
 		else if (arg == L"-close")
 		{
+			id = nextArg(it, L"Missing agument ti -close"
+				L"Supply argument as -close \"id\"");
 			closeNotify = true;
 		}
 		else  if (arg == L"-v")

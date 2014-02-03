@@ -159,6 +159,7 @@ bool SnoreToasts::closeNotification()
 		SetEvent(event);
 		return true;
 	}
+	std::wcout << "Notification " << m_id << " does not exist" << std::endl;
 	return false;
 }
 
