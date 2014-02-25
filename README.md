@@ -9,39 +9,41 @@ If your application does not have a shortcut in the startmenu yet please use the
 
 
 ----------------------------------------------------------
-
+	
     Welcome to SnoreToast.
-    Provide toast with a message and display it via the graphical notification system.
-    This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts
-
-    ---- Usage ----
-    toast [Options]
-
-    ---- Options ----
-    [-t] <title string>     | Displayed on the first line of the toast.
-    [-m] <message string>   | Displayed on the remaining lines, wrapped.
-    [-p] <image URI>        | Display toast with an image
-    [-w]                    | Wait for toast to expire or activate.
-
-    The folowing arguments are only avalible in SnoreToast:
-    [-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
-    [-silent]               | Don't play a sound file when showing the notifications.
-    [-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
-
-    [-install] <path> <path to aplication> <APP.ID> | Set the path of your applications shortcut.
-    [-v]                    | Print the version and copying information.
-
-    ?                       | Print these instructions. Same as no args.
-    Exit Status     :  Exit Code
-    Failed          : -1
-    Success         :  0
-    Hidden          :  1
-    Dismissed       :  2
-    Timeout         :  3
-
-    ---- Image Notes ----
-    Images must be .png with:
-            maximum dimensions of 1024x1024
-            size <= 200kb
-    These limitations are due to the Toast notification system.
-    This should go without saying, but windows style paths are required.
+	Provide toast with a message and display it via the graphical notification system.
+	This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts
+	
+	---- Usage ----
+	toast [Options]
+	
+	---- Options ----
+	[-t] <title string>     | Displayed on the first line of the toast.
+	[-m] <message string>   | Displayed on the remaining lines, wrapped.
+	[-p] <image URI>        | Display toast with an image, local files only
+	[-w]                    | Wait for toast to expire or activate.
+	
+	The folowing arguments are only avalible in SnoreToast:
+	[-id] <id>              | sets the id for a notification to be able to cose it later
+	[-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
+	[-silent]               | Don't play a sound file when showing the notifications.
+	[-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
+	
+	-install <path> <aplication>| Creates a shortcut <path> in the startmenu which point to the executeable <aplication>, uses the provided appID or a dfault value.
+	-close                  | Closes a cureenlty dispayed notification, must be used together with -id
+	[-v]                    | Print the version and copying information.
+	
+	?                       | Print these instructions. Same as no args.
+	Exit Status     :  Exit Code
+	Failed          : -1
+	Success         :  0
+	Hidden          :  1
+	Dismissed       :  2
+	Timeout         :  3
+	
+	---- Image Notes ----
+	Images must be .png with:
+	        maximum dimensions of 1024x1024
+	        size <= 200kb
+	These limitations are due to the Toast notification system.
+	This should go without saying, but windows style paths are required.
