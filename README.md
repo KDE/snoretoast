@@ -24,7 +24,7 @@ If your application does not have a shortcut in the startmenu yet please use the
 	[-w]                    | Wait for toast to expire or activate.
 	
 	The folowing arguments are only avalible in SnoreToast:
-	[-id] <id>              | sets the id for a notification to be able to cose it later
+	[-id] <id>              | sets the id for a notification to be able to close it later
 	[-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
 	[-silent]               | Don't play a sound file when showing the notifications.
 	[-appID] <App.ID>       | Don't create a shortcut but use the provided app id.

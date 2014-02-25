@@ -45,14 +45,14 @@ void help()
 		<< L"[-p] <image URI>\t| Display toast with an image, local files only" << std::endl
 		<< L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
 		<< std::endl
-		<< L"The folowing arguments are only avalible in SnoreToast:" << std::endl
-		<< L"[-id] <id>\t\t| sets the id for a notification to be able to cose it later" << std::endl
+		<< L"The flowing arguments are only available in SnoreToast:" << std::endl
+		<< L"[-id] <id>\t\t| sets the id for a notification to be able to close it later" << std::endl
 		<< L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
 		<< L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
 		<< L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
 		<< std::endl
-		<< L"-install <path> <aplication>| Creates a shortcut <path> in the startmenu which point to the executeable <aplication>, uses the provided appID or a dfault value." << std::endl
-		<< L"-close \t\t\t| Closes a cureenlty dispayed notification, must be used together with -id" << std::endl
+		<< L"-install <path> <application>| Creates a shortcut <path> in the start menu which point to the executable <application>, uses the provided appID or a default value." << std::endl
+		<< L"-close \t\t\t| Closes a currently displayed notification, must be used together with -id" << std::endl
 		<< L"[-v] \t\t\t| Print the version and copying information." << std::endl
 		<< std::endl
 		<< L"?\t\t\t| Print these instructions. Same as no args." << std::endl
@@ -167,13 +167,13 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 		else  if (arg == L"-install")
 		{
 			std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
-				L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\""));
+				L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
 
 			std::wstring exe(nextArg(it, L"Missing argument to -install.\n"
-				L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\""));
+				L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
 
 			appID = nextArg(it, L"Missing argument to -install.\n"
-				L"Supply argument as -install \"path to your shortcut\" \"path to the aplication the shortcut should point to\" \"App.ID\"");
+				L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\"");
 
 			return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
 		}
