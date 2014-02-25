@@ -10,7 +10,7 @@ If your application does not have a shortcut in the startmenu yet please use the
 
 ----------------------------------------------------------
 	
-    Welcome to SnoreToast.
+	Welcome to SnoreToast.
 	Provide toast with a message and display it via the graphical notification system.
 	This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts
 	
@@ -23,14 +23,14 @@ If your application does not have a shortcut in the startmenu yet please use the
 	[-p] <image URI>        | Display toast with an image, local files only
 	[-w]                    | Wait for toast to expire or activate.
 	
-	The folowing arguments are only avalible in SnoreToast:
+	The flowing arguments are only available in SnoreToast:
 	[-id] <id>              | sets the id for a notification to be able to close it later
 	[-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
 	[-silent]               | Don't play a sound file when showing the notifications.
 	[-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
 	
-	-install <path> <aplication>| Creates a shortcut <path> in the startmenu which point to the executeable <aplication>, uses the provided appID or a dfault value.
-	-close                  | Closes a cureenlty dispayed notification, must be used together with -id
+	-install <path> <application>| Creates a shortcut <path> in the start menu which point to the executable <application>, uses the provided appID or a default value.
+	-close                  | Closes a currently displayed notification, must be used together with -id
 	[-v]                    | Print the version and copying information.
 	
 	?                       | Print these instructions. Same as no args.
