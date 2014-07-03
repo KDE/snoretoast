@@ -32,13 +32,13 @@ public:
 
     HANDLE event();
     SnoreToasts::USER_ACTION &userAction();
-        
-    // DesktopToastActivatedEventHandler 
+
+    // DesktopToastActivatedEventHandler
     IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ IInspectable* args);
 
     // DesktopToastDismissedEventHandler
     IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ ABI::Windows::UI::Notifications::IToastDismissedEventArgs *e);
-        
+
     // DesktopToastFailedEventHandler
     IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ ABI::Windows::UI::Notifications::IToastFailedEventArgs *e);
 
@@ -69,7 +69,7 @@ public:
 
         return E_NOINTERFACE;
     }
-    
+
 private:
     ULONG m_ref;
     SnoreToasts::USER_ACTION m_action;
