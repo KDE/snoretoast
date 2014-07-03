@@ -17,7 +17,7 @@
 	along with SnoreToast.  If not, see <http://www.gnu.org/licenses/>.
 	*/
 #include "snoretoasts.h"
-#include "ToastEventHandler.h"
+#include "toasteventhandler.h"
 
 #include <sstream>
 #include <iostream>
