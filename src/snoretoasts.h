@@ -20,26 +20,26 @@
 
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-#include <SDKDDKVer.h>
+#include "stringreferencewrapper.h"
+
+#include <sdkddkver.h>
 
 // Windows Header Files:
-#include <Windows.h>
+#include <windows.h>
 #include <sal.h>
-#include <Psapi.h>
+#include <psapi.h>
 #include <strsafe.h>
-#include <ObjBase.h>
-#include <ShObjIdl.h>
+#include <objbase.h>
+#include <shobjidl.h>
 #include <functiondiscoverykeys.h>
 #include <guiddef.h>
-#include <ShlGuid.h>
+#include <shlguid.h>
 
 
 
-#include <wrl\client.h>
-#include <wrl\implements.h>
+#include <wrl/client.h>
+#include <wrl/implements.h>
 #include <windows.ui.notifications.h>
-
-#include "StringReferenceWrapper.h"
 
 #include <string>
 
