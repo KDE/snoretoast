@@ -51,7 +51,7 @@ void help()
 		<< L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
 		<< L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
 		<< std::endl
-		<< L"-install <path> <application>| Creates a shortcut <path> in the start menu which point to the executable <application>, uses the provided appID or a default value." << std::endl
+		<< L"-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
 		<< L"-close \t\t\t| Closes a currently displayed notification, must be used together with -id" << std::endl
 		<< L"[-v] \t\t\t| Print the version and copying information." << std::endl
 		<< std::endl
