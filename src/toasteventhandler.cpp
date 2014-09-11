@@ -2,7 +2,6 @@
     SnoreToast is capable to invoke Windows 8 toast notifications.
     Copyright (C) 2013  Patrick von Reth <vonreth@kde.org>
 
-
     SnoreToast is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -25,21 +24,18 @@
 using namespace ABI::Windows::UI::Notifications;
 
 ToastEventHandler::ToastEventHandler(const std::wstring &id) :
-m_ref(1),
-m_action(SnoreToasts::Hidden)
+    m_ref(1),
+    m_action(SnoreToasts::Hidden)
 {
-	std::wstringstream eventName;
-	eventName << L"ToastEvent";
-	if (!id.empty())
-	{
-		eventName << id;
-	}
-	else
-	{
-		eventName << GetCurrentProcessId();
-	}
+    std::wstringstream eventName;
+    eventName << L"ToastEvent";
+    if (!id.empty()) {
+        eventName << id;
+    } else {
+        eventName << GetCurrentProcessId();
+    }
 
-    m_event = CreateEventW(NULL,TRUE,FALSE,eventName.str().c_str());
+    m_event = CreateEventW(NULL, TRUE, FALSE, eventName.str().c_str());
 }
 
 ToastEventHandler::~ToastEventHandler()
@@ -57,9 +53,8 @@ SnoreToasts::USER_ACTION &ToastEventHandler::userAction()
     return m_action;
 }
 
-
 // DesktopToastActivatedEventHandler
-IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification* /* sender */, _In_ IInspectable* /* args */)
+IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */, _In_ IInspectable * /* args */)
 {
     std::wcout << L"The user clicked on the toast." << std::endl;
     m_action = SnoreToasts::Success;
@@ -68,14 +63,12 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification* /* sender */, 
 }
 
 // DesktopToastDismissedEventHandler
-IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification* /* sender */, _In_ IToastDismissedEventArgs* e)
+IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */, _In_ IToastDismissedEventArgs *e)
 {
     ToastDismissalReason tdr;
     HRESULT hr = e->get_Reason(&tdr);
-    if (SUCCEEDED(hr))
-    {
-        switch (tdr)
-        {
+    if (SUCCEEDED(hr)) {
+        switch (tdr) {
         case ToastDismissalReason_ApplicationHidden:
             std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
             m_action = SnoreToasts::Hidden;
@@ -99,11 +92,11 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification* /* sender */, 
 }
 
 // DesktopToastFailedEventHandler
-IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification* /* sender */, _In_ IToastFailedEventArgs* /* e */)
+IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */, _In_ IToastFailedEventArgs * /* e */)
 {
     std::wcout << L"The toast encountered an error." << std::endl;
-	std::wcout << L"Please make sure that the app id is set correctly." << std::endl;
-	std::wcout << L"Command Line: " << GetCommandLineW() << std::endl;
+    std::wcout << L"Please make sure that the app id is set correctly." << std::endl;
+    std::wcout << L"Command Line: " << GetCommandLineW() << std::endl;
     m_action = SnoreToasts::Failed;
     SetEvent(m_event);
     return S_OK;

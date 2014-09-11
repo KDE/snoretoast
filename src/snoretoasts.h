@@ -2,7 +2,6 @@
     SnoreToast is capable to invoke Windows 8 toast notifications.
     Copyright (C) 2013  Patrick von Reth <vonreth@kde.org>
 
-
     SnoreToast is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -35,8 +34,6 @@
 #include <guiddef.h>
 #include <shlguid.h>
 
-
-
 #include <wrl/client.h>
 #include <wrl/implements.h>
 #include <windows.ui.notifications.h>
@@ -49,8 +46,7 @@ class SnoreToasts
 {
 public:
 
-    enum USER_ACTION
-    {
+    enum USER_ACTION {
         Failed = -1,
         Success,
         Hidden,
@@ -62,14 +58,11 @@ public:
 
     void displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
     USER_ACTION userAction();
-	bool closeNotification();
+    bool closeNotification();
 
     void setSound(const std::wstring &soundFile);
     void setSilent(bool silent);
-	void setId(const std::wstring &id);
-
-
-
+    void setId(const std::wstring &id);
 
 private:
     HRESULT createToast();
@@ -77,11 +70,10 @@ private:
     HRESULT setSound();
     HRESULT setTextValues();
     HRESULT setEventHandler(Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
-    HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node );
-    HRESULT addAttribute(const std::wstring &name,ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
+    HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node);
+    HRESULT addAttribute(const std::wstring &name, ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
 
-	void printXML();
-
+    void printXML();
 
     std::wstring m_appID;
 
@@ -89,19 +81,17 @@ private:
     std::wstring m_body;
     std::wstring m_image;
     std::wstring m_sound;
-	std::wstring m_id;
+    std::wstring m_id;
     bool m_silent;
     bool m_wait;
 
     SnoreToasts::USER_ACTION m_action;
 
-	Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> m_toastXml;
-	Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics> m_toastManager;
-	Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotifier> m_notifier;
-	Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> m_notification;
+    Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> m_toastXml;
+    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics> m_toastManager;
+    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotifier> m_notifier;
+    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> m_notification;
 
     Microsoft::WRL::ComPtr<ToastEventHandler> m_eventHanlder;
-
-
 
 };

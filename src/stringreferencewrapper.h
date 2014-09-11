@@ -14,8 +14,7 @@ public:
     {
         HRESULT hr = WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
 
-        if (FAILED(hr))
-        {
+        if (FAILED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
         }
     }
@@ -25,25 +24,23 @@ public:
     {
         HRESULT hr = WindowsCreateStringReference(m_data.c_str(), m_data.length(), &_header, &_hstring);
 
-        if (FAILED(hr))
-        {
+        if (FAILED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
         }
     }
 
-	~StringReferenceWrapper()
-	{
+    ~StringReferenceWrapper()
+    {
         WindowsDeleteString(_hstring);
-	}
+    }
 
     template <size_t N>
-    StringReferenceWrapper(_In_reads_(N) wchar_t const (&stringRef)[N]) throw()
+    StringReferenceWrapper(_In_reads_(N) wchar_t const(&stringRef)[N]) throw()
     {
-        UINT32 length = N-1;
+        UINT32 length = N - 1;
         HRESULT hr = WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
 
-        if (FAILED(hr))
-        {
+        if (FAILED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
         }
     }
@@ -54,8 +51,7 @@ public:
         UINT32 length;
         HRESULT hr = SizeTToUInt32(wcslen(stringRef), &length);
 
-        if (FAILED(hr))
-        {
+        if (FAILED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
         }
 
@@ -66,7 +62,6 @@ public:
     {
         return _hstring;
     }
-
 
 private:
     HSTRING             _hstring;

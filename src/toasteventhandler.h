@@ -2,7 +2,6 @@
     SnoreToast is capable to invoke Windows 8 toast notifications.
     Copyright (C) 2013  Patrick von Reth <vonreth@kde.org>
 
-
     SnoreToast is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -27,14 +26,14 @@ class ToastEventHandler :
     public Microsoft::WRL::Implements<DesktopToastActivatedEventHandler, DesktopToastDismissedEventHandler, DesktopToastFailedEventHandler>
 {
 public:
-	ToastEventHandler::ToastEventHandler(const std::wstring &id);
+    ToastEventHandler::ToastEventHandler(const std::wstring &id);
     ~ToastEventHandler();
 
     HANDLE event();
     SnoreToasts::USER_ACTION &userAction();
 
     // DesktopToastActivatedEventHandler
-    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ IInspectable* args);
+    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ IInspectable *args);
 
     // DesktopToastDismissedEventHandler
     IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ ABI::Windows::UI::Notifications::IToastDismissedEventArgs *e);
@@ -43,27 +42,36 @@ public:
     IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ ABI::Windows::UI::Notifications::IToastFailedEventArgs *e);
 
     // IUnknown
-    IFACEMETHODIMP_(ULONG) AddRef() { return InterlockedIncrement(&m_ref); }
+    IFACEMETHODIMP_(ULONG) AddRef()
+    {
+        return InterlockedIncrement(&m_ref);
+    }
 
-    IFACEMETHODIMP_(ULONG) Release() {
+    IFACEMETHODIMP_(ULONG) Release()
+    {
         ULONG l = InterlockedDecrement(&m_ref);
-        if (l == 0) delete this;
+        if (l == 0) {
+            delete this;
+        }
         return l;
     }
 
-    IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv) {
-        if (IsEqualIID(riid, IID_IUnknown))
-            *ppv = static_cast<IUnknown*>(static_cast<DesktopToastActivatedEventHandler*>(this));
-        else if (IsEqualIID(riid, __uuidof(DesktopToastActivatedEventHandler)))
-            *ppv = static_cast<DesktopToastActivatedEventHandler*>(this);
-        else if (IsEqualIID(riid, __uuidof(DesktopToastDismissedEventHandler)))
-            *ppv = static_cast<DesktopToastDismissedEventHandler*>(this);
-        else if (IsEqualIID(riid, __uuidof(DesktopToastFailedEventHandler)))
-            *ppv = static_cast<DesktopToastFailedEventHandler*>(this);
-        else *ppv = nullptr;
+    IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv)
+    {
+        if (IsEqualIID(riid, IID_IUnknown)) {
+            *ppv = static_cast<IUnknown *>(static_cast<DesktopToastActivatedEventHandler *>(this));
+        } else if (IsEqualIID(riid, __uuidof(DesktopToastActivatedEventHandler))) {
+            *ppv = static_cast<DesktopToastActivatedEventHandler *>(this);
+        } else if (IsEqualIID(riid, __uuidof(DesktopToastDismissedEventHandler))) {
+            *ppv = static_cast<DesktopToastDismissedEventHandler *>(this);
+        } else if (IsEqualIID(riid, __uuidof(DesktopToastFailedEventHandler))) {
+            *ppv = static_cast<DesktopToastFailedEventHandler *>(this);
+        } else {
+            *ppv = nullptr;
+        }
 
         if (*ppv) {
-            reinterpret_cast<IUnknown*>(*ppv)->AddRef();
+            reinterpret_cast<IUnknown *>(*ppv)->AddRef();
             return S_OK;
         }
 
