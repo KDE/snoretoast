@@ -333,25 +333,26 @@ HRESULT SnoreToasts::createToast()
                         if (setting == NotificationSetting_Enabled) {
                             hr = setEventHandler(m_notification);
                         } else {
+                            hr = E_FAIL;
                             std::wcout << L"Notifications are disabled" << std::endl
                                        << L"Reason: ";
 
                             switch (setting) {
                             case NotificationSetting_DisabledForApplication:
-                                std::wcout << L"DisabledForApplication";
+                                std::wcout << L"DisabledForApplication" << std::endl;
                                 break;
                             case NotificationSetting_DisabledForUser:
-                                std::wcout << L"DisabledForUser";
+                                std::wcout << L"DisabledForUser" << std::endl;
                                 break;
                             case NotificationSetting_DisabledByGroupPolicy:
-                                std::wcout << L"DisabledByGroupPolicy";
+                                std::wcout << L"DisabledByGroupPolicy" << std::endl;
                                 break;
                             case NotificationSetting_DisabledByManifest:
-                                std::wcout << L"DisabledByManifest";
+                                std::wcout << L"DisabledByManifest" << std::endl;
                                 break;
                             }
-                            std::wcout << std::endl;
-                            m_action = Failed;
+                            std::wcout << L"Please make sure that the app id is set correctly." << std::endl;
+                            std::wcout << L"Command Line: " << GetCommandLineW() << std::endl;
                         }
                     }
                     if (SUCCEEDED(hr)) {
