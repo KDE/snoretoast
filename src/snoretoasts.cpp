@@ -351,6 +351,7 @@ HRESULT SnoreToasts::createToast()
                                 break;
                             }
                             std::wcout << std::endl;
+                            m_action = Failed;
                         }
                     }
                     if (SUCCEEDED(hr)) {
