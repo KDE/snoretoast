@@ -20,7 +20,7 @@
 
 #include <string>
 #include <iostream>
-
+#include <sstream>
 #include <roapi.h>
 #include <algorithm>
 #include <functional>
@@ -28,10 +28,16 @@
 
 using namespace Windows::Foundation;
 
-void help()
+void help(const std::wstring &error)
 {
-    std::wcout << L"Welcome to SnoreToast." << std::endl
-               << L"Provide toast with a message and display it via the graphical notification system." << std::endl
+	if (!error.empty()) {
+		std::wcout << error << std::endl
+				   << std::endl;
+	}
+	else {
+		std::wcout << L"Welcome to SnoreToast." << std::endl;
+	}
+    std::wcout << L"Provide toast with a message and display it via the graphical notification system." << std::endl
                << L"This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts" << std::endl
                << std::endl
                << L"---- Usage ----" << std::endl
@@ -101,14 +107,13 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
             return *it++;
         } else
         {
-            std::wcout << helpText << std::endl;
-            help();
+			help(helpText);
             exit(SnoreToasts::Failed);
             return L"";
         }
     };
 
-    auto it = args.cbegin();
+    auto it = args.cbegin() + 1;
     while (it != args.end()) {
         std::wstring arg(nextArg(it, L""));
         std::transform(arg.begin(), arg.end(), arg.begin(), [](int i) -> int { return ::tolower(i); });
@@ -158,7 +163,12 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
         } else  if (arg == L"-v") {
             version();
             return SnoreToasts::Success;
-        }
+		} else {
+			std::wstringstream ws;
+			ws << L"Unknown argument: " << arg << std::endl;
+			help(ws.str());
+			return SnoreToasts::Failed;
+		}
     }
     if (closeNotify) {
         if (!id.empty()) {
@@ -168,8 +178,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
                 return SnoreToasts::Success;
             }
         } else {
-            std::wcout << L"Close only works if an -id id was provided." << std::endl;
-            help();
+			help(L"Close only works if an -id id was provided.");
         }
     } else {
         hr = (title.length() > 0 && body.length() > 0) ? S_OK : E_FAIL;
@@ -187,7 +196,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
                 return app.userAction();
             }
         } else {
-            help();
+            help(L"");
             return SnoreToasts::Success;
         }
     }
