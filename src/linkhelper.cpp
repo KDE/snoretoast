@@ -1,6 +1,6 @@
 /*
     SnoreToast is capable to invoke Windows 8 toast notifications.
-    Copyright (C) 2013  Patrick von Reth <vonreth@kde.org>
+    Copyright (C) 2013-2015  Patrick von Reth <vonreth@kde.org>
 
     SnoreToast is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -18,6 +18,7 @@
 #include "linkhelper.h"
 
 #include <propvarutil.h>
+#include <comdef.h>
 
 #include <iostream>
 #include <sstream>
@@ -27,31 +28,24 @@ using namespace Microsoft::WRL;
 HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
 {
     HRESULT hr = S_OK;
+    std::wstringstream lnkName;
 
-    std::wstringstream path;
-    std::wstring lnkName;
-    wchar_t buffer[MAX_PATH];
-
-    if (GetEnvironmentVariable(L"APPDATA", buffer , MAX_PATH) > 0) {
-        path << buffer
-             << L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
-
+    if(PathIsRelative(shortcutPath.c_str()) == TRUE) {
+        lnkName << startmenuPath();
     }
-
-    lnkName = shortcutPath;
+    lnkName << shortcutPath;
 
     if (shortcutPath.rfind(L".lnk") == std::wstring::npos) {
-        lnkName.append(L".lnk");
+        lnkName << L".lnk";
     }
-    hr = mkdirs(path.str(), lnkName);
+    hr = mkdirs(lnkName.str());
     if (SUCCEEDED(hr)) {
-        path << lnkName;
 
-        DWORD attributes = GetFileAttributes(path.str().c_str());
+		DWORD attributes = GetFileAttributes(lnkName.str().c_str());
         bool fileExists = attributes < 0xFFFFFFF;
 
         if (!fileExists) {
-            hr = installShortcut(path.str(), exePath, appID);
+			hr = installShortcut(lnkName.str(), exePath, appID);
         } else {
             hr = S_FALSE;
         }
@@ -108,10 +102,13 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
             }
         }
     }
+	if (FAILED(hr)) {
+		std::wcout << "Failed to install shortcut " << shortcutPath << "  error: " << _com_error(hr).ErrorMessage() << std::endl;
+	}
     return hr;
 }
 
-HRESULT LinkHelper::mkdirs(const std::wstring &basepath, const std::wstring &dirs)
+HRESULT LinkHelper::mkdirs(const std::wstring &dirs)
 {
     HRESULT hr = S_OK;
     size_t pos;
@@ -121,12 +118,25 @@ HRESULT LinkHelper::mkdirs(const std::wstring &basepath, const std::wstring &dir
         return hr;
     }
     while (SUCCEEDED(hr) && (pos = dirs.find(L"\\", oldPos)) <= last_pos) {
-        hr = _wmkdir((basepath + dirs.substr(0, pos)).c_str()) != ENOENT ? S_OK : E_FAIL;
+        hr = _wmkdir((dirs.substr(0, pos)).c_str()) != ENOENT ? S_OK : E_FAIL;
         if (oldPos == pos) {
             break;
         }
         oldPos = pos;
     }
     return hr;
+}
+
+std::wstring LinkHelper::startmenuPath()
+{
+    wchar_t buffer[MAX_PATH];
+    std::wstringstream path;
+
+    if (GetEnvironmentVariable(L"APPDATA", buffer , MAX_PATH) > 0) {
+        path << buffer
+             << L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
+
+    }
+    return path.str();
 }
 
