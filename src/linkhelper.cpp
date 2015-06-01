@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <regex>
 
 using namespace Microsoft::WRL;
 
@@ -33,7 +34,7 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const st
     if(PathIsRelative(shortcutPath.c_str()) == TRUE) {
         lnkName << startmenuPath();
     }
-    lnkName << shortcutPath;
+	lnkName << shortcutPath;
 
     if (shortcutPath.rfind(L".lnk") == std::wstring::npos) {
         lnkName << L".lnk";
@@ -111,18 +112,10 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
 HRESULT LinkHelper::mkdirs(const std::wstring &dirs)
 {
     HRESULT hr = S_OK;
-    size_t pos;
-    size_t oldPos = 0;
-    size_t last_pos = dirs.rfind(L"\\");
-    if (last_pos == std::wstring::npos) {
-        return hr;
-    }
-    while (SUCCEEDED(hr) && (pos = dirs.find(L"\\", oldPos)) <= last_pos) {
-        hr = _wmkdir((dirs.substr(0, pos)).c_str()) != ENOENT ? S_OK : E_FAIL;
-        if (oldPos == pos) {
-            break;
-        }
-        oldPos = pos;
+	static std::wregex seperator(L"\\\\|/");	
+
+	for (std::wsregex_iterator i = std::wsregex_iterator(dirs.begin(), dirs.end(), seperator); SUCCEEDED(hr) && i != std::wsregex_iterator(); ++i){
+		hr = _wmkdir(dirs.substr(0, i->position()).c_str()) != ENOENT ? S_OK : E_FAIL;
     }
     return hr;
 }
