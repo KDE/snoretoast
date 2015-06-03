@@ -309,7 +309,9 @@ void SnoreToasts::printXML()
     HSTRING string;
     s->GetXml(&string);
     PCWSTR str = WindowsGetStringRawBuffer(string, NULL);
-    std::wcout << L"------------------------" << std::endl
+	std::wcout << L"------------------------" << std::endl
+			   << L"SnoreToast " << version() << std::endl
+			   << L"------------------------" << std::endl
                << m_appID << std::endl
                << L"------------------------" << std::endl
                << str << std::endl
@@ -333,7 +335,6 @@ HRESULT SnoreToasts::createToast()
                         if (setting == NotificationSetting_Enabled) {
                             hr = setEventHandler(m_notification);
                         } else {
-                            hr = E_FAIL;
                             std::wcout << L"Notifications are disabled" << std::endl
                                        << L"Reason: ";
 
@@ -365,3 +366,7 @@ HRESULT SnoreToasts::createToast()
     return hr;
 }
 
+
+std::wstring SnoreToasts::version(){
+	return L"0.3.99";
+}

@@ -51,6 +51,9 @@ public:
         Dismissed,
         Timeout
     };
+
+	static std::wstring version();
+
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
 
