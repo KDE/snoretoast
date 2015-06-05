@@ -20,17 +20,17 @@ If your application does not have a shortcut in the startmenu yet please use the
 	---- Options ----
 	[-t] <title string>     | Displayed on the first line of the toast.
 	[-m] <message string>   | Displayed on the remaining lines, wrapped.
-	[-p] <image URI>        | Display toast with an image, local files only
+	[-p] <image URI>        | Display toast with an image, local files only.
 	[-w]                    | Wait for toast to expire or activate.
 	
 	The flowing arguments are only available in SnoreToast:
-	[-id] <id>              | sets the id for a notification to be able to close it later
+	[-id] <id>              | sets the id for a notification to be able to close it later.
 	[-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
 	[-silent]               | Don't play a sound file when showing the notifications.
 	[-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
 	
-	-install <path> <application>| Creates a shortcut <path> in the start menu which point to the executable <application>, uses the provided appID or a default value.
-	-close                  | Closes a currently displayed notification, must be used together with -id
+	-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications.
+	-close                  | Closes a currently displayed notification, must be used together with -id, in order to be able to close a notification the parameter -w needs to be used to create the notification.
 	[-v]                    | Print the version and copying information.
 	
 	?                       | Print these instructions. Same as no args.
