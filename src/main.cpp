@@ -34,31 +34,28 @@ void help(const std::wstring &error)
 		std::wcout << error << std::endl;
 	}
 	else {
-		std::wcout << L"Welcome to SnoreToast." << std::endl 
-				   << L"Provide toast with a message and display it via the graphical notification system." << std::endl
-				   << L"This application is inspired by https://github.com/nels-o/toaster and has the same syntax in some parts" << std::endl;
+		std::wcout << L"Welcome to SnoreToast " << SnoreToasts::version() << "." << std::endl
+			       << L"A command line application which is capable of creating Windows Toast notifications." << std::endl;
 	}
     std::wcout << std::endl
                << L"---- Usage ----" << std::endl
-               << L"toast [Options]" << std::endl
+               << L"SnoreToast [Options]" << std::endl
                << std::endl
                << L"---- Options ----" << std::endl
                << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
                << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
                << L"[-p] <image URI>\t| Display toast with an image, local files only." << std::endl
                << L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
-               << std::endl
-               << L"The flowing arguments are only available in SnoreToast:" << std::endl
                << L"[-id] <id>\t\t| sets the id for a notification to be able to close it later." << std::endl
                << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
                << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
                << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
-               << std::endl
+			   << L"-close \t\t\t| Closes a currently displayed notification, must be used together with -id, in order to be able to close a notification the parameter -w needs to be used to create the notification." << std::endl
+			   << std::endl
                << L"-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
-               << L"-close \t\t\t| Closes a currently displayed notification, must be used together with -id, in order to be able to close a notification the parameter -w needs to be used to create the notification." << std::endl
-               << L"[-v] \t\t\t| Print the version and copying information." << std::endl
                << std::endl
-               << L"?\t\t\t| Print these instructions. Same as no args." << std::endl
+			   << L"-v \t\t\t| Print the version and copying information." << std::endl
+			   << L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
                << L"Exit Status\t:  Exit Code" << std::endl
                << L"Failed\t\t: -1"
                << std::endl
@@ -162,6 +159,9 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
         } else  if (arg == L"-v") {
             version();
             return SnoreToasts::Success;
+		} else if (arg == L"-h") {
+			help(L"");
+			return SnoreToasts::Success;
 		} else {
 			std::wstringstream ws;
 			ws << L"Unknown argument: " << arg << std::endl;
