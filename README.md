@@ -1,7 +1,7 @@
 Snoretoast
 ==========
 
-A command line application which is capable of creating Windows 8 Toast notifications.
+A command line application which is capable of creating Windows Toast notifications on Windows 8 or later.
 If SnoreToast is used without the parameter --appID an default appID is used and a shortcut to SnoreToast.exe is created in the startmenu, please read more about Application User Model IDs on http://msdn.microsoft.com/en-us/library/windows/apps/dd378459.aspx .
 If your application already has a shortcut in the startmenu, which provides an appID please pass this appID, an appID is needed and is also used to determine the application icon displayed in the toast notification.
 
