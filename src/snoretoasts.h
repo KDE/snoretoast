@@ -52,7 +52,7 @@ public:
         Timeout
     };
 
-	static std::wstring version();
+    static std::wstring version();
 
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();

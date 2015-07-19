@@ -30,13 +30,12 @@ using namespace Windows::Foundation;
 
 void help(const std::wstring &error)
 {
-	if (!error.empty()) {
-		std::wcout << error << std::endl;
-	}
-	else {
-		std::wcout << L"Welcome to SnoreToast " << SnoreToasts::version() << "." << std::endl
-			       << L"A command line application which is capable of creating Windows Toast notifications." << std::endl;
-	}
+    if (!error.empty()) {
+        std::wcout << error << std::endl;
+    } else {
+        std::wcout << L"Welcome to SnoreToast " << SnoreToasts::version() << "." << std::endl
+                   << L"A command line application which is capable of creating Windows Toast notifications." << std::endl;
+    }
     std::wcout << std::endl
                << L"---- Usage ----" << std::endl
                << L"SnoreToast [Options]" << std::endl
@@ -51,11 +50,11 @@ void help(const std::wstring &error)
                << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
                << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
                << L"-close <id>\t\t| Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification." << std::endl
-			   << std::endl
+               << std::endl
                << L"-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
                << std::endl
-			   << L"-v \t\t\t| Print the version and copying information." << std::endl
-			   << L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
+               << L"-v \t\t\t| Print the version and copying information." << std::endl
+               << L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
                << L"Exit Status\t:  Exit Code" << std::endl
                << L"Failed\t\t: -1"
                << std::endl
@@ -74,7 +73,7 @@ void help(const std::wstring &error)
 
 void version()
 {
-    std::wcout << L"SnoreToast version "<< SnoreToasts::version() << std::endl
+    std::wcout << L"SnoreToast version " << SnoreToasts::version() << std::endl
                << L"Copyright (C) 2015  Patrick von Reth <vonreth@kde.org>" << std::endl
                << L"SnoreToast is free software: you can redistribute it and/or modify" << std::endl
                << L"it under the terms of the GNU Lesser General Public License as published by" << std::endl
@@ -103,7 +102,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
             return *it++;
         } else
         {
-			help(helpText);
+            help(helpText);
             exit(SnoreToasts::Failed);
             return L"";
         }
@@ -159,15 +158,15 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
         } else  if (arg == L"-v") {
             version();
             return SnoreToasts::Success;
-		} else if (arg == L"-h") {
-			help(L"");
-			return SnoreToasts::Success;
-		} else {
-			std::wstringstream ws;
-			ws << L"Unknown argument: " << arg << std::endl;
-			help(ws.str());
-			return SnoreToasts::Failed;
-		}
+        } else if (arg == L"-h") {
+            help(L"");
+            return SnoreToasts::Success;
+        } else {
+            std::wstringstream ws;
+            ws << L"Unknown argument: " << arg << std::endl;
+            help(ws.str());
+            return SnoreToasts::Failed;
+        }
     }
     if (closeNotify) {
         if (!id.empty()) {
@@ -177,7 +176,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
                 return SnoreToasts::Success;
             }
         } else {
-			help(L"Close only works if an -id id was provided.");
+            help(L"Close only works if an -id id was provided.");
         }
     } else {
         hr = (title.length() > 0 && body.length() > 0) ? S_OK : E_FAIL;

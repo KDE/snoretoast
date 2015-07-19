@@ -29,6 +29,6 @@ private:
     static HRESULT installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID);
     static HRESULT mkdirs(const std::wstring &dirs);
 
-	static std::wstring startmenuPath();
+    static std::wstring startmenuPath();
 
 };

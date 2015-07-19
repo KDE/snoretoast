@@ -31,10 +31,10 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const st
     HRESULT hr = S_OK;
     std::wstringstream lnkName;
 
-    if(PathIsRelative(shortcutPath.c_str()) == TRUE) {
+    if (PathIsRelative(shortcutPath.c_str()) == TRUE) {
         lnkName << startmenuPath();
     }
-	lnkName << shortcutPath;
+    lnkName << shortcutPath;
 
     if (shortcutPath.rfind(L".lnk") == std::wstring::npos) {
         lnkName << L".lnk";
@@ -42,11 +42,11 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const st
     hr = mkdirs(lnkName.str());
     if (SUCCEEDED(hr)) {
 
-		DWORD attributes = GetFileAttributes(lnkName.str().c_str());
+        DWORD attributes = GetFileAttributes(lnkName.str().c_str());
         bool fileExists = attributes < 0xFFFFFFF;
 
         if (!fileExists) {
-			hr = installShortcut(lnkName.str(), exePath, appID);
+            hr = installShortcut(lnkName.str(), exePath, appID);
         } else {
             hr = S_FALSE;
         }
@@ -103,19 +103,19 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
             }
         }
     }
-	if (FAILED(hr)) {
-		std::wcout << "Failed to install shortcut " << shortcutPath << "  error: " << _com_error(hr).ErrorMessage() << std::endl;
-	}
+    if (FAILED(hr)) {
+        std::wcout << "Failed to install shortcut " << shortcutPath << "  error: " << _com_error(hr).ErrorMessage() << std::endl;
+    }
     return hr;
 }
 
 HRESULT LinkHelper::mkdirs(const std::wstring &dirs)
 {
     HRESULT hr = S_OK;
-	static std::wregex seperator(L"\\\\|/");	
+    static std::wregex seperator(L"\\\\|/");
 
-	for (std::wsregex_iterator i = std::wsregex_iterator(dirs.begin(), dirs.end(), seperator); SUCCEEDED(hr) && i != std::wsregex_iterator(); ++i){
-		hr = _wmkdir(dirs.substr(0, i->position()).c_str()) != ENOENT ? S_OK : E_FAIL;
+    for (std::wsregex_iterator i = std::wsregex_iterator(dirs.begin(), dirs.end(), seperator); SUCCEEDED(hr) && i != std::wsregex_iterator(); ++i) {
+        hr = _wmkdir(dirs.substr(0, i->position()).c_str()) != ENOENT ? S_OK : E_FAIL;
     }
     return hr;
 }

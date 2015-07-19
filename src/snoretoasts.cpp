@@ -309,9 +309,9 @@ void SnoreToasts::printXML()
     HSTRING string;
     s->GetXml(&string);
     PCWSTR str = WindowsGetStringRawBuffer(string, NULL);
-	std::wcout << L"------------------------" << std::endl
-			   << L"SnoreToast " << version() << std::endl
-			   << L"------------------------" << std::endl
+    std::wcout << L"------------------------" << std::endl
+               << L"SnoreToast " << version() << std::endl
+               << L"------------------------" << std::endl
                << m_appID << std::endl
                << L"------------------------" << std::endl
                << str << std::endl
@@ -366,7 +366,7 @@ HRESULT SnoreToasts::createToast()
     return hr;
 }
 
-
-std::wstring SnoreToasts::version(){
+std::wstring SnoreToasts::version()
+{
     return L"0.4.1";
 }
