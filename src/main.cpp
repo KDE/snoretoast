@@ -50,7 +50,7 @@ void help(const std::wstring &error)
                << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
                << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
                << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
-			   << L"-close \t\t\t| Closes a currently displayed notification, must be used together with -id, in order to be able to close a notification the parameter -w needs to be used to create the notification." << std::endl
+               << L"-close <id>\t\t| Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification." << std::endl
 			   << std::endl
                << L"-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
                << std::endl
