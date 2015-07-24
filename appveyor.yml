@@ -24,16 +24,14 @@ build_script:
 test: off
 
 cache:
-    - work\git -> ci\appveyor.ps1
-    - work\install -> ci\appveyor.ps1
-    - C:\ProgramData\chocolatey\bin -> ci\appveyor.ps1
-    - C:\ProgramData\chocolatey\lib -> ci\appveyor.ps1
-    - C:\tools -> ci\appveyor.ps1
-    - ci\appveyorHelp.psm1 -> ci\appveyor.ps1
+    - C:\ProgramData\chocolatey\bin -> appveyor.yml
+    - C:\ProgramData\chocolatey\lib -> appveyor.yml
+    - C:\tools -> appveyor.yml
+    - appveyorHelp.psm1 -> appveyor.yml
 
 environment:
     matrix:
-    - COMPILER: msvc2013_32
+    - COMPILER: msvc2013
     - COMPILER: msvc2013_64
     
 artifacts:
