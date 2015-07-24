@@ -25,6 +25,8 @@ cache:
     - ci\appveyorHelp.psm1 -> ci\appveyor.ps1
 
 environment:
+    matrix:
+    - COMPILER: msvc2013_32
     - COMPILER: msvc2013_64
     
 artifacts:
