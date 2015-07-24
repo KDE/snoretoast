@@ -1,0 +1,41 @@
+version: '{build}'
+   
+build_script:
+    - ps: >-
+        if ( !(Test-Path "$env:APPVEYOR_BUILD_FOLDER\ci\appveyorHelp.psm1"))
+        {
+            Start-FileDownload https://raw.githubusercontent.com/TheOneRing/appVeyorHelp/master/appveyorHelp.psm1 -FileName $env:APPVEYOR_BUILD_FOLDER\ci\appveyorHelp.psm1 
+        }
+        $ErrorActionPreference="Stop"
+        Import-Module $env:APPVEYOR_BUILD_FOLDER\ci\appveyorHelp.psm1
+        Init @("ninja")
+        mkdir -Force $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
+        cd $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
+        LogExec cmake -G"Ninja" $env:APPVEYOR_BUILD_FOLDER -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_ROOT"
+        CmakeImageInstall "$env:APPVEYOR_BUILD_FOLDER\work\image"
+
+test: off
+
+cache:
+    - work\git -> ci\appveyor.ps1
+    - work\install -> ci\appveyor.ps1
+    - C:\ProgramData\chocolatey\bin -> ci\appveyor.ps1
+    - C:\ProgramData\chocolatey\lib -> ci\appveyor.ps1
+    - C:\tools -> ci\appveyor.ps1
+    - ci\appveyorHelp.psm1 -> ci\appveyor.ps1
+
+environment:
+    matrix:
+    #mingw
+    - COMPILER: mingw492_32
+    #msvc
+    - COMPILER: msvc2013_64
+    
+artifacts:
+    - path: work\image
+      name: $(APPVEYOR_PROJECT_NAME)-$(COMPILER)
+      
+deploy:
+    - provider: Environment
+      name: my
+      
