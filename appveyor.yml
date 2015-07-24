@@ -25,10 +25,6 @@ cache:
     - ci\appveyorHelp.psm1 -> ci\appveyor.ps1
 
 environment:
-    matrix:
-    #mingw
-    - COMPILER: mingw492_32
-    #msvc
     - COMPILER: msvc2013_64
     
 artifacts:
