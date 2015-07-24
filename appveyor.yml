@@ -12,9 +12,13 @@ build_script:
         Import-Module $env:APPVEYOR_BUILD_FOLDER\appveyorHelp.psm1
         
         Init @("ninja")
+        
         mkdir -Force $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
+        
         cd $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
+        
         LogExec cmake -G"Ninja" $env:APPVEYOR_BUILD_FOLDER -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_ROOT"
+        
         CmakeImageInstall "$env:APPVEYOR_BUILD_FOLDER\work\image"
 
 test: off
