@@ -2,12 +2,12 @@ version: '{build}'
    
 build_script:
     - ps: >-
-        if ( !(Test-Path "$env:APPVEYOR_BUILD_FOLDER\ci\appveyorHelp.psm1"))
+        if ( !(Test-Path "$env:APPVEYOR_BUILD_FOLDER\appveyorHelp.psm1"))
         {
-            Start-FileDownload https://raw.githubusercontent.com/TheOneRing/appVeyorHelp/master/appveyorHelp.psm1 -FileName $env:APPVEYOR_BUILD_FOLDER\ci\appveyorHelp.psm1 
+            Start-FileDownload https://raw.githubusercontent.com/TheOneRing/appVeyorHelp/master/appveyorHelp.psm1 -FileName $env:APPVEYOR_BUILD_FOLDER\appveyorHelp.psm1 
         }
         $ErrorActionPreference="Stop"
-        Import-Module $env:APPVEYOR_BUILD_FOLDER\ci\appveyorHelp.psm1
+        Import-Module $env:APPVEYOR_BUILD_FOLDER\appveyorHelp.psm1
         Init @("ninja")
         mkdir -Force $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
         cd $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
