@@ -6,8 +6,11 @@ build_script:
         {
             Start-FileDownload https://raw.githubusercontent.com/TheOneRing/appVeyorHelp/master/appveyorHelp.psm1 -FileName $env:APPVEYOR_BUILD_FOLDER\appveyorHelp.psm1 
         }
+        
         $ErrorActionPreference="Stop"
+        
         Import-Module $env:APPVEYOR_BUILD_FOLDER\appveyorHelp.psm1
+        
         Init @("ninja")
         mkdir -Force $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
         cd $env:APPVEYOR_BUILD_FOLDER\work\build\$env:APPVEYOR_PROJECT_NAME
