@@ -19,14 +19,14 @@ build_script:
         
         LogExec cmake -G"Ninja" $env:APPVEYOR_BUILD_FOLDER -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_ROOT"
         
-        CmakeImageInstall "$env:APPVEYOR_BUILD_FOLDER\work\image"
+        CmakeImageInstall
+        7ZipDeployImage
 
 test: off
 
 cache:
     - C:\ProgramData\chocolatey\bin -> appveyor.yml
     - C:\ProgramData\chocolatey\lib -> appveyor.yml
-    - C:\tools -> appveyor.yml
     - appveyorHelp.psm1 -> appveyor.yml
 
 environment:
@@ -34,11 +34,3 @@ environment:
     - COMPILER: msvc2013
     - COMPILER: msvc2013_64
     
-artifacts:
-    - path: work\image
-      name: $(APPVEYOR_PROJECT_NAME)-$(COMPILER)
-      
-deploy:
-    - provider: Environment
-      name: my
-      
