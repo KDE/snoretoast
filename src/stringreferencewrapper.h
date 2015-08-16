@@ -24,7 +24,7 @@ public:
     StringReferenceWrapper(const std::wstring &stringRef) throw() :
         m_data(stringRef)
     {
-        HRESULT hr = WindowsCreateStringReference(m_data.c_str(), m_data.length(), &_header, &_hstring);
+        HRESULT hr = WindowsCreateStringReference(m_data.c_str(), static_cast<UINT32>(m_data.length()), &_header, &_hstring);
 
         if (FAILED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
