@@ -108,7 +108,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
         }
     };
 
-    auto it = args.cbegin() + 1;
+    auto it = args.cbegin();
     while (it != args.end()) {
         std::wstring arg(nextArg(it, L""));
         std::transform(arg.begin(), arg.end(), arg.begin(), [](int i) -> int { return ::tolower(i); });
@@ -202,11 +202,15 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
     return SnoreToasts::Failed;
 }
 
-// Main function
-int main()
+int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t *cmd, int)
 {
     int argc;
-    wchar_t **argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    wchar_t **argv = CommandLineToArgvW(cmd, &argc);
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        FILE *stream;
+		_wfreopen_s(&stream, L"CONOUT$", L"w", stdout);
+		_wfreopen_s(&stream, L"CONOUT$", L"w", stderr);
+    }
 
     SnoreToasts::USER_ACTION action = SnoreToasts::Success;
 

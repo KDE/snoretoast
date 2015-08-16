@@ -368,5 +368,5 @@ HRESULT SnoreToasts::createToast()
 
 std::wstring SnoreToasts::version()
 {
-    return L"0.4.1";
+    return L"0.5.0";
 }
