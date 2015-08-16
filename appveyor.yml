@@ -15,6 +15,8 @@ build_script:
         LogExec cmake -G"Ninja" $env:APPVEYOR_BUILD_FOLDER -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_ROOT"
         
         CmakeImageInstall
+        CreateDeployImage @("SnoreToast\.exe")
+        7ZipDeployImage
 
 test: off
 
@@ -27,8 +29,5 @@ environment:
     matrix:
     - COMPILER: msvc2013
     - COMPILER: msvc2013_64
-    
-artifacts:
-    - path: work\install\SnoreToast.exe
 
     
