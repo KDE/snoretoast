@@ -26,6 +26,6 @@ cache:
 
 environment:
     matrix:
-    - COMPILER: msvc2013_32
+    - COMPILER: msvc2013
     - COMPILER: msvc2013_64
     
