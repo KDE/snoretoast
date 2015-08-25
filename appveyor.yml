@@ -15,7 +15,7 @@ build_script:
         LogExec cmake -G"Ninja" $env:APPVEYOR_BUILD_FOLDER -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_ROOT"
         
         CmakeImageInstall
-        CreateDeployImage @("SnoreToast\.exe")
+        CreateDeployImage @("SnoreToast\.exe", "SnoreToastGui\.exe")
         7ZipDeployImage
 
 test: off
