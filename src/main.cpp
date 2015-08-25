@@ -82,7 +82,7 @@ void version()
 
 }
 
-SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
+SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
 {
     HRESULT hr = S_OK;
 
@@ -108,7 +108,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
         }
     };
 
-    auto it = args.cbegin();
+    auto it = args.begin() + 1;
     while (it != args.end()) {
         std::wstring arg(nextArg(it, L""));
         std::transform(arg.begin(), arg.end(), arg.begin(), [](int i) -> int { return ::tolower(i); });
@@ -202,21 +202,24 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t *> args)
     return SnoreToasts::Failed;
 }
 
-int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t *cmd, int)
+#ifdef BUILD_GUI
+int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int)
 {
-    int argc;
-    wchar_t **argv = CommandLineToArgvW(cmd, &argc);
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
         FILE *stream;
-		_wfreopen_s(&stream, L"CONOUT$", L"w", stdout);
-		_wfreopen_s(&stream, L"CONOUT$", L"w", stderr);
+        _wfreopen_s(&stream, L"CONOUT$", L"w", stdout);
+        _wfreopen_s(&stream, L"CONOUT$", L"w", stderr);
     }
-
+#else
+int wmain()
+{
+#endif
+	int argc;
+	wchar_t **argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     SnoreToasts::USER_ACTION action = SnoreToasts::Success;
 
     HRESULT hr = Initialize(RO_INIT_MULTITHREADED);
     if (SUCCEEDED(hr)) {
-
         action = parse(std::vector<wchar_t *>(argv, argv + argc));
         Uninitialize();
     }
