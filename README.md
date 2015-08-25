@@ -7,10 +7,15 @@ If your application already has a shortcut in the startmenu, which provides an a
 
 If your application does not have a shortcut in the startmenu yet please use the --install parameter, for example "snoretoast.exe --install "MyApp\MyApp.lnk" "C:\myApp.exe" "My.APP_ID" " the appID provided here has to be passed to snoretoast with the parameter --appID.
 
+# SnoreToastGui
+We provide two applications SnoreToast.exe and SnoreToastGui.exe.
+SnoreToastGui.exe is a GUI application and won't display a command line window when executed.
+SnoreToast.exe is a standard commandline application.
+
 
 ----------------------------------------------------------
 
-    Welcome to SnoreToast 0.5.0.
+    Welcome to SnoreToast 0.5.1.
     A command line application which is capable of creating Windows Toast notifications.
 
     ---- Usage ----
