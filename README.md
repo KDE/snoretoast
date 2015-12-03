@@ -1,11 +1,14 @@
 Snoretoast
 ==========
-
 A command line application which is capable of creating Windows Toast notifications on Windows 8 or later.
 If SnoreToast is used without the parameter --appID an default appID is used and a shortcut to SnoreToast.exe is created in the startmenu, please read more about Application User Model IDs on http://msdn.microsoft.com/en-us/library/windows/apps/dd378459.aspx .
 If your application already has a shortcut in the startmenu, which provides an appID please pass this appID, an appID is needed and is also used to determine the application icon displayed in the toast notification.
 
 If your application does not have a shortcut in the startmenu yet please use the --install parameter, for example "snoretoast.exe --install "MyApp\MyApp.lnk" "C:\myApp.exe" "My.APP_ID" " the appID provided here has to be passed to snoretoast with the parameter --appID.
+
+# Releases and Binaries
+Releases and binaries cane be found here [http://download.kde.org/stable/snoretoast/](download.kde.org)
+
 
 # SnoreToastGui
 We provide two applications SnoreToast.exe and SnoreToastGui.exe.
