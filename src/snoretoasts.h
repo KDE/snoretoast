@@ -38,6 +38,9 @@
 
 #include <string>
 
+using namespace Microsoft::WRL;
+using namespace ABI::Windows::Data::Xml::Dom;
+
 class ToastEventHandler;
 
 class SnoreToasts
@@ -70,9 +73,12 @@ private:
     HRESULT setImage();
     HRESULT setSound();
     HRESULT setTextValues();
+    HRESULT setButtons(ComPtr<IXmlNode> root, const std::wstring &buttonText1, const std::wstring &buttonText2);
     HRESULT setEventHandler(Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
     HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node);
     HRESULT addAttribute(const std::wstring &name, ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
+    HRESULT addAttribute(const std::wstring &name, ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap, const std::wstring &value);
+    HRESULT createNewActionButton(ComPtr<IXmlNode> actionsNode, const std::wstring &value);
 
     void printXML();
 
