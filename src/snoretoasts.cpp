@@ -61,6 +61,9 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             if (SUCCEEDED(hr)) {
                 ComPtr<IXmlNode> root;
                 hr = rootList->Item(0, &root);
+                //Adding actions
+                setButtons(root, L"domain.tld", L"subdomain.domain.tld");
+
                 if (SUCCEEDED(hr)) {
 
                     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> audioElement;
@@ -106,6 +109,7 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             }
         }
     }
+    printXML();
     m_action = SUCCEEDED(hr) ? Success : Failed;
 }
 
@@ -248,6 +252,20 @@ HRESULT SnoreToasts::setTextValues()
     return hr;
 }
 
+HRESULT SnoreToasts::setButtons(ComPtr<IXmlNode> root, const std::wstring &buttonText1, const std::wstring &buttonText2)
+{
+    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionsElement;
+    HRESULT hr = m_toastXml->CreateElement(StringReferenceWrapper(L"actions").Get(), &actionsElement);
+    ComPtr<IXmlNode> actionsNodeTmp;
+    hr = actionsElement.As(&actionsNodeTmp);
+    ComPtr<IXmlNode> actionsNode;
+    root->AppendChild(actionsNodeTmp.Get(), &actionsNode);
+
+    hr = createNewActionButton(actionsNode, buttonText1);
+    hr = createNewActionButton(actionsNode, buttonText2);
+    return hr;
+}
+
 HRESULT SnoreToasts::setEventHandler(ComPtr<IToastNotification> toast)
 {
     // Register the event handlers
@@ -298,6 +316,40 @@ HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *at
             hr = attributeMap->SetNamedItem(node.Get(), &pNode);
         }
     }
+    return hr;
+}
+
+HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *attributeMap, const std::wstring &value)
+{
+    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
+    HRESULT hr = m_toastXml->CreateAttribute(StringReferenceWrapper(name).Get(), &srcAttribute);
+
+    if (SUCCEEDED(hr)) {
+        ComPtr<IXmlNode> node;
+        hr = srcAttribute.As(&node);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNode> pNode;
+            hr = attributeMap->SetNamedItem(node.Get(), &pNode);
+            hr = setNodeValueString(StringReferenceWrapper(value).Get(), node.Get());
+        }
+    }
+    return hr;
+}
+
+HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const std::wstring &value)
+{
+    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionElement;
+    HRESULT hr = m_toastXml->CreateElement(StringReferenceWrapper(L"action").Get(), &actionElement);
+    ComPtr<IXmlNode> actionNodeTmp;
+    hr = actionElement.As(&actionNodeTmp);
+    ComPtr<IXmlNode> actionNode;
+    actionsNode->AppendChild(actionNodeTmp.Get(), &actionNode);
+    ComPtr<IXmlNamedNodeMap> actionAttributes;
+    hr = actionNode->get_Attributes(&actionAttributes);
+    hr = addAttribute(L"content", actionAttributes.Get(), value);
+    hr = addAttribute(L"arguments", actionAttributes.Get(), L"action=viewdetails&amp;contentId=351");
+    hr = addAttribute(L"activationType", actionAttributes.Get(), L"foreground");
+
     return hr;
 }
 
