@@ -54,9 +54,23 @@ SnoreToasts::USER_ACTION &ToastEventHandler::userAction()
 }
 
 // DesktopToastActivatedEventHandler
-IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */, _In_ IInspectable * /* args */)
+IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification *  sender, _In_ IInspectable * args)
 {
-    std::wcout << L"The user clicked on the toast." << std::endl;
+    IToastActivatedEventArgs *test = nullptr;
+    args->QueryInterface(&test);
+    if (test == nullptr)
+    {
+        std::wcout << L"args is not a IToastActivatedEventArgs" << std::endl;
+        std::wcout << L"The user clicked on the toast." << std::endl;
+    }
+    else
+    {
+        HSTRING args;
+        test->get_Arguments(&args);
+        PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
+        std::wcout << str << std::endl;
+    }
+
     m_action = SnoreToasts::Success;
     SetEvent(m_event);
     return S_OK;
