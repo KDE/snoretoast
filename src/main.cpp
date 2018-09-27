@@ -92,6 +92,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
     std::wstring image;
     std::wstring id;
     std::wstring sound(L"Notification.Default");
+    std::wstring buttons;
     bool silent = false;
     bool  wait = false;
     bool closeNotify = false;
@@ -140,6 +141,9 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
         } else  if (arg == L"-appid") {
             appID = nextArg(it, L"Missing argument to -appID.\n"
                             L"Supply argument as -appID \"Your.APP.ID\"");
+        } else  if (arg == L"-b") {
+            buttons = nextArg(it, L"Missing argument to -b.\n"
+                            L"Supply argument for buttons as -b \"button1;button2\"");
         } else  if (arg == L"-install") {
             std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
                                           L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
@@ -190,6 +194,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
                 app.setSilent(silent);
                 app.setSound(sound);
                 app.setId(id);
+                app.setButtons(buttons);
                 app.displayToast(title, body, image, wait);
                 return app.userAction();
             }

@@ -67,13 +67,14 @@ public:
     void setSound(const std::wstring &soundFile);
     void setSilent(bool silent);
     void setId(const std::wstring &id);
+    void setButtons(const std::wstring &buttons);
 
 private:
     HRESULT createToast();
     HRESULT setImage();
     HRESULT setSound();
     HRESULT setTextValues();
-    HRESULT setButtons(ComPtr<IXmlNode> root, const std::wstring &buttonText1, const std::wstring &buttonText2);
+    HRESULT setButtons(ComPtr<IXmlNode> root);
     HRESULT setEventHandler(Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
     HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node);
     HRESULT addAttribute(const std::wstring &name, ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
@@ -89,6 +90,7 @@ private:
     std::wstring m_image;
     std::wstring m_sound;
     std::wstring m_id;
+    std::wstring m_buttons;
     bool m_silent;
     bool m_wait;
 
