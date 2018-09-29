@@ -17,6 +17,7 @@
     */
 #include "snoretoasts.h"
 #include "toasteventhandler.h"
+#include "linkhelper.h"
 
 #include <sstream>
 #include <iostream>
@@ -35,7 +36,7 @@ SnoreToasts::SnoreToasts(const std::wstring &appID) :
 
 SnoreToasts::~SnoreToasts()
 {
-
+    LinkHelper::unregisterActivator();
 }
 
 void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait)
@@ -61,10 +62,22 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             if (SUCCEEDED(hr)) {
                 ComPtr<IXmlNode> root;
                 hr = rootList->Item(0, &root);
+                if (m_textbox){
+                    ComPtr<IXmlNamedNodeMap> rootAttributes;
+
+                    hr = root->get_Attributes(&rootAttributes);
+                    if (SUCCEEDED(hr)) {
+                        hr = addAttribute(L"launch", rootAttributes.Get(), L"action=openThread&amp;threadId=92185");
+                    }
+                }
                 //Adding buttons
                 if (!m_buttons.empty())
                 {
                     setButtons(root);
+                }
+                else if (m_textbox)
+                {
+                    setTextBox(root);
                 }
 
                 if (SUCCEEDED(hr)) {
@@ -112,7 +125,7 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             }
         }
     }
-    printXML();
+    //printXML();
     m_action = SUCCEEDED(hr) ? Success : Failed;
 }
 
@@ -164,6 +177,11 @@ void SnoreToasts::setId(const std::wstring &id)
 void SnoreToasts::setButtons(const std::wstring &buttons)
 {
     m_buttons = buttons;
+}
+
+void SnoreToasts::setTextBoxEnabled(bool textBoxEnabled)
+{
+    m_textbox = textBoxEnabled;
 }
 
 // Set the value of the "src" attribute of the "image" node
@@ -224,9 +242,7 @@ HRESULT SnoreToasts::setSound()
                         if (SUCCEEDED(hr)) {
                             hr = setNodeValueString(StringReferenceWrapper(m_silent ? L"true" : L"false").Get(), srcAttribute.Get());
                         }
-
                     }
-
                 }
             }
         }
@@ -277,6 +293,58 @@ HRESULT SnoreToasts::setButtons(ComPtr<IXmlNode> root)
             {
                 hr &= createNewActionButton(actionsNode, buttonText);
             }
+        }
+    }
+
+    return hr;
+}
+
+HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
+{
+    ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionsElement;
+    HRESULT hr = m_toastXml->CreateElement(StringReferenceWrapper(L"actions").Get(), &actionsElement);
+    if (SUCCEEDED(hr)) {
+        ComPtr<IXmlNode> actionsNodeTmp;
+        hr = actionsElement.As(&actionsNodeTmp);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNode> actionsNode;
+            root->AppendChild(actionsNodeTmp.Get(), &actionsNode);
+
+            ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> inputElement;
+            HRESULT hr = m_toastXml->CreateElement(StringReferenceWrapper(L"input").Get(), &inputElement);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IXmlNode> inputNodeTmp;
+                hr = inputElement.As(&inputNodeTmp);
+                if (SUCCEEDED(hr)) {
+                    ComPtr<IXmlNode> inputNode;
+                    actionsNode->AppendChild(inputNodeTmp.Get(), &inputNode);
+                    ComPtr<IXmlNamedNodeMap> inputAttributes;
+                    hr = inputNode->get_Attributes(&inputAttributes);
+                    if (SUCCEEDED(hr)) {
+                        hr &= addAttribute(L"id", inputAttributes.Get(), L"textBox");
+                        hr &= addAttribute(L"type", inputAttributes.Get(), L"text");
+                        hr &= addAttribute(L"placeHolderContent", inputAttributes.Get(), L"Type a reply");
+                    }
+                }
+                ComPtr<IXmlElement> actionElement;
+                HRESULT hr = m_toastXml->CreateElement(StringReferenceWrapper(L"action").Get(), &actionElement);
+                if (SUCCEEDED(hr)) {
+                    ComPtr<IXmlNode> actionNodeTmp;
+                    hr = actionElement.As(&actionNodeTmp);
+                    if (SUCCEEDED(hr)) {
+                        ComPtr<IXmlNode> actionNode;
+                        actionsNode->AppendChild(actionNodeTmp.Get(), &actionNode);
+                        ComPtr<IXmlNamedNodeMap> actionAttributes;
+                        hr = actionNode->get_Attributes(&actionAttributes);
+                        if (SUCCEEDED(hr)) {
+                            hr &= addAttribute(L"content", actionAttributes.Get(), L"Send");
+                            hr &= addAttribute(L"arguments", actionAttributes.Get(), L"action=reply&amp;threadId=92185");
+                            hr &= addAttribute(L"hint-inputId", actionAttributes.Get(), L"textBox");
+                        }
+                    }
+                }
+            }
+
         }
     }
 

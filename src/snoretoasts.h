@@ -68,6 +68,7 @@ public:
     void setSilent(bool silent);
     void setId(const std::wstring &id);
     void setButtons(const std::wstring &buttons);
+    void setTextBoxEnabled(bool textBoxEnabled);
 
 private:
     HRESULT createToast();
@@ -75,6 +76,7 @@ private:
     HRESULT setSound();
     HRESULT setTextValues();
     HRESULT setButtons(ComPtr<IXmlNode> root);
+    HRESULT setTextBox(ComPtr<IXmlNode> root);
     HRESULT setEventHandler(Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
     HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node);
     HRESULT addAttribute(const std::wstring &name, ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
@@ -93,6 +95,7 @@ private:
     std::wstring m_buttons;
     bool m_silent;
     bool m_wait;
+    bool m_textbox;
 
     SnoreToasts::USER_ACTION m_action;
 

@@ -17,14 +17,50 @@
 */
 #pragma once
 #include "snoretoasts.h"
+#include "wrl.h"
 
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ::IInspectable *> DesktopToastActivatedEventHandler;
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ABI::Windows::UI::Notifications::ToastDismissedEventArgs *> DesktopToastDismissedEventHandler;
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ABI::Windows::UI::Notifications::ToastFailedEventArgs *> DesktopToastFailedEventHandler;
 
+//Define INotificationActivationCallback for older versions of the Windows SDK
+#include <ntverp.h>
+
+typedef struct NOTIFICATION_USER_INPUT_DATA
+{
+  LPCWSTR Key;
+  LPCWSTR Value;
+}  NOTIFICATION_USER_INPUT_DATA;
+
+MIDL_INTERFACE("53E31837-6600-4A81-9395-75CFFE746F94")
+INotificationActivationCallback : public IUnknown
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
+                                               __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA *data, ULONG count) = 0;
+};
+
+
+//The COM server which implements the callback notifcation from Action Center
+class DECLSPEC_UUID("383803B6-AFDA-4220-BFC3-0DBF810106BF")
+  CToastNotificationActivationCallback : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, INotificationActivationCallback>
+{
+public:
+//Constructors / Destructors
+  CToastNotificationActivationCallback()
+  {
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
+                                             __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count) override;
+};
+
+CoCreatableClass(CToastNotificationActivationCallback);
+
 class ToastEventHandler :
     public Microsoft::WRL::Implements<DesktopToastActivatedEventHandler, DesktopToastDismissedEventHandler, DesktopToastFailedEventHandler>
 {
+
 public:
     ToastEventHandler::ToastEventHandler(const std::wstring &id);
     ~ToastEventHandler();
