@@ -16,6 +16,7 @@
     along with SnoreToast.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "linkhelper.h"
+#include "toasteventhandler.h"
 
 #include <propvarutil.h>
 #include <comdef.h>
@@ -23,6 +24,7 @@
 #include <iostream>
 #include <sstream>
 #include <regex>
+#include <corecrt_wstring.h>
 
 using namespace Microsoft::WRL;
 
@@ -46,11 +48,13 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const st
         bool fileExists = attributes < 0xFFFFFFF;
 
         if (!fileExists) {
-            hr = installShortcut(lnkName.str(), exePath, appID);
+            hr = installShortcut(lnkName.str(), exePath, appID, __uuidof(CToastNotificationActivationCallback));
         } else {
             hr = S_FALSE;
         }
+
     }
+    registerActivator();
     return hr;
 }
 
@@ -63,11 +67,25 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &appID)
     return E_FAIL;
 }
 
-// Install the shortcut
-HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
+HRESULT LinkHelper::registerActivator()
 {
+    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create([] {});
+    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().IncrementObjectCount();
+    return Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().RegisterObjects();
+}
+
+void LinkHelper::unregisterActivator()
+{
+    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().UnregisterObjects();
+    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().DecrementObjectCount();
+}
+
+// Install the shortcut
+HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID, GUID toastGUID)
+{
+    PCWSTR pszExePath = exePath.c_str();
     std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << std::endl;
-    HRESULT hr = S_OK;
+    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\{383803B6-AFDA-4220-BFC3-0DBF810106BA}\\LocalServer32", nullptr, REG_SZ, pszExePath, static_cast<DWORD>(wcslen(pszExePath)*sizeof(wchar_t))));
 
     if (SUCCEEDED(hr)) {
         ComPtr<IShellLink> shellLink;
@@ -87,16 +105,22 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
                         if (SUCCEEDED(hr)) {
                             hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
                             if (SUCCEEDED(hr)) {
-                                hr = propertyStore->Commit();
+                                PropVariantClear(&appIdPropVar);
+                                PROPVARIANT toastActivatorPropVar;
+                                toastActivatorPropVar.vt = VT_CLSID;
+                                toastActivatorPropVar.puuid = &toastGUID;
+                                hr = propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID, toastActivatorPropVar);
                                 if (SUCCEEDED(hr)) {
-                                    ComPtr<IPersistFile> persistFile;
-                                    hr = shellLink.As(&persistFile);
+                                    hr = propertyStore->Commit();
                                     if (SUCCEEDED(hr)) {
-                                        hr = persistFile->Save(shortcutPath.c_str(), TRUE);
+                                        ComPtr<IPersistFile> persistFile;
+                                        hr = shellLink.As(&persistFile);
+                                        if (SUCCEEDED(hr)) {
+                                            hr = persistFile->Save(shortcutPath.c_str(), TRUE);
+                                        }
                                     }
                                 }
                             }
-                            PropVariantClear(&appIdPropVar);
                         }
                     }
                 }

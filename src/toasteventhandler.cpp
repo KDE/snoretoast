@@ -115,3 +115,21 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
     SetEvent(m_event);
     return S_OK;
 }
+
+HRESULT CToastNotificationActivationCallback::Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
+                                                       __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count)
+{
+    std::wstring sMsg;
+    std::wcout << "CToastNotificationActivationCallback::Activate: " << appUserModelId << std::endl;
+    if (count)
+    {
+      sMsg += L" TextBox value:\r\n  ";
+      for (ULONG i=0; i<count; i++)
+      {
+        sMsg += data[i].Value;
+      }
+    }
+
+    std::wcout << sMsg << std::endl;
+    return S_OK;
+}

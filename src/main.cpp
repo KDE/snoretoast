@@ -43,6 +43,8 @@ void help(const std::wstring &error)
                << L"---- Options ----" << std::endl
                << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
                << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
+               << L"[-b] <button1;button2 string>\t| Displayed on the bottom line, can list multiple buttons separated by ;" << std::endl
+               << L"[-tb]\t| Displayed a textbox on the bottom line, only if buttons are not presented." << std::endl
                << L"[-p] <image URI>\t| Display toast with an image, local files only." << std::endl
                << L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
                << L"[-id] <id>\t\t| sets the id for a notification to be able to close it later." << std::endl
@@ -94,8 +96,9 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
     std::wstring sound(L"Notification.Default");
     std::wstring buttons;
     bool silent = false;
-    bool  wait = false;
+    bool wait = false;
     bool closeNotify = false;
+    bool isTextBoxEnabled = false;
 
     auto nextArg = [&](std::vector<wchar_t *>::const_iterator & it, const std::wstring & helpText)-> std::wstring {
         if (it != args.cend())
@@ -144,6 +147,8 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
         } else  if (arg == L"-b") {
             buttons = nextArg(it, L"Missing argument to -b.\n"
                             L"Supply argument for buttons as -b \"button1;button2\"");
+        } else  if (arg == L"-tb") {
+            isTextBoxEnabled = true;
         } else  if (arg == L"-install") {
             std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
                                           L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
@@ -195,6 +200,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
                 app.setSound(sound);
                 app.setId(id);
                 app.setButtons(buttons);
+                app.setTextBoxEnabled(isTextBoxEnabled);
                 app.displayToast(title, body, image, wait);
                 return app.userAction();
             }
