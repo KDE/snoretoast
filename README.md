@@ -27,6 +27,8 @@ SnoreToast.exe is a standard commandline application.
     ---- Options ----
     [-t] <title string>     | Displayed on the first line of the toast.
     [-m] <message string>   | Displayed on the remaining lines, wrapped.
+    [-b] <button string>    | Displayed on the bottom line, can list multiple buttons separated by ;
+    [-tb]                   | Displayed a textbox on the bottom line, only if buttons are not presented.
     [-p] <image URI>        | Display toast with an image, local files only.
     [-w]                    | Wait for toast to expire or activate.
     [-id] <id>              | sets the id for a notification to be able to close it later.
