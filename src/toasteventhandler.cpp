@@ -23,6 +23,9 @@
 
 using namespace ABI::Windows::UI::Notifications;
 
+
+static bool resultPrinted = false;
+
 ToastEventHandler::ToastEventHandler(const std::wstring &id) :
     m_ref(1),
     m_action(SnoreToasts::Hidden)
@@ -65,10 +68,13 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification *  sender, _In_
     }
     else
     {
-        HSTRING args;
-        test->get_Arguments(&args);
-        PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
-        std::wcout << str << std::endl;
+        if (!resultPrinted)
+        {
+            HSTRING args;
+            test->get_Arguments(&args);
+            PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
+            std::wcout << std::endl << "Result:" << str << std::endl;
+        }
     }
 
     m_action = SnoreToasts::Success;
@@ -120,16 +126,20 @@ HRESULT CToastNotificationActivationCallback::Activate(__RPC__in_string LPCWSTR 
                                                        __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count)
 {
     std::wstring sMsg;
-    std::wcout << "CToastNotificationActivationCallback::Activate: " << appUserModelId << std::endl;
     if (count)
     {
-      sMsg += L" TextBox value:\r\n  ";
+      sMsg += L"Result:[";
       for (ULONG i=0; i<count; i++)
       {
         sMsg += data[i].Value;
+        sMsg += L"]";
+        resultPrinted = true;
       }
     }
 
-    std::wcout << sMsg << std::endl;
+    if (resultPrinted)
+    {
+        std::wcout << sMsg << std::endl;
+    }
     return S_OK;
 }

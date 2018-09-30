@@ -108,7 +108,6 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             }
         }
     }
-    //    printXML();
 
     if (SUCCEEDED(hr)) {
         if (m_image.length() > 0) {
@@ -125,7 +124,7 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             }
         }
     }
-    printXML();
+    // printXML();
     m_action = SUCCEEDED(hr) ? Success : Failed;
 }
 
@@ -435,7 +434,7 @@ HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const s
             hr = actionNode->get_Attributes(&actionAttributes);
             if (SUCCEEDED(hr)) {
                 hr &= addAttribute(L"content", actionAttributes.Get(), value);
-                hr &= addAttribute(L"arguments", actionAttributes.Get(), value);
+                hr &= addAttribute(L"arguments", actionAttributes.Get(), L"[" + value + L"]");
                 hr &= addAttribute(L"activationType", actionAttributes.Get(), L"foreground");
             }
         }
@@ -464,7 +463,7 @@ void SnoreToasts::printXML()
 // Create and display the toast
 HRESULT SnoreToasts::createToast()
 {
-    std::wcout << "mAppid: " << m_appID << std::endl;
+    //std::wcout << "mAppid: " << m_appID << std::endl;
     HRESULT hr = m_toastManager->CreateToastNotifierWithId(StringReferenceWrapper(m_appID).Get(), &m_notifier);
     if (SUCCEEDED(hr)) {
         if (SUCCEEDED(hr)) {
