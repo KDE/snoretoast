@@ -337,7 +337,7 @@ HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
                         hr = actionNode->get_Attributes(&actionAttributes);
                         if (SUCCEEDED(hr)) {
                             hr &= addAttribute(L"content", actionAttributes.Get(), L"Send");
-                            hr &= addAttribute(L"arguments", actionAttributes.Get(), L"action=reply&amp;threadId=92185");
+                            hr &= addAttribute(L"arguments", actionAttributes.Get(), L"[" + m_id + L"]");
                             hr &= addAttribute(L"hint-inputId", actionAttributes.Get(), L"textBox");
                         }
                     }
@@ -434,7 +434,7 @@ HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const s
             hr = actionNode->get_Attributes(&actionAttributes);
             if (SUCCEEDED(hr)) {
                 hr &= addAttribute(L"content", actionAttributes.Get(), value);
-                hr &= addAttribute(L"arguments", actionAttributes.Get(), L"[" + value + L"]");
+                hr &= addAttribute(L"arguments", actionAttributes.Get(), L"[" + value + L"][" + m_id + L"]");
                 hr &= addAttribute(L"activationType", actionAttributes.Get(), L"foreground");
             }
         }

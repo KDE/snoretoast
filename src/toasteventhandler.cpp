@@ -68,12 +68,16 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification *  sender, _In_
     }
     else
     {
+        HSTRING args;
+        test->get_Arguments(&args);
+        PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
         if (!resultPrinted)
         {
-            HSTRING args;
-            test->get_Arguments(&args);
-            PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
             std::wcout << std::endl << "Result:" << str << std::endl;
+        }
+        else
+        {
+            std::wcout << str << std::endl;
         }
     }
 
@@ -139,7 +143,7 @@ HRESULT CToastNotificationActivationCallback::Activate(__RPC__in_string LPCWSTR 
 
     if (resultPrinted)
     {
-        std::wcout << sMsg << std::endl;
+        std::wcout << sMsg;
     }
     return S_OK;
 }
