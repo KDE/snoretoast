@@ -23,8 +23,9 @@
 
 using namespace ABI::Windows::UI::Notifications;
 
-
-static bool resultPrinted = false;
+static bool dismissed = false;
+static bool delaySetEvent = false;
+static HANDLE eventHandle;
 
 ToastEventHandler::ToastEventHandler(const std::wstring &id) :
     m_ref(1),
@@ -39,6 +40,7 @@ ToastEventHandler::ToastEventHandler(const std::wstring &id) :
     }
 
     m_event = CreateEventW(NULL, TRUE, FALSE, eventName.str().c_str());
+    eventHandle = m_event;
 }
 
 ToastEventHandler::~ToastEventHandler()
@@ -59,59 +61,48 @@ SnoreToasts::USER_ACTION &ToastEventHandler::userAction()
 // DesktopToastActivatedEventHandler
 IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification *  sender, _In_ IInspectable * args)
 {
-    IToastActivatedEventArgs *test = nullptr;
-    args->QueryInterface(&test);
-    if (test == nullptr)
+    m_action = SnoreToasts::Success;
+
+    if (!delaySetEvent)
     {
-        std::wcout << L"args is not a IToastActivatedEventArgs" << std::endl;
-        std::wcout << L"The user clicked on the toast." << std::endl;
+        delaySetEvent = true;
     }
     else
     {
-        HSTRING args;
-        test->get_Arguments(&args);
-        PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
-        if (!resultPrinted)
-        {
-            std::wcout << std::endl << "Result:" << str << std::endl;
-        }
-        else
-        {
-            std::wcout << str << std::endl;
-        }
+        SetEvent(m_event);
     }
 
-    m_action = SnoreToasts::Success;
-    SetEvent(m_event);
     return S_OK;
 }
 
 // DesktopToastDismissedEventHandler
 IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */, _In_ IToastDismissedEventArgs *e)
 {
+    dismissed = true;
     ToastDismissalReason tdr;
     HRESULT hr = e->get_Reason(&tdr);
     if (SUCCEEDED(hr)) {
         switch (tdr) {
         case ToastDismissalReason_ApplicationHidden:
-            std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
+            //std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
             m_action = SnoreToasts::Hidden;
             break;
         case ToastDismissalReason_UserCanceled:
-            std::wcout << L"The user dismissed this toast" << std::endl;
+            //std::wcout << L"The user dismissed this toast" << std::endl;
             m_action = SnoreToasts::Dismissed;
+            SetEvent(m_event);
             break;
         case ToastDismissalReason_TimedOut:
-            std::wcout << L"The toast has timed out" << std::endl;
+            //std::wcout << L"The toast has timed out" << std::endl;
             m_action = SnoreToasts::Timeout;
             break;
         default:
-            std::wcout << L"Toast not activated" << std::endl;
+            //std::wcout << L"Toast not activated" << std::endl;
             m_action = SnoreToasts::Failed;
             break;
         }
     }
-    SetEvent(m_event);
+
     return S_OK;
 }
 
@@ -137,13 +128,27 @@ HRESULT CToastNotificationActivationCallback::Activate(__RPC__in_string LPCWSTR 
       {
         sMsg += data[i].Value;
         sMsg += L"]";
-        resultPrinted = true;
       }
     }
-
-    if (resultPrinted)
+    else
     {
-        std::wcout << sMsg;
+        sMsg += L"Result:";
     }
+
+    std::wcout << sMsg << invokedArgs << std::endl;
+    if (dismissed)
+    {
+        SetEvent(eventHandle);
+    }
+
+    if (!delaySetEvent)
+    {
+        delaySetEvent = true;
+    }
+    else
+    {
+        SetEvent(eventHandle);
+    }
+
     return S_OK;
 }

@@ -139,9 +139,10 @@ SnoreToasts::USER_ACTION SnoreToasts::userAction()
             std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
         }
         CloseHandle(event);
-        if (m_action != SnoreToasts::Success)
+        if (m_action != SnoreToasts::Success && m_action != SnoreToasts::Timeout)
         {
             std::wcout << L"Result:[][" + m_id + L"]" << std::endl;
+            m_notifier->Hide(m_notification.Get());
         }
     }
     return m_action;
