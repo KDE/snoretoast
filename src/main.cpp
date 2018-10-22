@@ -53,7 +53,7 @@ void help(const std::wstring &error)
                << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
                << L"-close <id>\t\t| Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification." << std::endl
                << std::endl
-               << L"-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
+               << L"-install | Creates a shortcut in the start menu which point to the executable SnoraToast, appID used for the notifications." << std::endl
                << std::endl
                << L"-v \t\t\t| Print the version and copying information." << std::endl
                << L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
@@ -150,16 +150,8 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
         } else  if (arg == L"-tb") {
             isTextBoxEnabled = true;
         } else  if (arg == L"-install") {
-            std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
-                                          L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
-
-            std::wstring exe(nextArg(it, L"Missing argument to -install.\n"
-                                     L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
-
-            appID = nextArg(it, L"Missing argument to -install.\n"
-                            L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\"");
-
-            return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
+            appID = L"Snore.DesktopToasts";
+            return SUCCEEDED(LinkHelper::tryCreateShortcut(appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
         } else if (arg == L"-close") {
             id = nextArg(it, L"Missing agument to -close"
                          L"Supply argument as -close \"id\"");
