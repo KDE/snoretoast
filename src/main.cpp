@@ -150,8 +150,16 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
         } else  if (arg == L"-tb") {
             isTextBoxEnabled = true;
         } else  if (arg == L"-install") {
-            appID = L"Snore.DesktopToasts";
-            return SUCCEEDED(LinkHelper::tryCreateShortcut(appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
+            std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
+                                                     L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
+
+            std::wstring exe(nextArg(it, L"Missing argument to -install.\n"
+                                    L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
+
+            appID = nextArg(it, L"Missing argument to -install.\n"
+                           L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\"");
+
+           return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
         } else if (arg == L"-close") {
             id = nextArg(it, L"Missing agument to -close"
                          L"Supply argument as -close \"id\"");

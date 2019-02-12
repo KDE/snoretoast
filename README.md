@@ -37,7 +37,7 @@ SnoreToast.exe is a standard commandline application.
     [-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
     -close <id>             | Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification.
 
-    -install | Creates a shortcutin the start menu which point to the executable, appID used for the notifications.
+    -install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications.
 
     -v                      | Print the version and copying information.
     -h                      | Print these instructions. Same as no args.
