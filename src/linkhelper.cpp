@@ -48,6 +48,10 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const st
         bool fileExists = attributes < 0xFFFFFFF;
 
         if (!fileExists) {
+            /**
+             * Required to use the CToastNotificationActivationCallback for buttons and textbox interactions.
+             * windows.ui.notifications does not support user interaction from cpp
+             */
             hr = installShortcut(lnkName.str(), exePath, appID, __uuidof(CToastNotificationActivationCallback));
         } else {
             hr = S_FALSE;
@@ -85,6 +89,7 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
 {
     PCWSTR pszExePath = exePath.c_str();
     std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << std::endl;
+    //Add CToastNotificationActivationCallback to registry
     HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\{383803B6-AFDA-4220-BFC3-0DBF810106BA}\\LocalServer32", nullptr, REG_SZ, pszExePath, static_cast<DWORD>(wcslen(pszExePath)*sizeof(wchar_t))));
 
     if (SUCCEEDED(hr)) {
