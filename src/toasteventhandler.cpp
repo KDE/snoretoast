@@ -141,6 +141,7 @@ HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, L
       for (ULONG i=0; i<count; ++i)
       {
         std::wstring tmp = data[i].Value;
+        // printing \r to stdcout is kind of problematic :D
         std::replace(tmp.begin(), tmp.end(), '\r', '\n');
         sMsg << tmp;
       }
