@@ -18,10 +18,12 @@
 #include "snoretoasts.h"
 #include "linkhelper.h"
 
+#include <shellapi.h>
+#include <roapi.h>
+
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <roapi.h>
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -31,12 +33,12 @@ using namespace Windows::Foundation;
 void help(const std::wstring &error)
 {
     if (!error.empty()) {
-        std::wcout << error << std::endl;
+        std::wcerr << error << std::endl;
     } else {
-        std::wcout << L"Welcome to SnoreToast " << SnoreToasts::version() << "." << std::endl
+        std::wcerr << L"Welcome to SnoreToast " << SnoreToasts::version() << "." << std::endl
                    << L"A command line application which is capable of creating Windows Toast notifications." << std::endl;
     }
-    std::wcout << std::endl
+    std::wcerr << std::endl
                << L"---- Usage ----" << std::endl
                << L"SnoreToast [Options]" << std::endl
                << std::endl
@@ -75,7 +77,7 @@ void help(const std::wstring &error)
 
 void version()
 {
-    std::wcout << L"SnoreToast version " << SnoreToasts::version() << std::endl
+    std::wcerr << L"SnoreToast version " << SnoreToasts::version() << std::endl
                << L"Copyright (C) 2015  Hannah von Reth <vonreth@kde.org>" << std::endl
                << L"SnoreToast is free software: you can redistribute it and/or modify" << std::endl
                << L"it under the terms of the GNU Lesser General Public License as published by" << std::endl

@@ -2,7 +2,7 @@ project( snoretoast )
 cmake_minimum_required(VERSION 2.8)
 
 
-add_definitions(-DUNICODE -D_UNICODE )
+add_definitions(-DUNICODE -D_UNICODE -D__WRL_CLASSIC_COM_STRICT__ -DWIN32_LEAN_AND_MEAN)
 
 #link runtime static
 if(MSVC)

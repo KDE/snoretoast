@@ -20,12 +20,14 @@
 
 #include <sstream>
 #include <iostream>
+#include <wchar.h>
+#include <algorithm>
 
 using namespace ABI::Windows::UI::Notifications;
 
 ToastEventHandler::ToastEventHandler(const std::wstring &id) :
     m_ref(1),
-    m_action(SnoreToasts::Hidden)
+    m_userAction(SnoreToasts::Hidden)
 {
     std::wstringstream eventName;
     eventName << L"ToastEvent";
@@ -34,7 +36,6 @@ ToastEventHandler::ToastEventHandler(const std::wstring &id) :
     } else {
         eventName << GetCurrentProcessId();
     }
-
     m_event = CreateEventW(NULL, TRUE, FALSE, eventName.str().c_str());
 }
 
@@ -50,28 +51,37 @@ HANDLE ToastEventHandler::event()
 
 SnoreToasts::USER_ACTION &ToastEventHandler::userAction()
 {
-    return m_action;
+    return m_userAction;
 }
 
 // DesktopToastActivatedEventHandler
 IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification *  sender, _In_ IInspectable * args)
 {
-    IToastActivatedEventArgs *test = nullptr;
-    args->QueryInterface(&test);
-    if (test == nullptr)
+    IToastActivatedEventArgs *buttonReply = nullptr;
+    args->QueryInterface(&buttonReply);
+    if (buttonReply == nullptr)
     {
-        std::wcout << L"args is not a IToastActivatedEventArgs" << std::endl;
-        std::wcout << L"The user clicked on the toast." << std::endl;
+        std::wcerr << L"args is not a IToastActivatedEventArgs" << std::endl;
+        std::wcerr << L"The user clicked on the toast." << std::endl;
     }
     else
     {
         HSTRING args;
-        test->get_Arguments(&args);
+        buttonReply->get_Arguments(&args);
         PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
-        std::wcout << str << std::endl;
+
+        std::wcerr << L"The user clicked on a toast button." << std::endl;
+        if (wcscmp(str, L"action=reply&amp;processId=") < 0)
+        {
+          std::wcout << str << std::endl;
+        }
+        else
+        {
+          std::wcerr << str << std::endl;
+        }
     }
 
-    m_action = SnoreToasts::Success;
+    m_userAction = SnoreToasts::Success;
     SetEvent(m_event);
     return S_OK;
 }
@@ -84,20 +94,20 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
     if (SUCCEEDED(hr)) {
         switch (tdr) {
         case ToastDismissalReason_ApplicationHidden:
-            std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
-            m_action = SnoreToasts::Hidden;
+            std::wcerr << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
+            m_userAction = SnoreToasts::Hidden;
             break;
         case ToastDismissalReason_UserCanceled:
-            std::wcout << L"The user dismissed this toast" << std::endl;
-            m_action = SnoreToasts::Dismissed;
+            std::wcerr << L"The user dismissed this toast" << std::endl;
+            m_userAction = SnoreToasts::Dismissed;
             break;
         case ToastDismissalReason_TimedOut:
-            std::wcout << L"The toast has timed out" << std::endl;
-            m_action = SnoreToasts::Timeout;
+            std::wcerr << L"The toast has timed out" << std::endl;
+            m_userAction = SnoreToasts::Timeout;
             break;
         default:
-            std::wcout << L"Toast not activated" << std::endl;
-            m_action = SnoreToasts::Failed;
+            std::wcerr << L"Toast not activated" << std::endl;
+            m_userAction = SnoreToasts::Failed;
             break;
         }
     }
@@ -108,28 +118,33 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
 // DesktopToastFailedEventHandler
 IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */, _In_ IToastFailedEventArgs * /* e */)
 {
-    std::wcout << L"The toast encountered an error." << std::endl;
-    std::wcout << L"Please make sure that the app id is set correctly." << std::endl;
-    std::wcout << L"Command Line: " << GetCommandLineW() << std::endl;
-    m_action = SnoreToasts::Failed;
+    std::wcerr << L"The toast encountered an error." << std::endl;
+    std::wcerr << L"Please make sure that the app id is set correctly." << std::endl;
+    std::wcerr << L"Command Line: " << GetCommandLineW() << std::endl;
+    m_userAction = SnoreToasts::Failed;
     SetEvent(m_event);
     return S_OK;
 }
 
-HRESULT CToastNotificationActivationCallback::Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
-                                                       __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count)
+HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, LPCWSTR invokedArgs,
+                                                       const NOTIFICATION_USER_INPUT_DATA* data, ULONG count)
 {
-    std::wstring sMsg;
-    std::wcout << "CToastNotificationActivationCallback::Activate: " << appUserModelId << std::endl;
+    if (invokedArgs == nullptr)
+    {
+        return S_OK;
+    }
+    std::wstringstream sMsg;
+    std::wcerr << "CToastNotificationActivationCallback::Activate: " << appUserModelId << " : " << invokedArgs << " : " << data << std::endl;
+    std::wcerr << "CurrentProcess: " << GetCurrentProcessId() << std::endl;
     if (count)
     {
-      sMsg += L" TextBox value:\r\n  ";
-      for (ULONG i=0; i<count; i++)
+      for (ULONG i=0; i<count; ++i)
       {
-        sMsg += data[i].Value;
+        std::wstring tmp = data[i].Value;
+        std::replace(tmp.begin(), tmp.end(), '\r', '\n');
+        sMsg << tmp;
       }
+      std::wcout << sMsg.str() << std::endl;
     }
-
-    std::wcout << sMsg << std::endl;
     return S_OK;
 }

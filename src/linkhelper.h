@@ -18,12 +18,6 @@
 #pragma once
 
 #include "snoretoasts.h"
-#ifndef INIT_PKEY_AppUserModel_ToastActivatorCLSID
-EXTERN_C const PROPERTYKEY DECLSPEC_SELECTANY PKEY_AppUserModel_ToastActivatorCLSID = { { 0x9F4C2855, 0x9F79, 0x4B39,{ 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3 } }, 26 };
-#define INIT_PKEY_AppUserModel_ToastActivatorCLSID { { 0x9F4C2855, 0x9F79, 0x4B39, 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3 }, 26 }
-#endif //#ifndef INIT_PKEY_AppUserModel_ToastActivatorCLSID
-
-#pragma comment(lib, "runtimeobject.lib")
 
 class LinkHelper
 {
@@ -34,7 +28,7 @@ public:
     static void unregisterActivator();
 
 private:
-    static HRESULT installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID, GUID toastGUID);
+    static HRESULT installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID);
     static HRESULT mkdirs(const std::wstring &dirs);
 
     static std::wstring startmenuPath();
