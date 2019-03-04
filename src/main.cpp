@@ -1,6 +1,6 @@
 /*
     SnoreToast is capable to invoke Windows 8 toast notifications.
-    Copyright (C) 2013-2015  Hannah von Reth <vonreth@kde.org>
+    Copyright (C) 2013-2019  Hannah von Reth <vonreth@kde.org>
 
     SnoreToast is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -78,7 +78,7 @@ void help(const std::wstring &error)
 void version()
 {
     std::wcerr << L"SnoreToast version " << SnoreToasts::version() << std::endl
-               << L"Copyright (C) 2015  Hannah von Reth <vonreth@kde.org>" << std::endl
+               << L"Copyright (C) 2019  Hannah von Reth <vonreth@kde.org>" << std::endl
                << L"SnoreToast is free software: you can redistribute it and/or modify" << std::endl
                << L"it under the terms of the GNU Lesser General Public License as published by" << std::endl
                << L"the Free Software Foundation, either version 3 of the License, or" << std::endl

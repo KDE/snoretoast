@@ -1,6 +1,6 @@
 /*
     SnoreToast is capable to invoke Windows 8 toast notifications.
-    Copyright (C) 2013-2015  Hannah von Reth <vonreth@kde.org>
+    Copyright (C) 2013-2019  Hannah von Reth <vonreth@kde.org>
 
     SnoreToast is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
