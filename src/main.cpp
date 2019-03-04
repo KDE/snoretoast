@@ -45,8 +45,8 @@ void help(const std::wstring &error)
                << L"---- Options ----" << std::endl
                << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
                << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
-               << L"[-b] <button1;button2 string>\t| Displayed on the bottom line, can list multiple buttons separated by ;" << std::endl
-               << L"[-tb]\t| Displayed a textbox on the bottom line, only if buttons are not presented." << std::endl
+               << L"[-b] <button1;button2 string>| Displayed on the bottom line, can list multiple buttons separated by ;" << std::endl
+               << L"[-tb]\t\t\t| Displayed a textbox on the bottom line, only if buttons are not presented." << std::endl
                << L"[-p] <image URI>\t| Display toast with an image, local files only." << std::endl
                << L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
                << L"[-id] <id>\t\t| sets the id for a notification to be able to close it later." << std::endl
@@ -61,11 +61,13 @@ void help(const std::wstring &error)
                << L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
                << L"Exit Status\t:  Exit Code" << std::endl
                << L"Failed\t\t: -1"
-               << std::endl
+               << std::endl << std::endl
                << "Success\t\t:  0" << std::endl
                << "Hidden\t\t:  1" << std::endl
                << "Dismissed\t:  2" << std::endl
-               << "Timeout\t\t:  3" << std::endl
+               << "TimedOut\t:  3" << std::endl
+               << "ButtonPressed\t:  4" << std::endl
+               << "TextEntered\t:  5" << std::endl
                << std::endl
                << L"---- Image Notes ----" << std::endl
                << L"Images must be .png with:" << std::endl
