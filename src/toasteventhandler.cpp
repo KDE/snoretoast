@@ -73,15 +73,15 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification *  sender, _In_
         std::wcerr << L"The user clicked on a toast button." << std::endl;
         if (wcscmp(str, L"action=reply&amp;processId=") < 0)
         {
-          std::wcout << str << std::endl;
+            std::wcout << str << std::endl;
+            m_userAction = SnoreToasts::TextEntered;
         }
         else
         {
-          std::wcerr << str << std::endl;
+            std::wcerr << str << std::endl;
+            m_userAction = SnoreToasts::ButtonPressed;
         }
     }
-
-    m_userAction = SnoreToasts::Success;
     SetEvent(m_event);
     return S_OK;
 }
@@ -103,7 +103,7 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
             break;
         case ToastDismissalReason_TimedOut:
             std::wcerr << L"The toast has timed out" << std::endl;
-            m_userAction = SnoreToasts::Timeout;
+            m_userAction = SnoreToasts::TimedOut;
             break;
         default:
             std::wcerr << L"Toast not activated" << std::endl;

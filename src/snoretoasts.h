@@ -52,7 +52,9 @@ public:
         Success,
         Hidden,
         Dismissed,
-        Timeout
+        TimedOut,
+        ButtonPressed,
+        TextEntered
     };
 
     static std::wstring version();

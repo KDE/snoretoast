@@ -46,7 +46,9 @@ SnoreToast.exe is a standard commandline application.
     Success         :  0
     Hidden          :  1
     Dismissed       :  2
-    Timeout         :  3
+    TimedOut        :  3
+    ButtonPressed   :  4
+    TextEntered     :  5
 
     ---- Image Notes ----
     Images must be .png with:
