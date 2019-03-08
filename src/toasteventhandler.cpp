@@ -30,6 +30,7 @@ using namespace ABI::Windows::UI::Notifications;
 ToastEventHandler::ToastEventHandler(const std::wstring &id) :
     m_ref(1),
     m_userAction(SnoreToasts::Hidden)
+  , m_id(id)
 {
     std::wstringstream eventName;
     eventName << L"ToastEvent" << id;
@@ -69,6 +70,7 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/, _
 
         const auto data = Utils::splitData(CToastNotificationActivationCallback::data());
         const auto action = data.at(L"action");
+        assert(data.at(L"notificationId") == m_id);
 
         if (action == Actions::Reply)
         {

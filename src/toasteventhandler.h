@@ -129,4 +129,5 @@ private:
     ULONG m_ref;
     SnoreToasts::USER_ACTION m_userAction;
     HANDLE m_event;
+    std::wstring m_id;
 };
