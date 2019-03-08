@@ -16,6 +16,9 @@
     along with SnoreToast.  If not, see <http://www.gnu.org/licenses/>.
     */
 #include "snoretoasts.h"
+#include "toasteventhandler.h"
+#include "utils.h"
+
 #include "linkhelper.h"
 
 #include <shellapi.h>
@@ -53,6 +56,7 @@ void help(const std::wstring &error)
                << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
                << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
                << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
+               << L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for callbacks." << std::endl
                << L"-close <id>\t\t| Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification." << std::endl
                << std::endl
                << L"-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
@@ -93,6 +97,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
     HRESULT hr = S_OK;
 
     std::wstring appID;
+    std::wstring pipe;
     std::wstring title;
     std::wstring body;
     std::wstring image;
@@ -112,7 +117,6 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
         {
             help(helpText);
             exit(SnoreToasts::Failed);
-            return L"";
         }
     };
 
@@ -135,25 +139,28 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
                 path = _wfullpath(nullptr, path.c_str(), MAX_PATH);
             }
             image.append(path);
-        } else  if (arg == L"-w") {
+        } else if (arg == L"-w") {
             wait = true;
-        } else  if (arg == L"-s") {
+        } else if (arg == L"-s") {
             sound = nextArg(it, L"Missing argument to -s.\n"
                             L"Supply argument as -s \"sound name\"");
         } else if (arg == L"-id") {
             id = nextArg(it, L"Missing argument to -id.\n"
                          L"Supply argument as -id \"id\"");
-        } else  if (arg == L"-silent") {
+        } else if (arg == L"-silent") {
             silent = true;
-        } else  if (arg == L"-appid") {
+        } else if (arg == L"-appid") {
             appID = nextArg(it, L"Missing argument to -appID.\n"
                             L"Supply argument as -appID \"Your.APP.ID\"");
-        } else  if (arg == L"-b") {
+        } else if (arg == L"-pipename") {
+            pipe = nextArg(it, L"Missing argument to -pipeName.\n"
+                                      L"Supply argument as -pipeName \"\\.\\pipe\\foo\\\"");
+        } else if (arg == L"-b") {
             buttons = nextArg(it, L"Missing argument to -b.\n"
                             L"Supply argument for buttons as -b \"button1;button2\"");
-        } else  if (arg == L"-tb") {
+        } else if (arg == L"-tb") {
             isTextBoxEnabled = true;
-        } else  if (arg == L"-install") {
+        } else if (arg == L"-install") {
             std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
                                           L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
 
@@ -168,7 +175,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
             id = nextArg(it, L"Missing agument to -close"
                          L"Supply argument as -close \"id\"");
             closeNotify = true;
-        } else  if (arg == L"-v") {
+        } else if (arg == L"-v") {
             version();
             return SnoreToasts::Success;
         } else if (arg == L"-h") {
@@ -194,12 +201,15 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
     } else {
         hr = (title.length() > 0 && body.length() > 0) ? S_OK : E_FAIL;
         if (SUCCEEDED(hr)) {
-            if (appID.length() == 0) {
-                appID = L"Snore.DesktopToasts";
+            if (appID.empty()) {
+                std::wstringstream _appID;
+                _appID << L"Snore.DesktopToasts." << SnoreToasts::version();
+                appID = _appID.str();
                 hr = LinkHelper::tryCreateShortcut(appID);
             }
             if (SUCCEEDED(hr)) {
                 SnoreToasts app(appID);
+                app.setPipeName(pipe);
                 app.setSilent(silent);
                 app.setSound(sound);
                 app.setId(id);
@@ -217,25 +227,41 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
     return SnoreToasts::Failed;
 }
 
-#ifdef BUILD_GUI
+
+SnoreToasts::USER_ACTION handleEmbedded()
+{
+    Utils::registerActivator();
+    CToastNotificationActivationCallback::waitForActivation();
+    Utils::unregisterActivator();
+    return SnoreToasts::Success;
+}
+
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int)
 {
-    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-        FILE *stream;
-        _wfreopen_s(&stream, L"CONOUT$", L"w", stdout);
-        _wfreopen_s(&stream, L"CONOUT$", L"w", stderr);
+    if (AttachConsole(ATTACH_PARENT_PROCESS))
+    {
+        FILE *dummy;
+        _wfreopen_s(&dummy, L"CONOUT$", L"w", stdout);
+        setvbuf(stdout, nullptr, _IONBF, 0);
+
+        _wfreopen_s(&dummy, L"CONOUT$", L"w", stderr);
+        setvbuf(stderr, nullptr, _IONBF, 0);
+        std::ios::sync_with_stdio();
     }
-#else
-int wmain()
-{
-#endif
-	int argc;
-	wchar_t **argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    const auto commandLine = GetCommandLineW();
+    tLog << commandLine;
+    int argc;
+    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
     SnoreToasts::USER_ACTION action = SnoreToasts::Success;
 
     HRESULT hr = Initialize(RO_INIT_MULTITHREADED);
     if (SUCCEEDED(hr)) {
-        action = parse(std::vector<wchar_t *>(argv, argv + argc));
+        if (std::wstring(commandLine).find(L"-Embedding") != std::wstring::npos)
+        {
+            action = handleEmbedded();
+        } else {
+            action = parse(std::vector<wchar_t *>(argv, argv + argc));
+        }
         Uninitialize();
     }
 

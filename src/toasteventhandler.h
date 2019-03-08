@@ -19,7 +19,13 @@
 #include "snoretoasts.h"
 #include "wrl.h"
 
-#define TOAST_UUID "383803B6-AFDA-4220-BFC3-0DBF810106BF"
+#define TOAST_UUID "{383803B6-AFDA-4220-BFC3-0DBF810106BF}"
+
+namespace Actions {
+    static const std::wstring Reply = L"reply";
+    static const std::wstring Clicked = L"clicked";
+    static const std::wstring Button = L"button";
+}
 
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ::IInspectable *> DesktopToastActivatedEventHandler;
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ABI::Windows::UI::Notifications::ToastDismissedEventArgs *> DesktopToastDismissedEventHandler;
@@ -48,13 +54,16 @@ class DECLSPEC_UUID(TOAST_UUID)
   CToastNotificationActivationCallback : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, INotificationActivationCallback>
 {
 public:
-//Constructors / Destructors
-  CToastNotificationActivationCallback()
-  {
-  }
+    static std::wstring waitForActivation();
+    static std::wstring data();
 
-  virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
+    CToastNotificationActivationCallback();
+    virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
                                              __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count) override;
+private:
+    static HANDLE m_event;
+    static std::wstring m_data;
+
 };
 
 CoCreatableClass(CToastNotificationActivationCallback);

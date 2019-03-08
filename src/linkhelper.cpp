@@ -17,6 +17,7 @@
 */
 #include "linkhelper.h"
 #include "toasteventhandler.h"
+#include "utils.h"
 
 #include <propvarutil.h>
 #include <comdef.h>
@@ -31,8 +32,6 @@
 EXTERN_C const PROPERTYKEY DECLSPEC_SELECTANY PKEY_AppUserModel_ToastActivatorCLSID = { { 0x9F4C2855, 0x9F79, 0x4B39,{ 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3 } }, 26 };
 #define INIT_PKEY_AppUserModel_ToastActivatorCLSID { { 0x9F4C2855, 0x9F79, 0x4B39, 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3 }, 26 }
 #endif //#ifndef INIT_PKEY_AppUserModel_ToastActivatorCLSID
-
-using namespace Microsoft::WRL;
 
 HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
 {
@@ -54,51 +53,34 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const st
         bool fileExists = attributes < 0xFFFFFFF;
 
         if (!fileExists) {
-            /**
-             * Required to use the CToastNotificationActivationCallback for buttons and textbox interactions.
-             * windows.ui.notifications does not support user interaction from cpp
-             */
             hr = installShortcut(lnkName.str(), exePath, appID);
         } else {
             hr = S_FALSE;
         }
 
     }
-    registerActivator();
+    Utils::registerActivator();
     return hr;
 }
 
 HRESULT LinkHelper::tryCreateShortcut(const std::wstring &appID)
 {
-    wchar_t buffer[MAX_PATH];
-    if (GetModuleFileNameEx(GetCurrentProcess(), nullptr, buffer, MAX_PATH) > 0) {
-        return tryCreateShortcut(L"SnoreToast.lnk", buffer, appID);
-    }
-    return E_FAIL;
-}
-
-HRESULT LinkHelper::registerActivator()
-{
-    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create([] {});
-    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().IncrementObjectCount();
-    return Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().RegisterObjects();
-}
-
-void LinkHelper::unregisterActivator()
-{
-    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().UnregisterObjects();
-    Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().DecrementObjectCount();
+    std::wstringstream name;
+    name << L"SnoreToast v" << SnoreToasts::version() << L".lnk";
+    return tryCreateShortcut(name.str(), Utils::selfLocate().c_str(), appID);
 }
 
 // Install the shortcut
 HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
 {
     PCWSTR pszExePath = exePath.c_str();
-    std::wcerr << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << std::endl;
-    //Add CToastNotificationActivationCallback to registry
-    std::wstringstream regKey;
-    regKey << L"SOFTWARE\\Classes\\CLSID\\{" << TOAST_UUID  << L"}\\LocalServer32";
-    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, regKey.str().c_str(), nullptr, REG_SZ, pszExePath, static_cast<DWORD>(wcslen(pszExePath)*sizeof(wchar_t))));
+    std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << std::endl;
+    /**
+     * Add CToastNotificationActivationCallback to registry
+     * Required to use the CToastNotificationActivationCallback for buttons and textbox interactions.
+     * windows.ui.notifications does not support user interaction from cpp
+     */;
+    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\" TOAST_UUID  L"\\LocalServer32", nullptr, REG_SZ, pszExePath, static_cast<DWORD>(wcslen(pszExePath)*sizeof(wchar_t))));
 
     if (SUCCEEDED(hr)) {
         ComPtr<IShellLink> shellLink;

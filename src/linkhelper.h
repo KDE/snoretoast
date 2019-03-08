@@ -24,8 +24,6 @@ class LinkHelper
 public:
     static HRESULT tryCreateShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID);
     static HRESULT tryCreateShortcut(const std::wstring &appID);
-    static HRESULT registerActivator();
-    static void unregisterActivator();
 
 private:
     static HRESULT installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID);

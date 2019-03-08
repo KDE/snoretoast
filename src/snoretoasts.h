@@ -72,7 +72,10 @@ public:
     void setButtons(const std::wstring &buttons);
     void setTextBoxEnabled(bool textBoxEnabled);
 
-private:
+    std::wstring pipeName() const;
+    void setPipeName(const std::wstring &pipeName);
+
+    private:
     HRESULT createToast();
     HRESULT setImage();
     HRESULT setSound();
@@ -88,18 +91,19 @@ private:
     void printXML();
 
     std::wstring m_appID;
+    std::wstring m_pipeName;
 
     std::wstring m_title;
     std::wstring m_body;
     std::wstring m_image;
-    std::wstring m_sound;
+    std::wstring m_sound = L"Notification.Default";
     std::wstring m_id;
     std::wstring m_buttons;
     bool m_silent;
     bool m_wait;
     bool m_textbox;
 
-    SnoreToasts::USER_ACTION m_action;
+    SnoreToasts::USER_ACTION m_action = SnoreToasts::Success;
 
     Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> m_toastXml;
     Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics> m_toastManager;

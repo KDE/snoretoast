@@ -18,6 +18,7 @@
 #include "snoretoasts.h"
 #include "toasteventhandler.h"
 #include "linkhelper.h"
+#include "utils.h"
 
 #include <sstream>
 #include <iostream>
@@ -29,14 +30,14 @@ using namespace Windows::Foundation;
 
 SnoreToasts::SnoreToasts(const std::wstring &appID) :
     m_appID(appID),
-    m_action(Success),
-    m_sound(L"Notification.Default")
+    m_id(std::to_wstring(GetCurrentProcessId()))
 {
+    Utils::registerActivator();
 }
 
 SnoreToasts::~SnoreToasts()
 {
-    LinkHelper::unregisterActivator();
+    Utils::unregisterActivator();
 }
 
 void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait)
@@ -62,13 +63,16 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             if (SUCCEEDED(hr)) {
                 ComPtr<IXmlNode> root;
                 hr = rootList->Item(0, &root);
-                if (m_textbox){
-                    ComPtr<IXmlNamedNodeMap> rootAttributes;
 
-                    hr = root->get_Attributes(&rootAttributes);
-                    if (SUCCEEDED(hr)) {
-                        hr = addAttribute(L"launch", rootAttributes.Get(), L"action=openThread&amp;threadId=92185");
-                    }
+                ComPtr<IXmlNamedNodeMap> rootAttributes;
+                hr = root->get_Attributes(&rootAttributes);
+                if (SUCCEEDED(hr)) {
+                    const auto data = Utils::formatData({
+                                                            {L"action", Actions::Clicked},
+                                                            {L"notificationId", m_id},
+                                                            {L"pipe", m_pipeName},
+                                                        });
+                    hr = addAttribute(L"launch", rootAttributes.Get(), data);
                 }
                 //Adding buttons
                 if (!m_buttons.empty())
@@ -131,13 +135,13 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
 
 SnoreToasts::USER_ACTION SnoreToasts::userAction()
 {
-    if (m_eventHanlder.Get() != NULL) {
+    if (m_eventHanlder.Get()) {
         HANDLE event = m_eventHanlder.Get()->event();
         WaitForSingleObject(event, INFINITE);
         m_action = m_eventHanlder.Get()->userAction();
         if (m_action == SnoreToasts::Hidden) {
             m_notifier->Hide(m_notification.Get());
-            std::wcerr << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
+            tLog << L"The application hid the toast using ToastNotifier.hide()";
         }
         CloseHandle(event);
     }
@@ -155,7 +159,7 @@ bool SnoreToasts::closeNotification()
         SetEvent(event);
         return true;
     }
-    std::wcerr << "Notification " << m_id << " does not exist" << std::endl;
+    tLog << "Notification " << m_id << " does not exist";
     return false;
 }
 
@@ -171,7 +175,10 @@ void SnoreToasts::setSilent(bool silent)
 
 void SnoreToasts::setId(const std::wstring &id)
 {
-    m_id = id;
+    if (!id.empty())
+    {
+        m_id = id;
+    }
 }
 
 void SnoreToasts::setButtons(const std::wstring &buttons)
@@ -338,9 +345,12 @@ HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
                         hr = actionNode->get_Attributes(&actionAttributes);
                         if (SUCCEEDED(hr)) {
                             hr &= addAttribute(L"content", actionAttributes.Get(), L"Send");
-                            std::wstringstream id;
-                            id << "action=reply&amp;processId=" << GetCurrentProcessId();
-                            hr &= addAttribute(L"arguments", actionAttributes.Get(), id.str());
+                            const auto data = Utils::formatData({
+                                                                    {L"action", Actions::Reply},
+                                                                    {L"notificationId", m_id},
+                                                                    {L"pipe", m_pipeName},
+                                                                });
+                            hr &= addAttribute(L"arguments", actionAttributes.Get(), data);
                             hr &= addAttribute(L"hint-inputId", actionAttributes.Get(), L"textBox");
                         }
                     }
@@ -437,7 +447,14 @@ HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const s
             hr = actionNode->get_Attributes(&actionAttributes);
             if (SUCCEEDED(hr)) {
                 hr &= addAttribute(L"content", actionAttributes.Get(), value);
-                hr &= addAttribute(L"arguments", actionAttributes.Get(), value);
+
+                const auto data = Utils::formatData({
+                                                        {L"action", Actions::Button},
+                                                        {L"notificationId", m_id},
+                                                        {L"button", value},
+                                                        {L"pipe", m_pipeName},
+                                                    });
+                hr &= addAttribute(L"arguments", actionAttributes.Get(), data);
                 hr &= addAttribute(L"activationType", actionAttributes.Get(), L"foreground");
             }
         }
@@ -453,14 +470,22 @@ void SnoreToasts::printXML()
     ss.As(&s);
     HSTRING string;
     s->GetXml(&string);
-    PCWSTR str = WindowsGetStringRawBuffer(string, NULL);
-    std::wcerr << L"------------------------" << std::endl
-               << L"SnoreToast " << version() << std::endl
-               << L"------------------------" << std::endl
-               << m_appID << std::endl
-               << L"------------------------" << std::endl
-               << str << std::endl
-               << L"------------------------" << std::endl;
+    PCWSTR str = WindowsGetStringRawBuffer(string, nullptr);
+    tLog << L"------------------------\n"
+         << m_appID << L"\n"
+         << L"------------------------\n"
+         << str << L"\n"
+         << L"------------------------\n";
+}
+
+std::wstring SnoreToasts::pipeName() const
+{
+    return m_pipeName;
+}
+
+void SnoreToasts::setPipeName(const std::wstring &pipeName)
+{
+    m_pipeName = pipeName;
 }
 
 // Create and display the toast
@@ -513,5 +538,6 @@ HRESULT SnoreToasts::createToast()
 
 std::wstring SnoreToasts::version()
 {
+    // if there are changes to the callback mechanism we need to change the uuid for the activator TOAST_UUID
     return L"0.5.99";
 }

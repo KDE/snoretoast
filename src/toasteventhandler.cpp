@@ -17,11 +17,13 @@
 */
 #include "snoretoasts.h"
 #include "toasteventhandler.h"
+#include "utils.h"
 
 #include <sstream>
 #include <iostream>
 #include <wchar.h>
 #include <algorithm>
+#include <assert.h>
 
 using namespace ABI::Windows::UI::Notifications;
 
@@ -30,13 +32,8 @@ ToastEventHandler::ToastEventHandler(const std::wstring &id) :
     m_userAction(SnoreToasts::Hidden)
 {
     std::wstringstream eventName;
-    eventName << L"ToastEvent";
-    if (!id.empty()) {
-        eventName << id;
-    } else {
-        eventName << GetCurrentProcessId();
-    }
-    m_event = CreateEventW(NULL, TRUE, FALSE, eventName.str().c_str());
+    eventName << L"ToastEvent" << id;
+    m_event = CreateEventW(nullptr, true, false, eventName.str().c_str());
 }
 
 ToastEventHandler::~ToastEventHandler()
@@ -55,30 +52,39 @@ SnoreToasts::USER_ACTION &ToastEventHandler::userAction()
 }
 
 // DesktopToastActivatedEventHandler
-IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification *  sender, _In_ IInspectable * args)
+IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/, _In_ IInspectable *args)
 {
     IToastActivatedEventArgs *buttonReply = nullptr;
     args->QueryInterface(&buttonReply);
     if (buttonReply == nullptr)
     {
         std::wcerr << L"args is not a IToastActivatedEventArgs" << std::endl;
-        std::wcerr << L"The user clicked on the toast." << std::endl;
     }
     else
     {
         HSTRING args;
         buttonReply->get_Arguments(&args);
-        PCWSTR str = WindowsGetStringRawBuffer(args, NULL);
+        PCWSTR _str = WindowsGetStringRawBuffer(args, nullptr);
+        const std::wstring str = _str;
 
-        std::wcerr << L"The user clicked on a toast button." << std::endl;
-        if (wcscmp(str, L"action=reply&amp;processId=") < 0)
+        const auto data = Utils::splitData(CToastNotificationActivationCallback::data());
+        const auto action = data.at(L"action");
+
+        if (action == Actions::Reply)
         {
-            std::wcout << str << std::endl;
+            tLog << L"The user entered a text.";
+            std::wcout << data.at(L"text") << std::endl;
             m_userAction = SnoreToasts::TextEntered;
+        }
+        else if (action == Actions::Clicked)
+        {
+            tLog << L"The user clicked on the toast.";
+            m_userAction = SnoreToasts::Success;
         }
         else
         {
-            std::wcerr << str << std::endl;
+            tLog << L"The user clicked on a toast button.";
+            std::wcout << str << std::endl;
             m_userAction = SnoreToasts::ButtonPressed;
         }
     }
@@ -94,20 +100,16 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
     if (SUCCEEDED(hr)) {
         switch (tdr) {
         case ToastDismissalReason_ApplicationHidden:
-            std::wcerr << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
+            tLog << L"The application hid the toast using ToastNotifier.hide()";
             m_userAction = SnoreToasts::Hidden;
             break;
         case ToastDismissalReason_UserCanceled:
-            std::wcerr << L"The user dismissed this toast" << std::endl;
+            tLog << L"The user dismissed this toast";
             m_userAction = SnoreToasts::Dismissed;
             break;
         case ToastDismissalReason_TimedOut:
-            std::wcerr << L"The toast has timed out" << std::endl;
+            tLog << L"The toast has timed out";
             m_userAction = SnoreToasts::TimedOut;
-            break;
-        default:
-            std::wcerr << L"Toast not activated" << std::endl;
-            m_userAction = SnoreToasts::Failed;
             break;
         }
     }
@@ -126,6 +128,13 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
     return S_OK;
 }
 
+CToastNotificationActivationCallback::CToastNotificationActivationCallback()
+{
+}
+
+HANDLE CToastNotificationActivationCallback::m_event = INVALID_HANDLE_VALUE;
+std::wstring CToastNotificationActivationCallback::m_data = {};
+
 HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, LPCWSTR invokedArgs,
                                                        const NOTIFICATION_USER_INPUT_DATA* data, ULONG count)
 {
@@ -133,19 +142,59 @@ HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, L
     {
         return S_OK;
     }
-    std::wstringstream sMsg;
-    std::wcerr << "CToastNotificationActivationCallback::Activate: " << appUserModelId << " : " << invokedArgs << " : " << data << std::endl;
-    std::wcerr << "CurrentProcess: " << GetCurrentProcessId() << std::endl;
-    if (count)
+    tLog << "CToastNotificationActivationCallback::Activate: " << appUserModelId << " : " << invokedArgs << " : " << data;
+    const auto dataMap = Utils::splitData(invokedArgs);
+    if (dataMap.at(L"action") == Actions::Reply)
     {
-      for (ULONG i=0; i<count; ++i)
-      {
-        std::wstring tmp = data[i].Value;
-        // printing \r to stdcout is kind of problematic :D
-        std::replace(tmp.begin(), tmp.end(), '\r', '\n');
-        sMsg << tmp;
-      }
-      std::wcout << sMsg.str() << std::endl;
+        assert(count);
+        std::wstringstream sMsg;
+        sMsg << invokedArgs << L"text=";
+        for (ULONG i=0; i<count; ++i)
+        {
+            std::wstring tmp = data[i].Value;
+            // printing \r to stdcout is kind of problematic :D
+            std::replace(tmp.begin(), tmp.end(), L'\r', L'\n');
+            sMsg << tmp;
+        }
+        m_data = sMsg.str();
+    }
+    else
+    {
+        m_data = invokedArgs;
+    }
+
+    const auto pipe = dataMap.find(L"pipe");
+    if (pipe != dataMap.cend())
+    {
+        Utils::writePipe(pipe->second, m_data);
+    }
+
+    tLog << m_data;
+    if (m_event != INVALID_HANDLE_VALUE)
+    {
+        SetEvent(m_event);
     }
     return S_OK;
+}
+
+std::wstring CToastNotificationActivationCallback::waitForActivation()
+{
+    if (m_event == INVALID_HANDLE_VALUE)
+    {
+        std::wstringstream eventName;
+        eventName << L"ToastActivationEvent" << GetCurrentProcessId();
+        m_event = CreateEventW(nullptr, true, false, eventName.str().c_str());
+    }
+    else
+    {
+        ResetEvent(m_event);
+    }
+    WaitForSingleObject(m_event, INFINITE);
+    return m_data;
+}
+
+
+std::wstring CToastNotificationActivationCallback::data()
+{
+    return m_data;
 }
