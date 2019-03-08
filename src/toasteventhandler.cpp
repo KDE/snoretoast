@@ -84,7 +84,7 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/, _
         else
         {
             tLog << L"The user clicked on a toast button.";
-            std::wcout << str << std::endl;
+            std::wcout << data.at(L"button") << std::endl;
             m_userAction = SnoreToasts::ButtonPressed;
         }
     }
