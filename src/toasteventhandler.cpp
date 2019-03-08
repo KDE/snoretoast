@@ -65,18 +65,32 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/, _
     {
         HSTRING args;
         buttonReply->get_Arguments(&args);
-        PCWSTR _str = WindowsGetStringRawBuffer(args, nullptr);
-        const std::wstring str = _str;
+        PCWSTR str = WindowsGetStringRawBuffer(args, nullptr);
 
-        const auto data = Utils::splitData(CToastNotificationActivationCallback::data());
-        const auto action = data.at(L"action");
-        assert(data.at(L"notificationId") == m_id);
+        auto data = CToastNotificationActivationCallback::data();
+        if (!data.empty())
+        {
+            data = str;
+        }
+        tLog << data;
+        const auto dataMap = Utils::splitData(data);
+        const auto action = dataMap.at(L"action");
+        assert(dataMap.at(L"notificationId") == m_id);
 
         if (action == Actions::Reply)
         {
             tLog << L"The user entered a text.";
-            std::wcout << data.at(L"text") << std::endl;
-            m_userAction = SnoreToasts::TextEntered;
+			const auto text = dataMap.find(L"text");
+			if (text == dataMap.cend())
+			{
+				std::wcerr << L"-tb is unreliable with -w and should by used with -pipeName instead." << std::endl;
+				m_userAction = SnoreToasts::Failed;
+			}
+			else
+			{
+				std::wcout << text.second() << std::endl;
+				m_userAction = SnoreToasts::TextEntered;
+			}
         }
         else if (action == Actions::Clicked)
         {
@@ -86,7 +100,7 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/, _
         else
         {
             tLog << L"The user clicked on a toast button.";
-            std::wcout << data.at(L"button") << std::endl;
+            std::wcout << dataMap.at(L"button") << std::endl;
             m_userAction = SnoreToasts::ButtonPressed;
         }
     }
