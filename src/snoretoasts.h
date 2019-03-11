@@ -101,6 +101,9 @@ public:
 	std::filesystem::path pipeName() const;
     void setPipeName(const std::filesystem::path &pipeName);
 
+	std::filesystem::path application() const;
+	void setApplication(const std::filesystem::path &application);
+
 	std::wstring formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring, std::wstring> > &extraData = {}) const;
 
     private:
@@ -120,6 +123,7 @@ public:
 
     std::wstring m_appID;
 	std::filesystem::path m_pipeName;
+	std::filesystem::path m_application;
 
     std::wstring m_title;
     std::wstring m_body;

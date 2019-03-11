@@ -172,7 +172,18 @@ HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, L
     const auto pipe = dataMap.find(L"pipe");
     if (pipe != dataMap.cend())
     {
-        Utils::writePipe(pipe->second, dataString);
+		if (!Utils::writePipe(pipe->second, dataString))
+		{
+			const auto app = dataMap.find(L"application");
+			if (app != dataMap.cend())
+			{
+				if (Utils::startProcess(app->second))
+				{
+					Utils::writePipe(pipe->second, dataString);
+				}
+			}
+		}
+
     }
 
     tLog << dataString;

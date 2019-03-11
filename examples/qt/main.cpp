@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
                           "-pipename", server->fullServerName(),
                           "-w",
                           "-id", QString::number(id++),
-                          "-appId", appId
+                          "-appId", appId,
+                          "-application", a.applicationFilePath()
                         });
     proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc]{
       std::wcout << qPrintable(proc->errorString()) << std::endl;

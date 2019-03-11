@@ -100,6 +100,28 @@ bool writePipe(const std::filesystem::path &pipe, const std::wstring &data)
     return false;
 }
 
+bool startProcess(const std::filesystem::path & app)
+{
+	STARTUPINFO info = {};
+	info.cb = sizeof(info);
+	PROCESS_INFORMATION pInfo = {};
+	const auto application = app.wstring();
+	if (!CreateProcess(const_cast<wchar_t*>(application.c_str()), const_cast<wchar_t*>(application.c_str()), nullptr, nullptr, false, DETACHED_PROCESS | INHERIT_PARENT_AFFINITY | CREATE_NO_WINDOW, nullptr, nullptr, &info, &pInfo))
+	{
+		tLog << L"Failed to start: " << app;
+		return false;
+	}
+	WaitForInputIdle(pInfo.hProcess, INFINITE);
+	// wait a second until the application is initialised
+	Sleep(1000);
+	DWORD status;
+	GetExitCodeProcess(pInfo.hProcess, &status);
+	CloseHandle(pInfo.hProcess);
+	CloseHandle(pInfo.hThread);
+	tLog << L"Started: " << app << L" Status: " << (status == STILL_ACTIVE ? L"STILL_ACTIVE" : std::to_wstring(status));
+	return status == STILL_ACTIVE;
+}
+
 std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring> > &data)
 {
     std::wstringstream out;

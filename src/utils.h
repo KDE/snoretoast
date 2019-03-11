@@ -34,6 +34,7 @@ namespace Utils
     std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring>> &data);
 
 	bool writePipe(const std::filesystem::path &pipe, const std::wstring &data);
+	bool startProcess(const std::filesystem::path &app);
 };
 
 

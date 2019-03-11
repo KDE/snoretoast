@@ -57,6 +57,7 @@ void help(const std::wstring &error)
 		<< L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
 		<< L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
 		<< L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for callbacks." << std::endl
+		<< L"[-application] <C:\\foo.exe>\t| Provide a application that might be started if the pipe does not exist." << std::endl
 		<< L"-close <id>\t\t| Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification." << std::endl
 		<< std::endl
 		<< L"-install <name> <application> <appID>| Creates a shortcut <name> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
@@ -97,6 +98,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t*> args)
 
     std::wstring appID;
 	std::filesystem::path pipe;
+	std::filesystem::path application;
     std::wstring title;
     std::wstring body;
     std::filesystem::path image;
@@ -153,6 +155,9 @@ SnoreToastActions::Actions parse(std::vector<wchar_t*> args)
         } else if (arg == L"-pipename") {
             pipe = nextArg(it, L"Missing argument to -pipeName.\n"
                                       L"Supply argument as -pipeName \"\\.\\pipe\\foo\\\"");
+		} else if (arg == L"-application") {
+			application = nextArg(it, L"Missing argument to -pipeName.\n"
+				L"Supply argument as -applicatzion \"C:\\foo.exe\"");
         } else if (arg == L"-b") {
             buttons = nextArg(it, L"Missing argument to -b.\n"
                             L"Supply argument for buttons as -b \"button1;button2\"");
@@ -216,6 +221,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t*> args)
 				}
                 SnoreToasts app(appID);
                 app.setPipeName(pipe);
+				app.setApplication(application);
                 app.setSilent(silent);
                 app.setSound(sound);
                 app.setId(id);

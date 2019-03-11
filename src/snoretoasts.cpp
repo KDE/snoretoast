@@ -1,4 +1,6 @@
 #include "snoretoasts.h"
+#include "snoretoasts.h"
+#include "snoretoasts.h"
 /*
     SnoreToast is capable to invoke Windows 8 toast notifications.
     Copyright (C) 2013-2019  Hannah von Reth <vonreth@kde.org>
@@ -478,13 +480,24 @@ void SnoreToasts::setPipeName(const std::filesystem::path &pipeName)
     m_pipeName = pipeName;
 }
 
+std::filesystem::path SnoreToasts::application() const
+{
+	return m_application;
+}
+
+void SnoreToasts::setApplication(const std::filesystem::path & application)
+{
+	m_application = application;
+}
+
 std::wstring SnoreToasts::formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring, std::wstring> > &extraData) const
 {
     const auto &actionString = SnoreToastActions::getActionString(action);
     std::vector<std::pair<std::wstring, std::wstring>> data = {
         {L"action", std::wstring(actionString.data(), actionString.size())},
         {L"notificationId", m_id},
-        {L"pipe", m_pipeName}
+        {L"pipe", m_pipeName},
+		{L"application", m_application}
     };
     data.insert(data.end(), extraData.cbegin(), extraData.cend());
     return Utils::formatData(data);
