@@ -18,15 +18,13 @@
 
 #pragma once
 
-#include <windows.h>
-
 #include <filesystem>
 #include <sstream>
 #include <unordered_map>
 
 namespace Utils
 {
-    HRESULT registerActivator();
+    bool registerActivator();
     void unregisterActivator();
 
     std::unordered_map<std::wstring, std::wstring> splitData(const std::wstring &data);
@@ -35,7 +33,7 @@ namespace Utils
 
     std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring>> &data);
 
-	bool writePipe(const std::wstring &pipe, const std::wstring &data);
+	bool writePipe(const std::filesystem::path &pipe, const std::wstring &data);
 };
 
 

@@ -32,16 +32,16 @@ namespace {
 }
 namespace Utils {
 
-HRESULT registerActivator()
+bool registerActivator()
 {
     if (!s_registered)
     {
         s_registered = true;
         Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create([] {});
         Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().IncrementObjectCount();
-        return Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().RegisterObjects();
+        return SUCCEEDED(Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().RegisterObjects());
     }
-    return S_OK;
+    return true;
 }
 
 void unregisterActivator()
@@ -79,13 +79,12 @@ const std::filesystem::path &selfLocate()
 		buf.resize(size);
 		return buf;
 	}();
-
     return path;
 }
 
-bool writePipe(const std::wstring &pipe, const std::wstring &data)
+bool writePipe(const std::filesystem::path &pipe, const std::wstring &data)
 {
-    HANDLE hPipe = CreateFile(pipe.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+    HANDLE hPipe = CreateFile(pipe.wstring().c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
     if (hPipe != INVALID_HANDLE_VALUE)
     {
         DWORD written;
