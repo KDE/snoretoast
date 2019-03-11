@@ -42,6 +42,18 @@ int main(int argc, char *argv[])
   server->listen("foo");
   std::wcout << qPrintable(server->fullServerName()) << std::endl;
 
+  const QString appId = "SnoreToast.Qt.Example";
+  QProcess proc(&a);
+  proc.start("SnoreToast.exe", {
+                        "-install",
+                        "SnoteTestQt",
+                        a.applicationFilePath(),
+                        appId
+                      });
+  proc.waitForFinished();
+  std::wcout << proc.exitCode() << std::endl;
+  std::wcout << qPrintable(proc.readAll()) << std::endl;
+
   QTimer *timer = new QTimer(&a);
   a.connect(timer, &QTimer::timeout, timer, [&]{
     static int id = 0;
@@ -50,16 +62,17 @@ int main(int argc, char *argv[])
       timer->stop();
     }
     auto proc = new QProcess(&a);
-    proc->startDetached("SnoreToast.exe", {
+    proc->start("SnoreToast.exe", {
                           "-t", "test",
                           "-m", "message",
                           "-pipename", server->fullServerName(),
                           "-w",
-                          "-id", QString::number(id++)
+                          "-id", QString::number(id++),
+                          "-appId", appId
                         });
     proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc]{
       std::wcout << qPrintable(proc->errorString()) << std::endl;
-      std::wcout << qPrintable(proc->readAll()  ) << std::endl;
+      std::wcout << qPrintable(proc->readAll()) << std::endl;
       std::wcout << proc->exitCode() << std::endl;
     });
   });
