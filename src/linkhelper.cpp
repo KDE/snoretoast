@@ -25,7 +25,7 @@
 #include <iostream>
 #include <sstream>
 #include <regex>
-#include <corecrt_wstring.h>
+#include <filesystem>
 
 // compat with older sdk
 #ifndef INIT_PKEY_AppUserModel_ToastActivatorCLSID
@@ -35,46 +35,42 @@ EXTERN_C const PROPERTYKEY DECLSPEC_SELECTANY PKEY_AppUserModel_ToastActivatorCL
 
 HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
 {
-    HRESULT hr = S_OK;
     std::wstringstream lnkName;
-
-    if (PathIsRelative(shortcutPath.c_str()) == TRUE) {
-        lnkName << startmenuPath();
+    if (!std::filesystem::path(shortcutPath).is_relative())
+    {
+        std::wcerr << L"The shortcut path must be relative" << std::endl;
+        return S_FALSE;
     }
-    lnkName << shortcutPath;
+    lnkName << startmenuPath() << L"SnoreToast/v" << SnoreToasts::version() << L"/" << shortcutPath;
 
     if (shortcutPath.rfind(L".lnk") == std::wstring::npos) {
         lnkName << L".lnk";
     }
-    hr = mkdirs(lnkName.str());
-    if (SUCCEEDED(hr)) {
 
-        DWORD attributes = GetFileAttributes(lnkName.str().c_str());
-        bool fileExists = attributes < 0xFFFFFFF;
-
-        if (!fileExists) {
-            hr = installShortcut(lnkName.str(), exePath, appID);
-        } else {
-            hr = S_FALSE;
-        }
-
+    const std::filesystem::path path(lnkName.str());
+    if (std::filesystem::exists(path))
+    {
+        tLog << L"Path: " << path << L" already exists, skip creation of shortcut";
+        return S_OK;
     }
-    Utils::registerActivator();
-    return hr;
+    if (!std::filesystem::exists(path.parent_path()) && !std::filesystem::create_directories(path.parent_path()))
+    {
+        tLog << L"Failed to create dir: " << path.parent_path();
+        return S_FALSE;
+    }
+    return installShortcut(path, exePath, appID);
 }
 
 HRESULT LinkHelper::tryCreateShortcut(const std::wstring &appID)
 {
-    std::wstringstream name;
-    name << L"SnoreToast v" << SnoreToasts::version() << L".lnk";
-    return tryCreateShortcut(name.str(), Utils::selfLocate().c_str(), appID);
+    return tryCreateShortcut(L"SnoreToast.lnk", Utils::selfLocate().c_str(), appID);
 }
 
 // Install the shortcut
 HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
 {
-    PCWSTR pszExePath = exePath.c_str();
     std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << std::endl;
+    tLog << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID;
     /**
      * Add CToastNotificationActivationCallback to registry
      * Required to use the CToastNotificationActivationCallback for buttons and textbox interactions.
@@ -125,17 +121,6 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
     }
     if (FAILED(hr)) {
         std::wcerr << "Failed to install shortcut " << shortcutPath << "  error: " << _com_error(hr).ErrorMessage() << std::endl;
-    }
-    return hr;
-}
-
-HRESULT LinkHelper::mkdirs(const std::wstring &dirs)
-{
-    HRESULT hr = S_OK;
-    static std::wregex seperator(L"\\\\|/");
-
-    for (std::wsregex_iterator i = std::wsregex_iterator(dirs.begin(), dirs.end(), seperator); SUCCEEDED(hr) && i != std::wsregex_iterator(); ++i) {
-        hr = _wmkdir(dirs.substr(0, i->position()).c_str()) != ENOENT ? S_OK : E_FAIL;
     }
     return hr;
 }

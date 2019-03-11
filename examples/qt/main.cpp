@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   QProcess proc(&a);
   proc.start("SnoreToast.exe", {
                         "-install",
-                        "SnoteTestQt",
+                        "SnoreToast/SnoreToastTestQt",
                         a.applicationFilePath(),
                         appId
                       });
