@@ -120,13 +120,12 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
             if (SUCCEEDED(hr)) {
                 hr = setTextValues();
                 if (SUCCEEDED(hr)) {
-                    //printXML();
+                    printXML();
                     hr = createToast();
                 }
             }
         }
     }
-    //printXML();
     m_action = SUCCEEDED(hr) ? SnoreToastActions::Actions::Clicked : SnoreToastActions::Actions::Error;
 }
 
@@ -464,11 +463,9 @@ void SnoreToasts::printXML()
     HSTRING string;
     s->GetXml(&string);
     PCWSTR str = WindowsGetStringRawBuffer(string, nullptr);
-    tLog << L"------------------------\n"
-         << m_appID << L"\n"
-         << L"------------------------\n"
-         << str << L"\n"
-         << L"------------------------\n";
+    tLog << L"------------------------\n\t\t\t"
+         << str << L"\n\t\t"
+         << L"------------------------";
 }
 
 std::filesystem::path SnoreToasts::pipeName() const
