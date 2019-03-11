@@ -41,44 +41,43 @@ void help(const std::wstring &error)
         std::wcerr << L"Welcome to SnoreToast " << SnoreToasts::version() << "." << std::endl
                    << L"A command line application which is capable of creating Windows Toast notifications." << std::endl;
     }
-    std::wcerr << std::endl
-               << L"---- Usage ----" << std::endl
-               << L"SnoreToast [Options]" << std::endl
-               << std::endl
-               << L"---- Options ----" << std::endl
-               << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
-               << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
-               << L"[-b] <button1;button2 string>| Displayed on the bottom line, can list multiple buttons separated by ;" << std::endl
-               << L"[-tb]\t\t\t| Displayed a textbox on the bottom line, only if buttons are not presented." << std::endl
-               << L"[-p] <image URI>\t| Display toast with an image, local files only." << std::endl
-               << L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
-               << L"[-id] <id>\t\t| sets the id for a notification to be able to close it later." << std::endl
-               << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
-               << L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
-               << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
-               << L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for callbacks." << std::endl
-               << L"-close <id>\t\t| Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification." << std::endl
-               << std::endl
-               << L"-install <path> <application> <appID>| Creates a shortcut <path> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
-               << std::endl
-               << L"-v \t\t\t| Print the version and copying information." << std::endl
-               << L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
-               << L"Exit Status\t:  Exit Code" << std::endl
-               << L"Failed\t\t: -1"
-               << std::endl << std::endl
-               << "Success\t\t:  0" << std::endl
-               << "Hidden\t\t:  1" << std::endl
-               << "Dismissed\t:  2" << std::endl
-               << "TimedOut\t:  3" << std::endl
-               << "ButtonPressed\t:  4" << std::endl
-               << "TextEntered\t:  5" << std::endl
-               << std::endl
-               << L"---- Image Notes ----" << std::endl
-               << L"Images must be .png with:" << std::endl
-               << L"\tmaximum dimensions of 1024x1024" << std::endl
-               << L"\tsize <= 200kb" << std::endl
-               << L"These limitations are due to the Toast notification system." << std::endl
-               << L"This should go without saying, but windows style paths are required." << std::endl;
+	std::wcerr << std::endl
+		<< L"---- Usage ----" << std::endl
+		<< L"SnoreToast [Options]" << std::endl
+		<< std::endl
+		<< L"---- Options ----" << std::endl
+		<< L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
+		<< L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
+		<< L"[-b] <button1;button2 string>| Displayed on the bottom line, can list multiple buttons separated by ;" << std::endl
+		<< L"[-tb]\t\t\t| Displayed a textbox on the bottom line, only if buttons are not presented." << std::endl
+		<< L"[-p] <image URI>\t| Display toast with an image, local files only." << std::endl
+		<< L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
+		<< L"[-id] <id>\t\t| sets the id for a notification to be able to close it later." << std::endl
+		<< L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx." << std::endl
+		<< L"[-silent] \t\t| Don't play a sound file when showing the notifications." << std::endl
+		<< L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id." << std::endl
+		<< L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for callbacks." << std::endl
+		<< L"-close <id>\t\t| Closes a currently displayed notification, in order to be able to close a notification the parameter -w must be used to create the notification." << std::endl
+		<< std::endl
+		<< L"-install <name> <application> <appID>| Creates a shortcut <name> in the start menu which point to the executable <application>, appID used for the notifications." << std::endl
+		<< std::endl
+		<< L"-v \t\t\t| Print the version and copying information." << std::endl
+		<< L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
+		<< L"Exit Status\t:  Exit Code" << std::endl
+		<< L"Failed\t\t: " << static_cast<int>(SnoreToastActions::Actions::Error)
+		<< std::endl << std::endl
+		<< "Success\t\t:  " << static_cast<int>(SnoreToastActions::Actions::Clicked) << std::endl
+		<< "Hidden\t\t:  " << static_cast<int>(SnoreToastActions::Actions::Hidden) << std::endl
+		<< "Dismissed\t:  " << static_cast<int>(SnoreToastActions::Actions::Dismissed) << std::endl
+		<< "TimedOut\t:  " << static_cast<int>(SnoreToastActions::Actions::Timedout) << std::endl
+		<< "ButtonPressed\t:  " << static_cast<int>(SnoreToastActions::Actions::ButtonClicked) << std::endl
+		<< "TextEntered\t:  " << static_cast<int>(SnoreToastActions::Actions::TextEntered) << std::endl
+		<< std::endl
+		<< L"---- Image Notes ----" << std::endl
+		<< L"Images must be .png with:" << std::endl
+		<< L"\tmaximum dimensions of 1024x1024" << std::endl
+		<< L"\tsize <= 200kb" << std::endl
+		<< L"These limitations are due to the Toast notification system." << std::endl;
 }
 
 void version()
@@ -97,10 +96,10 @@ SnoreToastActions::Actions parse(std::vector<wchar_t*> args)
     HRESULT hr = S_OK;
 
     std::wstring appID;
-    std::wstring pipe;
+	std::filesystem::path pipe;
     std::wstring title;
     std::wstring body;
-    std::wstring image;
+    std::filesystem::path image;
     std::wstring id;
     std::wstring sound(L"Notification.Default");
     std::wstring buttons;
@@ -125,7 +124,6 @@ SnoreToastActions::Actions parse(std::vector<wchar_t*> args)
         std::wstring arg(nextArg(it, L""));
         std::transform(arg.begin(), arg.end(), arg.begin(), [](int i) -> int { return ::tolower(i); });
         if (arg == L"-m") {
-
             body = nextArg(it, L"Missing argument to -m.\n"
                            L"Supply argument as -m \"message string\"");
         } else if (arg == L"-t") {
@@ -161,10 +159,10 @@ SnoreToastActions::Actions parse(std::vector<wchar_t*> args)
         } else if (arg == L"-tb") {
             isTextBoxEnabled = true;
         } else if (arg == L"-install") {
-            std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
+            const std::wstring shortcut(nextArg(it, L"Missing argument to -install.\n"
                                           L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
 
-            std::wstring exe(nextArg(it, L"Missing argument to -install.\n"
+            const std::wstring exe(nextArg(it, L"Missing argument to -install.\n"
                                      L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\""));
 
             appID = nextArg(it, L"Missing argument to -install.\n"

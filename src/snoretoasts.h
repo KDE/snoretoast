@@ -36,6 +36,7 @@
 #include <wrl/implements.h>
 #include <windows.ui.notifications.h>
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -85,7 +86,7 @@ public:
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
 
-    void displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
+    void displayToast(const std::wstring &title, const std::wstring &body, const std::filesystem::path &image, bool wait);
 	SnoreToastActions::Actions userAction();
     bool closeNotification();
 
@@ -97,8 +98,8 @@ public:
     void setButtons(const std::wstring &buttons);
     void setTextBoxEnabled(bool textBoxEnabled);
 
-    std::wstring pipeName() const;
-    void setPipeName(const std::wstring &pipeName);
+	std::filesystem::path pipeName() const;
+    void setPipeName(const std::filesystem::path &pipeName);
 
 	std::wstring formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring, std::wstring> > &extraData = {}) const;
 
@@ -118,11 +119,11 @@ public:
     void printXML();
 
     std::wstring m_appID;
-    std::wstring m_pipeName;
+	std::filesystem::path m_pipeName;
 
     std::wstring m_title;
     std::wstring m_body;
-    std::wstring m_image;
+	std::filesystem::path m_image;
     std::wstring m_sound = L"Notification.Default";
     std::wstring m_id;
     std::wstring m_buttons;

@@ -22,12 +22,11 @@
 class LinkHelper
 {
 public:
-    static HRESULT tryCreateShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID);
+    static HRESULT tryCreateShortcut(const std::filesystem::path &shortcutPath, const std::filesystem::path &exePath, const std::wstring &appID);
     static HRESULT tryCreateShortcut(const std::wstring &appID);
 
 private:
-    static HRESULT installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID);
+    static HRESULT installShortcut(const std::filesystem::path &shortcutPath, const std::filesystem::path &exePath, const std::wstring &appID);
 
-    static std::wstring startmenuPath();
-
+	static std::filesystem::path startmenuPath();
 };

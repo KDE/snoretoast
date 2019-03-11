@@ -41,7 +41,7 @@ SnoreToasts::~SnoreToasts()
     Utils::unregisterActivator();
 }
 
-void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait)
+void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &body, const std::filesystem::path &image, bool wait)
 {
     HRESULT hr = S_OK;
     m_title = title;
@@ -51,7 +51,7 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
 
     hr = GetActivationFactory(StringReferenceWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &m_toastManager);
     if (SUCCEEDED(hr)) {
-        if (m_image.length() > 0) {
+        if (!m_image.empty()) {
             hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText02, &m_toastXml);
         } else {
             hr = m_toastManager->GetTemplateContent(ToastTemplateType_ToastText02, &m_toastXml);
@@ -112,7 +112,7 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
     //    printXML();
 
     if (SUCCEEDED(hr)) {
-        if (m_image.length() > 0) {
+        if (!m_image.empty()) {
             hr = setImage();
         }
         if (SUCCEEDED(hr)) {
@@ -471,12 +471,12 @@ void SnoreToasts::printXML()
          << L"------------------------\n";
 }
 
-std::wstring SnoreToasts::pipeName() const
+std::filesystem::path SnoreToasts::pipeName() const
 {
     return m_pipeName;
 }
 
-void SnoreToasts::setPipeName(const std::wstring &pipeName)
+void SnoreToasts::setPipeName(const std::filesystem::path &pipeName)
 {
     m_pipeName = pipeName;
 }

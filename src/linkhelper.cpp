@@ -24,8 +24,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <regex>
-#include <filesystem>
 
 // compat with older sdk
 #ifndef INIT_PKEY_AppUserModel_ToastActivatorCLSID
@@ -33,21 +31,20 @@ EXTERN_C const PROPERTYKEY DECLSPEC_SELECTANY PKEY_AppUserModel_ToastActivatorCL
 #define INIT_PKEY_AppUserModel_ToastActivatorCLSID { { 0x9F4C2855, 0x9F79, 0x4B39, 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3 }, 26 }
 #endif //#ifndef INIT_PKEY_AppUserModel_ToastActivatorCLSID
 
-HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
+HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath, const std::filesystem::path &exePath, const std::wstring &appID)
 {
-    std::wstringstream lnkName;
     if (!std::filesystem::path(shortcutPath).is_relative())
     {
         std::wcerr << L"The shortcut path must be relative" << std::endl;
         return S_FALSE;
     }
-    lnkName << startmenuPath() << L"SnoreToast/v" << SnoreToasts::version() << L"/" << shortcutPath;
+	std::filesystem::path path = startmenuPath();
+	path += L"SnoreToast/v" + SnoreToasts::version() + L"/" + shortcutPath.wstring();
 
-    if (shortcutPath.rfind(L".lnk") == std::wstring::npos) {
-        lnkName << L".lnk";
+    if (shortcutPath.extension() != L".lnk") {
+        path += L".lnk";
     }
 
-    const std::filesystem::path path(lnkName.str());
     if (std::filesystem::exists(path))
     {
         tLog << L"Path: " << path << L" already exists, skip creation of shortcut";
@@ -63,11 +60,11 @@ HRESULT LinkHelper::tryCreateShortcut(const std::wstring &shortcutPath, const st
 
 HRESULT LinkHelper::tryCreateShortcut(const std::wstring &appID)
 {
-    return tryCreateShortcut(L"SnoreToast.lnk", Utils::selfLocate().c_str(), appID);
+    return tryCreateShortcut(L"SnoreToast", Utils::selfLocate().c_str(), appID);
 }
 
 // Install the shortcut
-HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std::wstring &exePath, const std::wstring &appID)
+HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath, const std::filesystem::path &exePath, const std::wstring &appID)
 {
     std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << std::endl;
     tLog << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID;
@@ -125,7 +122,7 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
     return hr;
 }
 
-std::wstring LinkHelper::startmenuPath()
+std::filesystem::path LinkHelper::startmenuPath()
 {
     wchar_t buffer[MAX_PATH];
     std::wstringstream path;
