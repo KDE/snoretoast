@@ -38,13 +38,9 @@ HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
         std::wcerr << L"The shortcut path must be relative" << std::endl;
         return S_FALSE;
     }
-	std::filesystem::path path = startmenuPath() / L"SnoreToast" / SnoreToasts::version() / shortcutPath;
+	const std::filesystem::path path = (startmenuPath() / L"SnoreToast" / SnoreToasts::version() / shortcutPath).replace_extension(L".lnk");
 
-    if (shortcutPath.extension() != L".lnk") {
-        path += L".lnk";
-    }
-
-    if (std::filesystem::exists(path))
+	if (std::filesystem::exists(path))
     {
         tLog << L"Path: " << path << L" already exists, skip creation of shortcut";
         return S_OK;
@@ -72,7 +68,8 @@ HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath, c
      * Required to use the CToastNotificationActivationCallback for buttons and textbox interactions.
      * windows.ui.notifications does not support user interaction from cpp
      */;
-    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\" TOAST_UUID  L"\\LocalServer32", nullptr, REG_SZ, Utils::selfLocate().c_str(), static_cast<DWORD>(Utils::selfLocate().size() * sizeof(wchar_t))));
+	const std::wstring locPath = Utils::selfLocate().wstring();
+    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\" TOAST_UUID  L"\\LocalServer32", nullptr, REG_SZ, locPath.c_str(), static_cast<DWORD>(locPath.size() * sizeof(wchar_t))));
 
     if (SUCCEEDED(hr)) {
         ComPtr<IShellLink> shellLink;

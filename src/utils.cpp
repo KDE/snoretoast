@@ -67,18 +67,19 @@ std::unordered_map<std::wstring, std::wstring> splitData(const std::wstring &dat
     return out;
 }
 
-const std::wstring &selfLocate()
+const std::filesystem::path &selfLocate()
 {
-    static std::wstring path;
-    if (path.empty())
-    {
+    static const std::filesystem::path path = [] {
+		std::wstring buf;
         size_t size;
         do {
-            path.resize(path.size() + 1024);
-            size = GetModuleFileNameW(nullptr, const_cast<wchar_t*>(path.data()), static_cast<DWORD>(path.size()));
+			buf.resize(buf.size() + 1024);
+            size = GetModuleFileNameW(nullptr, const_cast<wchar_t*>(buf.data()), static_cast<DWORD>(buf.size()));
         } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
-        path.resize(size);
-    }
+		buf.resize(size);
+		return buf;
+	}();
+
     return path;
 }
 

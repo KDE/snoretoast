@@ -20,6 +20,7 @@
 
 #include <windows.h>
 
+#include <filesystem>
 #include <sstream>
 #include <unordered_map>
 
@@ -30,7 +31,7 @@ namespace Utils
 
     std::unordered_map<std::wstring, std::wstring> splitData(const std::wstring &data);
 
-    const std::wstring &selfLocate();
+    const std::filesystem::path &selfLocate();
 
     std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring>> &data);
 
