@@ -67,7 +67,7 @@ std::unordered_map<std::wstring, std::wstring> splitData(const std::wstring &dat
     return out;
 }
 
-std::wstring selfLocate()
+const std::wstring &selfLocate()
 {
     static std::wstring path;
     if (path.empty())
@@ -96,6 +96,7 @@ bool writePipe(const std::wstring &pipe, const std::wstring &data)
         CloseHandle(hPipe);
         return success;
     }
+	tLog << L"Failed to open pipe: " << pipe << L" data: " << data;
     return false;
 }
 
@@ -116,10 +117,11 @@ std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring> 
 
 ToastLog::ToastLog()
 {
-    *this << Utils::selfLocate() <<  L" v" << SnoreToasts::version() << L": ";
+    *this << Utils::selfLocate() <<  L" v" << SnoreToasts::version() << L"\n\t";
 }
 
 ToastLog::~ToastLog()
 {
+	m_log << L"\n";
     OutputDebugStringW(m_log.str().c_str());
 }

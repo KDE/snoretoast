@@ -30,11 +30,11 @@ namespace Utils
 
     std::unordered_map<std::wstring, std::wstring> splitData(const std::wstring &data);
 
-    std::wstring selfLocate();
+    const std::wstring &selfLocate();
 
     std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring>> &data);
 
-    bool writePipe(const std::wstring &pipe, const std::wstring &data);
+	bool writePipe(const std::wstring &pipe, const std::wstring &data);
 };
 
 
@@ -52,7 +52,7 @@ private:
     friend ToastLog & operator<<(ToastLog &, const T&);
 };
 
-#define tLog ToastLog().log() << __FUNCSIG__ << ": "
+#define tLog ToastLog().log() << __FUNCSIG__ << L"\n\t\t"
 
 template <typename T>
 ToastLog &operator<< (ToastLog &log, const T &t) {

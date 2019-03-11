@@ -37,43 +37,70 @@
 #include <windows.ui.notifications.h>
 
 #include <string>
+#include <vector>
 
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 
 class ToastEventHandler;
 
+
+class SnoreToastActions {
+public:
+	enum class Actions {
+		Clicked,
+		Hidden,
+		Dismissed,
+		Timedout,
+		ButtonClicked,
+		TextEntered,
+
+		Error = -1
+	};
+
+    static constexpr std::wstring_view getActionString(const Actions &a)
+	{
+        return ActionStrings[static_cast<int>(a)];
+	}
+
+    static SnoreToastActions::Actions getAction(const std::wstring &s);
+
+private:
+    static constexpr std::wstring_view ActionStrings[] =
+	{
+		L"clicked",
+        L"hidden",
+		L"dismissed",
+		L"timedout",
+		L"buttonClicked",
+		L"textEntered",
+	};
+};
+
 class SnoreToasts
 {
 public:
-
-    enum USER_ACTION {
-        Failed = -1,
-        Success,
-        Hidden,
-        Dismissed,
-        TimedOut,
-        ButtonPressed,
-        TextEntered
-    };
-
     static std::wstring version();
 
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
 
     void displayToast(const std::wstring &title, const std::wstring &body, const std::wstring &image, bool wait);
-    USER_ACTION userAction();
+	SnoreToastActions::Actions userAction();
     bool closeNotification();
 
     void setSound(const std::wstring &soundFile);
     void setSilent(bool silent);
     void setId(const std::wstring &id);
+	std::wstring id() const;
+
     void setButtons(const std::wstring &buttons);
     void setTextBoxEnabled(bool textBoxEnabled);
 
     std::wstring pipeName() const;
     void setPipeName(const std::wstring &pipeName);
+
+	std::wstring formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring, std::wstring> > &extraData = {}) const;
 
     private:
     HRESULT createToast();
@@ -103,7 +130,7 @@ public:
     bool m_wait;
     bool m_textbox;
 
-    SnoreToasts::USER_ACTION m_action = SnoreToasts::Success;
+	SnoreToastActions::Actions m_action = SnoreToastActions::Actions::Clicked;
 
     Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> m_toastXml;
     Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics> m_toastManager;

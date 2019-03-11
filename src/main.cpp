@@ -92,7 +92,7 @@ void version()
 
 }
 
-SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
+SnoreToastActions::Actions parse(std::vector<wchar_t*> args)
 {
     HRESULT hr = S_OK;
 
@@ -116,7 +116,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
         } else
         {
             help(helpText);
-            exit(SnoreToasts::Failed);
+            exit(static_cast<int>(SnoreToastActions::Actions::Error));
         }
     };
 
@@ -170,22 +170,22 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
             appID = nextArg(it, L"Missing argument to -install.\n"
                             L"Supply argument as -install \"path to your shortcut\" \"path to the application the shortcut should point to\" \"App.ID\"");
 
-            return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToasts::Success : SnoreToasts::Failed;
+            return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID)) ? SnoreToastActions::Actions::Clicked : SnoreToastActions::Actions::Error;
         } else if (arg == L"-close") {
             id = nextArg(it, L"Missing agument to -close"
                          L"Supply argument as -close \"id\"");
             closeNotify = true;
         } else if (arg == L"-v") {
             version();
-            return SnoreToasts::Success;
+            return SnoreToastActions::Actions::Clicked;
         } else if (arg == L"-h") {
             help(L"");
-            return SnoreToasts::Success;
+            return SnoreToastActions::Actions::Clicked;
         } else {
             std::wstringstream ws;
             ws << L"Unknown argument: " << arg << std::endl;
             help(ws.str());
-            return SnoreToasts::Failed;
+            return SnoreToastActions::Actions::Error;
         }
     }
     if (closeNotify) {
@@ -193,7 +193,7 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
             SnoreToasts app(appID);
             app.setId(id);
             if (app.closeNotification()) {
-                return SnoreToasts::Success;
+                return SnoreToastActions::Actions::Clicked;
             }
         } else {
             help(L"Close only works if an -id id was provided.");
@@ -208,6 +208,14 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
                 hr = LinkHelper::tryCreateShortcut(appID);
             }
             if (SUCCEEDED(hr)) {
+				if (isTextBoxEnabled)
+				{
+					if (pipe.empty())
+					{
+						std::wcerr << L"TextBox notifications only work if a pipe for the result was provided" << std::endl;
+						return SnoreToastActions::Actions::Error;
+					};
+				}
                 SnoreToasts app(appID);
                 app.setPipeName(pipe);
                 app.setSilent(silent);
@@ -220,20 +228,20 @@ SnoreToasts::USER_ACTION parse(std::vector<wchar_t*> args)
             }
         } else {
             help(L"");
-            return SnoreToasts::Success;
+            return SnoreToastActions::Actions::Clicked;
         }
     }
 
-    return SnoreToasts::Failed;
+    return SnoreToastActions::Actions::Error;
 }
 
 
-SnoreToasts::USER_ACTION handleEmbedded()
+SnoreToastActions::Actions handleEmbedded()
 {
     Utils::registerActivator();
     CToastNotificationActivationCallback::waitForActivation();
     Utils::unregisterActivator();
-    return SnoreToasts::Success;
+    return SnoreToastActions::Actions::Clicked;
 }
 
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int)
@@ -252,7 +260,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int)
     tLog << commandLine;
     int argc;
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
-    SnoreToasts::USER_ACTION action = SnoreToasts::Success;
+	SnoreToastActions::Actions action = SnoreToastActions::Actions::Clicked;
 
     HRESULT hr = Initialize(RO_INIT_MULTITHREADED);
     if (SUCCEEDED(hr)) {
@@ -265,6 +273,6 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int)
         Uninitialize();
     }
 
-    return action;
+    return static_cast<int>(action);
 }
 

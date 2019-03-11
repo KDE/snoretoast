@@ -1,3 +1,4 @@
+#include "snoretoasts.h"
 /*
     SnoreToast is capable to invoke Windows 8 toast notifications.
     Copyright (C) 2013-2019  Hannah von Reth <vonreth@kde.org>
@@ -67,11 +68,7 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
                 ComPtr<IXmlNamedNodeMap> rootAttributes;
                 hr = root->get_Attributes(&rootAttributes);
                 if (SUCCEEDED(hr)) {
-                    const auto data = Utils::formatData({
-                                                            {L"action", Actions::Clicked},
-                                                            {L"notificationId", m_id},
-                                                            {L"pipe", m_pipeName},
-                                                        });
+                    const auto data = formatAction(SnoreToastActions::Actions::Clicked);
                     hr = addAttribute(L"launch", rootAttributes.Get(), data);
                 }
                 //Adding buttons
@@ -130,16 +127,16 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
         }
     }
     //printXML();
-    m_action = SUCCEEDED(hr) ? Success : Failed;
+    m_action = SUCCEEDED(hr) ? SnoreToastActions::Actions::Clicked : SnoreToastActions::Actions::Error;
 }
 
-SnoreToasts::USER_ACTION SnoreToasts::userAction()
+SnoreToastActions::Actions SnoreToasts::userAction()
 {
     if (m_eventHanlder.Get()) {
         HANDLE event = m_eventHanlder.Get()->event();
         WaitForSingleObject(event, INFINITE);
         m_action = m_eventHanlder.Get()->userAction();
-        if (m_action == SnoreToasts::Hidden) {
+        if (m_action == SnoreToastActions::Actions::Hidden) {
             m_notifier->Hide(m_notification.Get());
             tLog << L"The application hid the toast using ToastNotifier.hide()";
         }
@@ -179,6 +176,11 @@ void SnoreToasts::setId(const std::wstring &id)
     {
         m_id = id;
     }
+}
+
+std::wstring SnoreToasts::id() const
+{
+	return m_id;
 }
 
 void SnoreToasts::setButtons(const std::wstring &buttons)
@@ -345,11 +347,7 @@ HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
                         hr = actionNode->get_Attributes(&actionAttributes);
                         if (SUCCEEDED(hr)) {
                             hr &= addAttribute(L"content", actionAttributes.Get(), L"Send");
-                            const auto data = Utils::formatData({
-                                                                    {L"action", Actions::Reply},
-                                                                    {L"notificationId", m_id},
-                                                                    {L"pipe", m_pipeName},
-                                                                });
+							const auto data = formatAction(SnoreToastActions::Actions::ButtonClicked);
                             hr &= addAttribute(L"arguments", actionAttributes.Get(), data);
                             hr &= addAttribute(L"hint-inputId", actionAttributes.Get(), L"textBox");
                         }
@@ -367,7 +365,7 @@ HRESULT SnoreToasts::setEventHandler(ComPtr<IToastNotification> toast)
 {
     // Register the event handlers
     EventRegistrationToken activatedToken, dismissedToken, failedToken;
-    ComPtr<ToastEventHandler> eventHandler(new ToastEventHandler(m_id));
+    ComPtr<ToastEventHandler> eventHandler(new ToastEventHandler(*this));
 
     HRESULT hr = toast->add_Activated(eventHandler.Get(), &activatedToken);
     if (SUCCEEDED(hr)) {
@@ -448,12 +446,7 @@ HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const s
             if (SUCCEEDED(hr)) {
                 hr &= addAttribute(L"content", actionAttributes.Get(), value);
 
-                const auto data = Utils::formatData({
-                                                        {L"action", Actions::Button},
-                                                        {L"notificationId", m_id},
-                                                        {L"button", value},
-                                                        {L"pipe", m_pipeName},
-                                                    });
+				const auto data = formatAction(SnoreToastActions::Actions::ButtonClicked, { {L"button", value} });
                 hr &= addAttribute(L"arguments", actionAttributes.Get(), data);
                 hr &= addAttribute(L"activationType", actionAttributes.Get(), L"foreground");
             }
@@ -486,6 +479,18 @@ std::wstring SnoreToasts::pipeName() const
 void SnoreToasts::setPipeName(const std::wstring &pipeName)
 {
     m_pipeName = pipeName;
+}
+
+std::wstring SnoreToasts::formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring, std::wstring> > &extraData) const
+{
+    const auto &actionString = SnoreToastActions::getActionString(action);
+    std::vector<std::pair<std::wstring, std::wstring>> data = {
+        {L"action", std::wstring(actionString.data(), actionString.size())},
+        {L"notificationId", m_id},
+        {L"pipe", m_pipeName}
+    };
+    data.insert(data.end(), extraData.cbegin(), extraData.cend());
+    return Utils::formatData(data);
 }
 
 // Create and display the toast
@@ -540,4 +545,18 @@ std::wstring SnoreToasts::version()
 {
     // if there are changes to the callback mechanism we need to change the uuid for the activator TOAST_UUID
     return L"0.5.99";
+}
+
+SnoreToastActions::Actions SnoreToastActions::getAction(const std::wstring &s)
+{
+    int i = 0;
+    for (const auto &sv : ActionStrings)
+    {
+        if (sv.compare(s.c_str()) == 0)
+        {
+            return static_cast<SnoreToastActions::Actions>(i);
+        }
+        ++i;
+    }
+    return SnoreToastActions::Actions::Error;
 }

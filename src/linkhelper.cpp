@@ -80,7 +80,7 @@ HRESULT LinkHelper::installShortcut(const std::wstring &shortcutPath, const std:
      * Required to use the CToastNotificationActivationCallback for buttons and textbox interactions.
      * windows.ui.notifications does not support user interaction from cpp
      */;
-    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\" TOAST_UUID  L"\\LocalServer32", nullptr, REG_SZ, pszExePath, static_cast<DWORD>(wcslen(pszExePath)*sizeof(wchar_t))));
+    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\" TOAST_UUID  L"\\LocalServer32", nullptr, REG_SZ, Utils::selfLocate().c_str(), static_cast<DWORD>(Utils::selfLocate().size() * sizeof(wchar_t))));
 
     if (SUCCEEDED(hr)) {
         ComPtr<IShellLink> shellLink;

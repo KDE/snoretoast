@@ -21,12 +21,6 @@
 
 #define TOAST_UUID "{383803B6-AFDA-4220-BFC3-0DBF810106BF}"
 
-namespace Actions {
-    static const std::wstring Reply = L"reply";
-    static const std::wstring Clicked = L"clicked";
-    static const std::wstring Button = L"button";
-}
-
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ::IInspectable *> DesktopToastActivatedEventHandler;
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ABI::Windows::UI::Notifications::ToastDismissedEventArgs *> DesktopToastDismissedEventHandler;
 typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ABI::Windows::UI::Notifications::ToastFailedEventArgs *> DesktopToastFailedEventHandler;
@@ -54,15 +48,13 @@ class DECLSPEC_UUID(TOAST_UUID)
   CToastNotificationActivationCallback : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, INotificationActivationCallback>
 {
 public:
-    static std::wstring waitForActivation();
-    static std::wstring data();
+    static void waitForActivation();
 
     CToastNotificationActivationCallback();
     virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
                                              __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count) override;
 private:
     static HANDLE m_event;
-    static std::wstring m_data;
 
 };
 
@@ -73,11 +65,11 @@ class ToastEventHandler :
 {
 
 public:
-    ToastEventHandler::ToastEventHandler(const std::wstring &id);
+    explicit ToastEventHandler::ToastEventHandler(const SnoreToasts &toast);
     ~ToastEventHandler();
 
     HANDLE event();
-    SnoreToasts::USER_ACTION &userAction();
+	SnoreToastActions::Actions &userAction();
 
     // DesktopToastActivatedEventHandler
     IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ IInspectable *args);
@@ -127,7 +119,7 @@ public:
 
 private:
     ULONG m_ref;
-    SnoreToasts::USER_ACTION m_userAction;
+	SnoreToastActions::Actions m_userAction;
     HANDLE m_event;
-    std::wstring m_id;
+	const SnoreToasts &m_toast;
 };
