@@ -38,8 +38,7 @@ HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
         std::wcerr << L"The shortcut path must be relative" << std::endl;
         return S_FALSE;
     }
-	std::filesystem::path path = startmenuPath();
-	path += L"SnoreToast/v" + SnoreToasts::version() + L"/" + shortcutPath.wstring();
+	std::filesystem::path path = startmenuPath() / L"SnoreToast" / SnoreToasts::version() / shortcutPath;
 
     if (shortcutPath.extension() != L".lnk") {
         path += L".lnk";
