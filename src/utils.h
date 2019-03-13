@@ -27,13 +27,13 @@ namespace Utils
     bool registerActivator();
     void unregisterActivator();
 
-    std::unordered_map<std::wstring, std::wstring> splitData(const std::wstring &data);
+    std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::wstring_view &data);
 
     const std::filesystem::path &selfLocate();
 
-    std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring>> &data);
+    std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view>> &data);
 
-	bool writePipe(const std::filesystem::path &pipe, const std::wstring &data);
+	bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait=false);
 	bool startProcess(const std::filesystem::path &app);
 };
 

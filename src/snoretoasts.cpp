@@ -490,14 +490,15 @@ void SnoreToasts::setApplication(const std::filesystem::path & application)
 	m_application = application;
 }
 
-std::wstring SnoreToasts::formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring, std::wstring> > &extraData) const
+std::wstring SnoreToasts::formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring_view, std::wstring_view> > &extraData) const
 {
-    const auto &actionString = SnoreToastActions::getActionString(action);
-    std::vector<std::pair<std::wstring, std::wstring>> data = {
-        {L"action", std::wstring(actionString.data(), actionString.size())},
-        {L"notificationId", m_id},
-        {L"pipe", m_pipeName},
-		{L"application", m_application}
+	const auto pipe = m_pipeName.wstring();
+	const auto application = m_application.wstring();
+    std::vector<std::pair<std::wstring_view, std::wstring_view>> data = {
+        {L"action", SnoreToastActions::getActionString(action)},
+        {L"notificationId", std::wstring_view(m_id)},
+        {L"pipe", std::wstring_view(pipe)},
+		{L"application", std::wstring_view(application)}
     };
     data.insert(data.end(), extraData.cbegin(), extraData.cend());
     return Utils::formatData(data);
@@ -555,18 +556,4 @@ std::wstring SnoreToasts::version()
 {
     // if there are changes to the callback mechanism we need to change the uuid for the activator TOAST_UUID
     return L"0.5.99";
-}
-
-SnoreToastActions::Actions SnoreToastActions::getAction(const std::wstring &s)
-{
-    int i = 0;
-    for (const auto &sv : ActionStrings)
-    {
-        if (sv.compare(s.c_str()) == 0)
-        {
-            return static_cast<SnoreToastActions::Actions>(i);
-        }
-        ++i;
-    }
-    return SnoreToastActions::Actions::Error;
 }

@@ -54,16 +54,21 @@ void unregisterActivator()
     }
 }
 
-std::unordered_map<std::wstring, std::wstring> splitData(const std::wstring &data)
+std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::wstring_view &data)
 {
-    std::unordered_map<std::wstring, std::wstring> out;
-    std::wstring tmp;
-    std::wstringstream wss(data);
-    while(std::getline(wss, tmp, L';'))
-    {
-        const auto pos = tmp.find(L"=");
-        out[tmp.substr(0, pos)] = tmp.substr(pos + 1);
-    }
+    std::unordered_map<std::wstring_view, std::wstring_view> out;
+	size_t start = 0;
+	for (size_t end = data.find(L";", start); end != std::wstring::npos; start=end + 1, end=data.find(L";", start))
+	{
+		if (start == end)
+		{
+			end = data.size();
+		}
+		const std::wstring_view tmp(data.data() + start, end - start);
+		const auto pos = tmp.find(L"=");
+ 		out[tmp.substr(0, pos)] = tmp.substr(pos + 1);
+		//tLog << L"'" << tmp.substr(0, pos) << L"' = '" << tmp.substr(pos + 1) << L"'";
+	}
     return out;
 }
 
@@ -82,9 +87,9 @@ const std::filesystem::path &selfLocate()
     return path;
 }
 
-bool writePipe(const std::filesystem::path &pipe, const std::wstring &data)
+bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait)
 {
-    HANDLE hPipe = CreateFile(pipe.wstring().c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+    HANDLE hPipe = CreateFile(pipe.wstring().c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
     if (hPipe != INVALID_HANDLE_VALUE)
     {
         DWORD written;
@@ -95,7 +100,13 @@ bool writePipe(const std::filesystem::path &pipe, const std::wstring &data)
         WriteFile(hPipe, nullptr, sizeof(wchar_t), &written, nullptr);
         CloseHandle(hPipe);
         return success;
-    }
+    } 
+	else if (wait)
+	{
+		// wait and retry
+		Sleep(20000);
+		return writePipe(pipe, data);
+	}
 	tLog << L"Failed to open pipe: " << pipe << L" data: " << data;
     return false;
 }
@@ -112,8 +123,6 @@ bool startProcess(const std::filesystem::path & app)
 		return false;
 	}
 	WaitForInputIdle(pInfo.hProcess, INFINITE);
-	// wait a second until the application is initialised
-	Sleep(1000);
 	DWORD status;
 	GetExitCodeProcess(pInfo.hProcess, &status);
 	CloseHandle(pInfo.hProcess);
@@ -122,7 +131,7 @@ bool startProcess(const std::filesystem::path & app)
 	return status == STILL_ACTIVE;
 }
 
-std::wstring formatData(const std::vector<std::pair<std::wstring, std::wstring> > &data)
+std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view> > &data)
 {
     std::wstringstream out;
     for (const auto &p : data)

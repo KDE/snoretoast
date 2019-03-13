@@ -54,7 +54,7 @@ public:
     virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
                                              __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count) override;
 private:
-    static HANDLE m_event;
+    static HANDLE event();
 
 };
 

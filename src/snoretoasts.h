@@ -18,6 +18,7 @@
 #pragma once
 
 #include "stringreferencewrapper.h"
+#include "snoretoastactions.h"
 
 #include <sdkddkver.h>
 
@@ -45,39 +46,6 @@ using namespace ABI::Windows::Data::Xml::Dom;
 
 class ToastEventHandler;
 
-
-class SnoreToastActions {
-public:
-	enum class Actions {
-		Clicked,
-		Hidden,
-		Dismissed,
-		Timedout,
-		ButtonClicked,
-		TextEntered,
-
-		Error = -1
-	};
-
-    static constexpr std::wstring_view getActionString(const Actions &a)
-	{
-        return ActionStrings[static_cast<int>(a)];
-	}
-
-    static SnoreToastActions::Actions getAction(const std::wstring &s);
-
-private:
-    static constexpr std::wstring_view ActionStrings[] =
-	{
-		L"clicked",
-        L"hidden",
-		L"dismissed",
-		L"timedout",
-		L"buttonClicked",
-		L"textEntered",
-	};
-};
-
 class SnoreToasts
 {
 public:
@@ -104,7 +72,7 @@ public:
 	std::filesystem::path application() const;
 	void setApplication(const std::filesystem::path &application);
 
-	std::wstring formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring, std::wstring> > &extraData = {}) const;
+	std::wstring formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring_view, std::wstring_view> > &extraData = {}) const;
 
     private:
     HRESULT createToast();

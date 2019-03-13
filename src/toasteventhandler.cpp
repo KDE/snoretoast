@@ -137,7 +137,15 @@ CToastNotificationActivationCallback::CToastNotificationActivationCallback()
 {
 }
 
-HANDLE CToastNotificationActivationCallback::m_event = INVALID_HANDLE_VALUE;
+HANDLE CToastNotificationActivationCallback::event()
+{
+	static HANDLE _event = []{
+		std::wstringstream eventName;
+		eventName << L"ToastActivationEvent" << GetCurrentProcessId();
+		return CreateEvent(nullptr, true, false, eventName.str().c_str());
+	}();
+	return _event;
+}
 
 HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, LPCWSTR invokedArgs,
                                                        const NOTIFICATION_USER_INPUT_DATA* data, ULONG count)
@@ -168,7 +176,6 @@ HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, L
     {
         dataString = invokedArgs;
     }
-
     const auto pipe = dataMap.find(L"pipe");
     if (pipe != dataMap.cend())
     {
@@ -179,7 +186,7 @@ HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, L
 			{
 				if (Utils::startProcess(app->second))
 				{
-					Utils::writePipe(pipe->second, dataString);
+					Utils::writePipe(pipe->second, dataString, true);
 				}
 			}
 		}
@@ -187,24 +194,15 @@ HRESULT CToastNotificationActivationCallback::Activate(LPCWSTR appUserModelId, L
     }
 
     tLog << dataString;
-    if (m_event != INVALID_HANDLE_VALUE)
-    {
-        SetEvent(m_event);
-    }
-    return S_OK;
+	if (!SetEvent(event()))
+	{
+		tLog << "SetEvent failed" << GetLastError();
+		return S_FALSE;
+	}
+	return S_OK;
 }
 
 void CToastNotificationActivationCallback::waitForActivation()
 {
-    if (m_event == INVALID_HANDLE_VALUE)
-    {
-        std::wstringstream eventName;
-        eventName << L"ToastActivationEvent" << GetCurrentProcessId();
-        m_event = CreateEventW(nullptr, true, false, eventName.str().c_str());
-    }
-    else
-    {
-        ResetEvent(m_event);
-    }
-    WaitForSingleObject(m_event, INFINITE);
+    WaitForSingleObject(event(), INFINITE);
 }
