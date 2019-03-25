@@ -23,31 +23,28 @@
 #include <wrl/implements.h>
 #include <wrl/module.h>
 
-
-
 using namespace Microsoft::WRL;
 
 namespace {
-    bool s_registered = false;
+bool s_registered = false;
 }
 namespace Utils {
 
 bool registerActivator()
 {
-    if (!s_registered)
-    {
+    if (!s_registered) {
         s_registered = true;
         Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create([] {});
         Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().IncrementObjectCount();
-        return SUCCEEDED(Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().RegisterObjects());
+        return SUCCEEDED(
+                Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().RegisterObjects());
     }
     return true;
 }
 
 void unregisterActivator()
 {
-    if (s_registered)
-    {
+    if (s_registered) {
         s_registered = false;
         Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().UnregisterObjects();
         Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule().DecrementObjectCount();
@@ -57,41 +54,41 @@ void unregisterActivator()
 std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::wstring_view &data)
 {
     std::unordered_map<std::wstring_view, std::wstring_view> out;
-	size_t start = 0;
-	for (size_t end = data.find(L";", start); end != std::wstring::npos; start=end + 1, end=data.find(L";", start))
-	{
-		if (start == end)
-		{
-			end = data.size();
-		}
-		const std::wstring_view tmp(data.data() + start, end - start);
-		const auto pos = tmp.find(L"=");
- 		out[tmp.substr(0, pos)] = tmp.substr(pos + 1);
-		//tLog << L"'" << tmp.substr(0, pos) << L"' = '" << tmp.substr(pos + 1) << L"'";
-	}
+    size_t start = 0;
+    for (size_t end = data.find(L";", start); end != std::wstring::npos;
+         start = end + 1, end = data.find(L";", start)) {
+        if (start == end) {
+            end = data.size();
+        }
+        const std::wstring_view tmp(data.data() + start, end - start);
+        const auto pos = tmp.find(L"=");
+        out[tmp.substr(0, pos)] = tmp.substr(pos + 1);
+        // tLog << L"'" << tmp.substr(0, pos) << L"' = '" << tmp.substr(pos + 1) << L"'";
+    }
     return out;
 }
 
 const std::filesystem::path &selfLocate()
 {
     static const std::filesystem::path path = [] {
-		std::wstring buf;
+        std::wstring buf;
         size_t size;
         do {
-			buf.resize(buf.size() + 1024);
-            size = GetModuleFileNameW(nullptr, const_cast<wchar_t*>(buf.data()), static_cast<DWORD>(buf.size()));
+            buf.resize(buf.size() + 1024);
+            size = GetModuleFileNameW(nullptr, const_cast<wchar_t *>(buf.data()),
+                                      static_cast<DWORD>(buf.size()));
         } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
-		buf.resize(size);
-		return buf;
-	}();
+        buf.resize(size);
+        return buf;
+    }();
     return path;
 }
 
 bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait)
 {
-    HANDLE hPipe = CreateFile(pipe.wstring().c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
-    if (hPipe != INVALID_HANDLE_VALUE)
-    {
+    HANDLE hPipe = CreateFile(pipe.wstring().c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0,
+                              nullptr);
+    if (hPipe != INVALID_HANDLE_VALUE) {
         DWORD written;
         const DWORD toWrite = static_cast<DWORD>(data.size() * sizeof(wchar_t));
         WriteFile(hPipe, data.c_str(), toWrite, &written, nullptr);
@@ -100,44 +97,43 @@ bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool
         WriteFile(hPipe, nullptr, sizeof(wchar_t), &written, nullptr);
         CloseHandle(hPipe);
         return success;
-    } 
-	else if (wait)
-	{
-		// wait and retry
-		Sleep(20000);
-		return writePipe(pipe, data);
-	}
-	tLog << L"Failed to open pipe: " << pipe << L" data: " << data;
+    } else if (wait) {
+        // wait and retry
+        Sleep(20000);
+        return writePipe(pipe, data);
+    }
+    tLog << L"Failed to open pipe: " << pipe << L" data: " << data;
     return false;
 }
 
-bool startProcess(const std::filesystem::path & app)
+bool startProcess(const std::filesystem::path &app)
 {
-	STARTUPINFO info = {};
-	info.cb = sizeof(info);
-	PROCESS_INFORMATION pInfo = {};
-	const auto application = app.wstring();
-	if (!CreateProcess(const_cast<wchar_t*>(application.c_str()), const_cast<wchar_t*>(application.c_str()), nullptr, nullptr, false, DETACHED_PROCESS | INHERIT_PARENT_AFFINITY | CREATE_NO_WINDOW, nullptr, nullptr, &info, &pInfo))
-	{
-		tLog << L"Failed to start: " << app;
-		return false;
-	}
-	WaitForInputIdle(pInfo.hProcess, INFINITE);
-	DWORD status;
-	GetExitCodeProcess(pInfo.hProcess, &status);
-	CloseHandle(pInfo.hProcess);
-	CloseHandle(pInfo.hThread);
-	tLog << L"Started: " << app << L" Status: " << (status == STILL_ACTIVE ? L"STILL_ACTIVE" : std::to_wstring(status));
-	return status == STILL_ACTIVE;
+    STARTUPINFO info = {};
+    info.cb = sizeof(info);
+    PROCESS_INFORMATION pInfo = {};
+    const auto application = app.wstring();
+    if (!CreateProcess(const_cast<wchar_t *>(application.c_str()),
+                       const_cast<wchar_t *>(application.c_str()), nullptr, nullptr, false,
+                       DETACHED_PROCESS | INHERIT_PARENT_AFFINITY | CREATE_NO_WINDOW, nullptr,
+                       nullptr, &info, &pInfo)) {
+        tLog << L"Failed to start: " << app;
+        return false;
+    }
+    WaitForInputIdle(pInfo.hProcess, INFINITE);
+    DWORD status;
+    GetExitCodeProcess(pInfo.hProcess, &status);
+    CloseHandle(pInfo.hProcess);
+    CloseHandle(pInfo.hThread);
+    tLog << L"Started: " << app << L" Status: "
+         << (status == STILL_ACTIVE ? L"STILL_ACTIVE" : std::to_wstring(status));
+    return status == STILL_ACTIVE;
 }
 
-std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view> > &data)
+std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view>> &data)
 {
     std::wstringstream out;
-    for (const auto &p : data)
-    {
-        if (!p.second.empty())
-        {
+    for (const auto &p : data) {
+        if (!p.second.empty()) {
             out << p.first << L"=" << p.second << L";";
         }
     }
@@ -148,11 +144,11 @@ std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstr
 
 ToastLog::ToastLog()
 {
-    *this << Utils::selfLocate() <<  L" v" << SnoreToasts::version() << L"\n\t";
+    *this << Utils::selfLocate() << L" v" << SnoreToasts::version() << L"\n\t";
 }
 
 ToastLog::~ToastLog()
 {
-	m_log << L"\n";
+    m_log << L"\n";
     OutputDebugStringW(m_log.str().c_str());
 }

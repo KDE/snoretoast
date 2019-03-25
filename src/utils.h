@@ -22,21 +22,19 @@
 #include <sstream>
 #include <unordered_map>
 
-namespace Utils
-{
-    bool registerActivator();
-    void unregisterActivator();
+namespace Utils {
+bool registerActivator();
+void unregisterActivator();
 
-    std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::wstring_view &data);
+std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::wstring_view &data);
 
-    const std::filesystem::path &selfLocate();
+const std::filesystem::path &selfLocate();
 
-    std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view>> &data);
+std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view>> &data);
 
-	bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait=false);
-	bool startProcess(const std::filesystem::path &app);
+bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait = false);
+bool startProcess(const std::filesystem::path &app);
 };
-
 
 class ToastLog
 {
@@ -44,18 +42,19 @@ public:
     ToastLog();
     ~ToastLog();
 
-    inline ToastLog &log() { return *this;}
+    inline ToastLog &log() { return *this; }
 
 private:
     std::wstringstream m_log;
     template<typename T>
-    friend ToastLog & operator<<(ToastLog &, const T&);
+    friend ToastLog &operator<<(ToastLog &, const T &);
 };
 
 #define tLog ToastLog().log() << __FUNCSIG__ << L"\n\t\t"
 
-template <typename T>
-ToastLog &operator<< (ToastLog &log, const T &t) {
+template<typename T>
+ToastLog &operator<<(ToastLog &log, const T &t)
+{
     log.m_log << t;
     return log;
 }

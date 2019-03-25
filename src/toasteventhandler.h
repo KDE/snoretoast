@@ -21,47 +21,62 @@
 
 #define TOAST_UUID "{383803B6-AFDA-4220-BFC3-0DBF810106BF}"
 
-typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ::IInspectable *> DesktopToastActivatedEventHandler;
-typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ABI::Windows::UI::Notifications::ToastDismissedEventArgs *> DesktopToastDismissedEventHandler;
-typedef ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification *, ABI::Windows::UI::Notifications::ToastFailedEventArgs *> DesktopToastFailedEventHandler;
+typedef ABI::Windows::Foundation::ITypedEventHandler<
+        ABI::Windows::UI::Notifications::ToastNotification *, ::IInspectable *>
+        DesktopToastActivatedEventHandler;
+typedef ABI::Windows::Foundation::ITypedEventHandler<
+        ABI::Windows::UI::Notifications::ToastNotification *,
+        ABI::Windows::UI::Notifications::ToastDismissedEventArgs *>
+        DesktopToastDismissedEventHandler;
+typedef ABI::Windows::Foundation::ITypedEventHandler<
+        ABI::Windows::UI::Notifications::ToastNotification *,
+        ABI::Windows::UI::Notifications::ToastFailedEventArgs *>
+        DesktopToastFailedEventHandler;
 
-//Define INotificationActivationCallback for older versions of the Windows SDK
+// Define INotificationActivationCallback for older versions of the Windows SDK
 #include <ntverp.h>
 
 typedef struct NOTIFICATION_USER_INPUT_DATA
 {
-  LPCWSTR Key;
-  LPCWSTR Value;
-}  NOTIFICATION_USER_INPUT_DATA;
+    LPCWSTR Key;
+    LPCWSTR Value;
+} NOTIFICATION_USER_INPUT_DATA;
 
 MIDL_INTERFACE("53E31837-6600-4A81-9395-75CFFE746F94")
 INotificationActivationCallback : public IUnknown
 {
 public:
-    virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
-                                               __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA *data, ULONG count) = 0;
+    virtual HRESULT STDMETHODCALLTYPE Activate(
+            __RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
+            __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA *data,
+            ULONG count) = 0;
 };
 
-
-//The COM server which implements the callback notifcation from Action Center
-class DECLSPEC_UUID(TOAST_UUID)
-  CToastNotificationActivationCallback : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, INotificationActivationCallback>
+// The COM server which implements the callback notifcation from Action Center
+class DECLSPEC_UUID(TOAST_UUID) CToastNotificationActivationCallback
+    : public Microsoft::WRL::RuntimeClass<
+              Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+              INotificationActivationCallback>
 {
 public:
     static void waitForActivation();
 
     CToastNotificationActivationCallback();
-    virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId, __RPC__in_opt_string LPCWSTR invokedArgs,
-                                             __RPC__in_ecount_full_opt(count) const NOTIFICATION_USER_INPUT_DATA* data, ULONG count) override;
+    virtual HRESULT STDMETHODCALLTYPE Activate(__RPC__in_string LPCWSTR appUserModelId,
+                                               __RPC__in_opt_string LPCWSTR invokedArgs,
+                                               __RPC__in_ecount_full_opt(count)
+                                                       const NOTIFICATION_USER_INPUT_DATA *data,
+                                               ULONG count) override;
+
 private:
     static HANDLE event();
-
 };
 
 CoCreatableClass(CToastNotificationActivationCallback);
 
-class ToastEventHandler :
-    public Microsoft::WRL::Implements<DesktopToastActivatedEventHandler, DesktopToastDismissedEventHandler, DesktopToastFailedEventHandler>
+class ToastEventHandler : public Microsoft::WRL::Implements<DesktopToastActivatedEventHandler,
+                                                            DesktopToastDismissedEventHandler,
+                                                            DesktopToastFailedEventHandler>
 {
 
 public:
@@ -69,22 +84,22 @@ public:
     ~ToastEventHandler();
 
     HANDLE event();
-	SnoreToastActions::Actions &userAction();
+    SnoreToastActions::Actions &userAction();
 
     // DesktopToastActivatedEventHandler
-    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ IInspectable *args);
+    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender,
+                          _In_ IInspectable *args);
 
     // DesktopToastDismissedEventHandler
-    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ ABI::Windows::UI::Notifications::IToastDismissedEventArgs *e);
+    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender,
+                          _In_ ABI::Windows::UI::Notifications::IToastDismissedEventArgs *e);
 
     // DesktopToastFailedEventHandler
-    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender, _In_ ABI::Windows::UI::Notifications::IToastFailedEventArgs *e);
+    IFACEMETHODIMP Invoke(_In_ ABI::Windows::UI::Notifications::IToastNotification *sender,
+                          _In_ ABI::Windows::UI::Notifications::IToastFailedEventArgs *e);
 
     // IUnknown
-    IFACEMETHODIMP_(ULONG) AddRef()
-    {
-        return InterlockedIncrement(&m_ref);
-    }
+    IFACEMETHODIMP_(ULONG) AddRef() { return InterlockedIncrement(&m_ref); }
 
     IFACEMETHODIMP_(ULONG) Release()
     {
@@ -119,7 +134,7 @@ public:
 
 private:
     ULONG m_ref;
-	SnoreToastActions::Actions m_userAction;
+    SnoreToastActions::Actions m_userAction;
     HANDLE m_event;
-	const SnoreToasts &m_toast;
+    const SnoreToasts &m_toast;
 };

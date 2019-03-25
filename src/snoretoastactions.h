@@ -20,47 +20,39 @@
 #include <string_view>
 #include <vector>
 
+class SnoreToastActions
+{
+public:
+    enum class Actions {
+        Clicked,
+        Hidden,
+        Dismissed,
+        Timedout,
+        ButtonClicked,
+        TextEntered,
 
-class SnoreToastActions {
-    public:
-        enum class Actions {
-            Clicked,
-            Hidden,
-            Dismissed,
-            Timedout,
-            ButtonClicked,
-            TextEntered,
+        Error = -1
+    };
 
-            Error = -1
-        };
+    static constexpr std::wstring_view getActionString(const Actions &a)
+    {
+        return ActionStrings[static_cast<int>(a)];
+    }
 
-        static constexpr std::wstring_view getActionString(const Actions &a)
-        {
-            return ActionStrings[static_cast<int>(a)];
-        }
-
-        static SnoreToastActions::Actions getAction(const std::wstring_view &s)
-        {
-            int i = 0;
-            for (const auto &sv : ActionStrings)
-            {
-                if (sv.compare(s) == 0)
-                {
-                    return static_cast<SnoreToastActions::Actions>(i);
-                }
-                ++i;
+    static SnoreToastActions::Actions getAction(const std::wstring_view &s)
+    {
+        int i = 0;
+        for (const auto &sv : ActionStrings) {
+            if (sv.compare(s) == 0) {
+                return static_cast<SnoreToastActions::Actions>(i);
             }
-            return SnoreToastActions::Actions::Error;
+            ++i;
         }
+        return SnoreToastActions::Actions::Error;
+    }
 
-    private:
-        static constexpr std::wstring_view ActionStrings[] =
-        {
-            L"clicked",
-            L"hidden",
-            L"dismissed",
-            L"timedout",
-            L"buttonClicked",
-            L"textEntered",
-        };
+private:
+    static constexpr std::wstring_view ActionStrings[] = {
+        L"clicked", L"hidden", L"dismissed", L"timedout", L"buttonClicked", L"textEntered",
+    };
 };

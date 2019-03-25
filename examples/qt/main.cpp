@@ -27,56 +27,48 @@
 
 int main(int argc, char *argv[])
 {
-  QCoreApplication a(argc, argv);
-  QLocalServer *server = new QLocalServer();
-  QObject::connect(server, &QLocalServer::newConnection, server, [server](){
-    auto sock = server->nextPendingConnection();
-    sock->waitForReadyRead();
-    qDebug() << sock->bytesAvailable();
-    const QByteArray rawData = sock->readAll();
-    const QString data = QString::fromWCharArray(reinterpret_cast<const wchar_t*>(rawData.constData()), rawData.size() / sizeof(wchar_t));
-    std::wcout << qPrintable(data) << std::endl;
+    QCoreApplication a(argc, argv);
+    QLocalServer *server = new QLocalServer();
+    QObject::connect(server, &QLocalServer::newConnection, server, [server]() {
+        auto sock = server->nextPendingConnection();
+        sock->waitForReadyRead();
+        qDebug() << sock->bytesAvailable();
+        const QByteArray rawData = sock->readAll();
+        const QString data =
+                QString::fromWCharArray(reinterpret_cast<const wchar_t *>(rawData.constData()),
+                                        rawData.size() / sizeof(wchar_t));
+        std::wcout << qPrintable(data) << std::endl;
 
-    // TODO: parse data
-  });
-  server->listen("foo");
-  std::wcout << qPrintable(server->fullServerName()) << std::endl;
-
-  const QString appId = "SnoreToast.Qt.Example";
-  QProcess proc(&a);
-  proc.start("SnoreToast.exe", {
-                        "-install",
-                        "SnoreToastTestQt",
-                        a.applicationFilePath(),
-                        appId
-                      });
-  proc.waitForFinished();
-  std::wcout << proc.exitCode() << std::endl;
-  std::wcout << qPrintable(proc.readAll()) << std::endl;
-
-  QTimer *timer = new QTimer(&a);
-  a.connect(timer, &QTimer::timeout, timer, [&]{
-    static int id = 0;
-    if (id >= 10)
-    {
-      timer->stop();
-    }
-    auto proc = new QProcess(&a);
-    proc->start("SnoreToast.exe", {
-                          "-t", "test",
-                          "-m", "message",
-                          "-pipename", server->fullServerName(),
-                          "-w",
-                          "-id", QString::number(id++),
-                          "-appId", appId,
-                          "-application", a.applicationFilePath()
-                        });
-    proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc]{
-      std::wcout << qPrintable(proc->errorString()) << std::endl;
-      std::wcout << qPrintable(proc->readAll()) << std::endl;
-      std::wcout << proc->exitCode() << std::endl;
+        // TODO: parse data
     });
-  });
-  timer->start(1000);
-  return a.exec();
+    server->listen("foo");
+    std::wcout << qPrintable(server->fullServerName()) << std::endl;
+
+    const QString appId = "SnoreToast.Qt.Example";
+    QProcess proc(&a);
+    proc.start("SnoreToast.exe",
+               { "-install", "SnoreToastTestQt", a.applicationFilePath(), appId });
+    proc.waitForFinished();
+    std::wcout << proc.exitCode() << std::endl;
+    std::wcout << qPrintable(proc.readAll()) << std::endl;
+
+    QTimer *timer = new QTimer(&a);
+    a.connect(timer, &QTimer::timeout, timer, [&] {
+        static int id = 0;
+        if (id >= 10) {
+            timer->stop();
+        }
+        auto proc = new QProcess(&a);
+        proc->start("SnoreToast.exe",
+                    { "-t", "test", "-m", "message", "-pipename", server->fullServerName(), "-w",
+                      "-id", QString::number(id++), "-appId", appId, "-application",
+                      a.applicationFilePath() });
+        proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc] {
+            std::wcout << qPrintable(proc->errorString()) << std::endl;
+            std::wcout << qPrintable(proc->readAll()) << std::endl;
+            std::wcout << proc->exitCode() << std::endl;
+        });
+    });
+    timer->start(1000);
+    return a.exec();
 }

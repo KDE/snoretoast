@@ -54,48 +54,56 @@ public:
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
 
-    void displayToast(const std::wstring &title, const std::wstring &body, const std::filesystem::path &image, bool wait);
-	SnoreToastActions::Actions userAction();
+    void displayToast(const std::wstring &title, const std::wstring &body,
+                      const std::filesystem::path &image, bool wait);
+    SnoreToastActions::Actions userAction();
     bool closeNotification();
 
     void setSound(const std::wstring &soundFile);
     void setSilent(bool silent);
     void setId(const std::wstring &id);
-	std::wstring id() const;
+    std::wstring id() const;
 
     void setButtons(const std::wstring &buttons);
     void setTextBoxEnabled(bool textBoxEnabled);
 
-	std::filesystem::path pipeName() const;
+    std::filesystem::path pipeName() const;
     void setPipeName(const std::filesystem::path &pipeName);
 
-	std::filesystem::path application() const;
-	void setApplication(const std::filesystem::path &application);
+    std::filesystem::path application() const;
+    void setApplication(const std::filesystem::path &application);
 
-	std::wstring formatAction(const SnoreToastActions::Actions &action, const std::vector<std::pair<std::wstring_view, std::wstring_view> > &extraData = {}) const;
+    std::wstring formatAction(const SnoreToastActions::Actions &action,
+                              const std::vector<std::pair<std::wstring_view, std::wstring_view>>
+                                      &extraData = {}) const;
 
-    private:
+private:
     HRESULT createToast();
     HRESULT setImage();
     HRESULT setSound();
     HRESULT setTextValues();
     HRESULT setButtons(ComPtr<IXmlNode> root);
     HRESULT setTextBox(ComPtr<IXmlNode> root);
-    HRESULT setEventHandler(Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
-    HRESULT setNodeValueString(const HSTRING &onputString, ABI::Windows::Data::Xml::Dom::IXmlNode *node);
-    HRESULT addAttribute(const std::wstring &name, ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
-    HRESULT addAttribute(const std::wstring &name, ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap, const std::wstring &value);
+    HRESULT setEventHandler(
+            Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> toast);
+    HRESULT setNodeValueString(const HSTRING &onputString,
+                               ABI::Windows::Data::Xml::Dom::IXmlNode *node);
+    HRESULT addAttribute(const std::wstring &name,
+                         ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap);
+    HRESULT addAttribute(const std::wstring &name,
+                         ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap *attributeMap,
+                         const std::wstring &value);
     HRESULT createNewActionButton(ComPtr<IXmlNode> actionsNode, const std::wstring &value);
 
     void printXML();
 
     std::wstring m_appID;
-	std::filesystem::path m_pipeName;
-	std::filesystem::path m_application;
+    std::filesystem::path m_pipeName;
+    std::filesystem::path m_application;
 
     std::wstring m_title;
     std::wstring m_body;
-	std::filesystem::path m_image;
+    std::filesystem::path m_image;
     std::wstring m_sound = L"Notification.Default";
     std::wstring m_id;
     std::wstring m_buttons;
@@ -103,13 +111,13 @@ public:
     bool m_wait;
     bool m_textbox;
 
-	SnoreToastActions::Actions m_action = SnoreToastActions::Actions::Clicked;
+    SnoreToastActions::Actions m_action = SnoreToastActions::Actions::Clicked;
 
     Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> m_toastXml;
-    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics> m_toastManager;
+    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics>
+            m_toastManager;
     Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotifier> m_notifier;
     Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> m_notification;
 
     Microsoft::WRL::ComPtr<ToastEventHandler> m_eventHanlder;
-
 };
