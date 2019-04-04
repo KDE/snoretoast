@@ -109,11 +109,17 @@ HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath,
                         }
                     }
                     if (SUCCEEDED(hr) && !callbackUUID.empty()) {
-                        PROPVARIANT toastActivatorPropVar = {};
-                        toastActivatorPropVar.vt = VT_CLSID;
-                        CLSIDFromString(callbackUUID.c_str(), toastActivatorPropVar.puuid);
-                        hr = propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
-                                                     toastActivatorPropVar);
+                        GUID guid;
+                        hr = CLSIDFromString(callbackUUID.c_str(), &guid);
+                        if (SUCCEEDED(hr))
+                        {
+                            tLog << guid.Data1;
+                            PROPVARIANT toastActivatorPropVar = {};
+                            toastActivatorPropVar.vt = VT_CLSID;
+                            toastActivatorPropVar.puuid = &guid;
+                            hr = propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
+                                                         toastActivatorPropVar);
+                        }
                     }
                     if (SUCCEEDED(hr)) {
                         hr = propertyStore->Commit();
