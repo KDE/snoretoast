@@ -39,14 +39,12 @@ public:
         return ActionStrings[static_cast<int>(a)];
     }
 
-    static SnoreToastActions::Actions getAction(const std::wstring_view &s)
+    static inline SnoreToastActions::Actions getAction(const std::wstring_view &s)
     {
-        int i = 0;
-        for (const auto &sv : ActionStrings) {
-            if (sv.compare(s) == 0) {
+        for (unsigned int i = 0; i <= sizeof(ActionStrings); ++i) {
+            if (ActionStrings[i].compare(s) == 0) {
                 return static_cast<SnoreToastActions::Actions>(i);
             }
-            ++i;
         }
         return SnoreToastActions::Actions::Error;
     }

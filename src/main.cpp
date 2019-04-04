@@ -17,7 +17,8 @@
     */
 #include "snoretoasts.h"
 #include "toasteventhandler.h"
-#include "utils.h"
+
+#include "snoretoastactioncenterintegration.h"
 
 #include "linkhelper.h"
 
@@ -216,7 +217,8 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                             L"Supply argument as -install \"path to your shortcut\" \"path to the "
                             L"application the shortcut should point to\" \"App.ID\"");
 
-            return SUCCEEDED(LinkHelper::tryCreateShortcut(shortcut, exe, appID))
+            return SUCCEEDED(LinkHelper::tryCreateShortcut(
+                           shortcut, exe, appID, SnoreToastActionCenterIntegration::uuid()))
                     ? SnoreToastActions::Actions::Clicked
                     : SnoreToastActions::Actions::Error;
         } else if (arg == L"-close") {
@@ -254,7 +256,10 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                 std::wstringstream _appID;
                 _appID << L"Snore.DesktopToasts." << SnoreToasts::version();
                 appID = _appID.str();
-                hr = LinkHelper::tryCreateShortcut(appID);
+                hr = LinkHelper::tryCreateShortcut(std::filesystem::path(L"SnoreToast")
+                                                           / SnoreToasts::version() / L"SnoreToast",
+                                                   appID,
+                                                   SnoreToastActionCenterIntegration::uuid());
             }
             if (SUCCEEDED(hr)) {
                 if (isTextBoxEnabled) {
@@ -287,9 +292,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
 
 SnoreToastActions::Actions handleEmbedded()
 {
-    Utils::registerActivator();
-    CToastNotificationActivationCallback::waitForActivation();
-    Utils::unregisterActivator();
+    SnoreToasts::waitForCallbackActivation();
     return SnoreToastActions::Actions::Clicked;
 }
 
@@ -305,7 +308,6 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t *, int)
         std::ios::sync_with_stdio();
     }
     const auto commandLine = GetCommandLineW();
-    tLog << commandLine;
     int argc;
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
     SnoreToastActions::Actions action = SnoreToastActions::Actions::Clicked;

@@ -38,16 +38,13 @@ EXTERN_C const PROPERTYKEY DECLSPEC_SELECTANY PKEY_AppUserModel_ToastActivatorCL
 
 HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
                                       const std::filesystem::path &exePath,
-                                      const std::wstring &appID)
+                                      const std::wstring &appID, const std::wstring &callbackUUID)
 {
     if (!std::filesystem::path(shortcutPath).is_relative()) {
         std::wcerr << L"The shortcut path must be relative" << std::endl;
         return S_FALSE;
     }
-    const std::filesystem::path path =
-            (startmenuPath() / L"SnoreToast" / SnoreToasts::version() / shortcutPath)
-                    .replace_extension(L".lnk");
-
+    const std::filesystem::path path = (startmenuPath() / shortcutPath).replace_extension(L".lnk");
     if (std::filesystem::exists(path)) {
         tLog << L"Path: " << path << L" already exists, skip creation of shortcut";
         return S_OK;
@@ -57,31 +54,38 @@ HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
         tLog << L"Failed to create dir: " << path.parent_path();
         return S_FALSE;
     }
-    return installShortcut(path, exePath, appID);
+    return installShortcut(path, exePath, appID, callbackUUID);
 }
 
-HRESULT LinkHelper::tryCreateShortcut(const std::wstring &appID)
+HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
+                                      const std::wstring &appID, const std::wstring &callbackUUID)
 {
-    return tryCreateShortcut(L"SnoreToast", Utils::selfLocate().c_str(), appID);
+    return tryCreateShortcut(shortcutPath, Utils::selfLocate(), appID, callbackUUID);
 }
 
 // Install the shortcut
 HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath,
-                                    const std::filesystem::path &exePath, const std::wstring &appID)
+                                    const std::filesystem::path &exePath, const std::wstring &appID,
+                                    const std::wstring &callbackUUID)
 {
+    HRESULT hr = S_OK;
     std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID
                << std::endl;
-    tLog << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID;
-    /**
-     * Add CToastNotificationActivationCallback to registry
-     * Required to use the CToastNotificationActivationCallback for buttons and textbox
-     * interactions. windows.ui.notifications does not support user interaction from cpp
-     */
-    ;
-    const std::wstring locPath = Utils::selfLocate().wstring();
-    HRESULT hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(
-            HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\CLSID\\" TOAST_UUID L"\\LocalServer32", nullptr,
-            REG_SZ, locPath.c_str(), static_cast<DWORD>(locPath.size() * sizeof(wchar_t))));
+    tLog << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << L" "
+         << callbackUUID;
+    if (!callbackUUID.empty()) {
+        /**
+         * Add CToastNotificationActivationCallback to registry
+         * Required to use the CToastNotificationActivationCallback for buttons and textbox
+         * interactions. windows.ui.notifications does not support user interaction from cpp
+         */
+        const std::wstring locPath = Utils::selfLocate().wstring();
+        std::wstringstream url;
+        url << L"SOFTWARE\\Classes\\CLSID\\" << callbackUUID << L"\\LocalServer32";
+        hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(
+                HKEY_CURRENT_USER, url.str().c_str(), nullptr, REG_SZ, locPath.c_str(),
+                static_cast<DWORD>(locPath.size() * sizeof(wchar_t))));
+    }
 
     if (SUCCEEDED(hr)) {
         ComPtr<IShellLink> shellLink;
@@ -101,25 +105,23 @@ HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath,
                         hr = InitPropVariantFromString(appID.c_str(), &appIdPropVar);
                         if (SUCCEEDED(hr)) {
                             hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+                            PropVariantClear(&appIdPropVar);
+                        }
+                    }
+                    if (SUCCEEDED(hr) && !callbackUUID.empty()) {
+                        PROPVARIANT toastActivatorPropVar = {};
+                        toastActivatorPropVar.vt = VT_CLSID;
+                        CLSIDFromString(callbackUUID.c_str(), toastActivatorPropVar.puuid);
+                        hr = propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
+                                                     toastActivatorPropVar);
+                    }
+                    if (SUCCEEDED(hr)) {
+                        hr = propertyStore->Commit();
+                        if (SUCCEEDED(hr)) {
+                            ComPtr<IPersistFile> persistFile;
+                            hr = shellLink.As(&persistFile);
                             if (SUCCEEDED(hr)) {
-                                PropVariantClear(&appIdPropVar);
-                                PROPVARIANT toastActivatorPropVar;
-                                toastActivatorPropVar.vt = VT_CLSID;
-                                toastActivatorPropVar.puuid = const_cast<CLSID *>(
-                                        &__uuidof(CToastNotificationActivationCallback));
-
-                                hr = propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
-                                                             toastActivatorPropVar);
-                                if (SUCCEEDED(hr)) {
-                                    hr = propertyStore->Commit();
-                                    if (SUCCEEDED(hr)) {
-                                        ComPtr<IPersistFile> persistFile;
-                                        hr = shellLink.As(&persistFile);
-                                        if (SUCCEEDED(hr)) {
-                                            hr = persistFile->Save(shortcutPath.c_str(), TRUE);
-                                        }
-                                    }
-                                }
+                                hr = persistFile->Save(shortcutPath.c_str(), TRUE);
                             }
                         }
                     }

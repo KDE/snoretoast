@@ -19,17 +19,22 @@
 
 #include "snoretoasts.h"
 
-class LinkHelper
+class LIBSNORETOAST_EXPORT LinkHelper
 {
 public:
     static HRESULT tryCreateShortcut(const std::filesystem::path &shortcutPath,
                                      const std::filesystem::path &exePath,
-                                     const std::wstring &appID);
-    static HRESULT tryCreateShortcut(const std::wstring &appID);
+                                     const std::wstring &appID,
+                                     const std::wstring &callbackUUID = {});
+
+    static HRESULT tryCreateShortcut(const std::filesystem::path &shortcutPath,
+                                     const std::wstring &appID,
+                                     const std::wstring &callbackUUID = {});
 
 private:
     static HRESULT installShortcut(const std::filesystem::path &shortcutPath,
-                                   const std::filesystem::path &exePath, const std::wstring &appID);
+                                   const std::filesystem::path &exePath, const std::wstring &appID,
+                                   const std::wstring &callbackUUID = {});
 
     static std::filesystem::path startmenuPath();
 };

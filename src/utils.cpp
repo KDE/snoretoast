@@ -28,6 +28,7 @@ using namespace Microsoft::WRL;
 namespace {
 bool s_registered = false;
 }
+
 namespace Utils {
 
 bool registerActivator()

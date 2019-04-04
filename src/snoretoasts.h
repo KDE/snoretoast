@@ -17,8 +17,8 @@
 */
 #pragma once
 
-#include "stringreferencewrapper.h"
 #include "snoretoastactions.h"
+#include "libsnoretoast_export.h"
 
 #include <sdkddkver.h>
 
@@ -44,12 +44,13 @@
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 
-class ToastEventHandler;
-
-class SnoreToasts
+class LIBSNORETOAST_EXPORT SnoreToasts
 {
 public:
     static std::wstring version();
+    static void waitForCallbackActivation();
+    static HRESULT backgroundCallback(const std::wstring &appUserModelId,
+                                      const std::wstring &invokedArgs, const std::wstring &msg);
 
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
@@ -97,27 +98,6 @@ private:
 
     void printXML();
 
-    std::wstring m_appID;
-    std::filesystem::path m_pipeName;
-    std::filesystem::path m_application;
-
-    std::wstring m_title;
-    std::wstring m_body;
-    std::filesystem::path m_image;
-    std::wstring m_sound = L"Notification.Default";
-    std::wstring m_id;
-    std::wstring m_buttons;
-    bool m_silent;
-    bool m_wait;
-    bool m_textbox;
-
-    SnoreToastActions::Actions m_action = SnoreToastActions::Actions::Clicked;
-
-    Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument> m_toastXml;
-    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotificationManagerStatics>
-            m_toastManager;
-    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotifier> m_notifier;
-    Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification> m_notification;
-
-    Microsoft::WRL::ComPtr<ToastEventHandler> m_eventHanlder;
+    friend class SnoreToastsPrivate;
+    SnoreToastsPrivate *d;
 };
