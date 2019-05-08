@@ -1,5 +1,5 @@
 
-add_library(libsnoretoast SHARED snoretoasts.cpp toasteventhandler.cpp linkhelper.cpp utils.cpp)
+add_library(libsnoretoast STATIC snoretoasts.cpp toasteventhandler.cpp linkhelper.cpp utils.cpp)
 target_link_libraries(libsnoretoast PUBLIC runtimeobject shlwapi)
 target_compile_definitions(libsnoretoast PRIVATE UNICODE _UNICODE __WRL_CLASSIC_COM_STRICT__ WIN32_LEAN_AND_MEAN NOMINMAX)
 target_compile_definitions(libsnoretoast PUBLIC __WRL_CLASSIC_COM_STRICT__)
