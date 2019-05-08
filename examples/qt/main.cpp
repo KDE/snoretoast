@@ -25,6 +25,9 @@
 
 #include <iostream>
 
+
+#include "../../src/snoretoastactions.h"
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -32,12 +35,22 @@ int main(int argc, char *argv[])
     QObject::connect(server, &QLocalServer::newConnection, server, [server]() {
         auto sock = server->nextPendingConnection();
         sock->waitForReadyRead();
-        qDebug() << sock->bytesAvailable();
         const QByteArray rawData = sock->readAll();
         const QString data =
                 QString::fromWCharArray(reinterpret_cast<const wchar_t *>(rawData.constData()),
                                         rawData.size() / sizeof(wchar_t));
+        QMap<QString, QString> map;
+        for (const auto &str : data.split(";"))
+        {
+            const auto index  = str.indexOf("=");
+            map[str.mid(0, index)] = str.mid(index + 1);
+        }
+        const auto action = map["action"];
+        std::wstring waction(action.size(), 0);
+        action.toWCharArray(waction.data());
+
         std::wcout << qPrintable(data) << std::endl;
+        std::wcout << "Action: " << waction << " " <<  static_cast<int>(SnoreToastActions::getAction(waction)) << std::endl;
 
         // TODO: parse data
     });
@@ -64,7 +77,6 @@ int main(int argc, char *argv[])
                       "-id", QString::number(id++), "-appId", appId, "-application",
                       a.applicationFilePath() });
         proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc] {
-            std::wcout << qPrintable(proc->errorString()) << std::endl;
             std::wcout << qPrintable(proc->readAll()) << std::endl;
             std::wcout << proc->exitCode() << std::endl;
         });
