@@ -17,8 +17,17 @@
 */
 #pragma once
 
-#include <string_view>
+#include <string>
+#include <map>
 #include <vector>
+
+#if __cplusplus > 201402L || _HAS_CXX17
+#define SNORE_HAS_CXX17
+#endif
+
+#ifdef SNORE_HAS_CXX17
+#include <string_view>
+#endif
 
 class SnoreToastActions
 {
@@ -34,23 +43,44 @@ public:
         Error = -1
     };
 
-    static constexpr std::wstring_view getActionString(const Actions &a)
+    static const inline std::wstring& getActionString(const Actions &a)
     {
-        return ActionStrings[static_cast<int>(a)];
+        return actionMap().at(a);
     }
 
-    static inline SnoreToastActions::Actions getAction(const std::wstring_view &s)
+    static inline SnoreToastActions::Actions getAction(const std::wstring &s)
     {
-        for (unsigned int i = 0; i <= sizeof(ActionStrings); ++i) {
-            if (ActionStrings[i].compare(s) == 0) {
-                return static_cast<SnoreToastActions::Actions>(i);
+        for (const auto &a : actionMap()) {
+            if (a.second.compare(s) == 0) {
+                return a.first;
             }
         }
         return SnoreToastActions::Actions::Error;
     }
 
+
+#ifdef SNORE_HAS_CXX17
+    static inline SnoreToastActions::Actions getAction(const std::wstring_view &s)
+    {
+        for (const auto &a : actionMap()) {
+            if (a.second.compare(s) == 0) {
+                return a.first;
+            }
+        }
+        return SnoreToastActions::Actions::Error;
+    }
+#endif
+
 private:
-    static constexpr std::wstring_view ActionStrings[] = {
-        L"clicked", L"hidden", L"dismissed", L"timedout", L"buttonClicked", L"textEntered",
-    };
+    static const std::map<Actions, std::wstring> &actionMap(){
+        static const std::map<Actions, std::wstring> _ActionStrings = {
+            {Actions::Clicked, L"clicked"},
+            {Actions::Hidden, L"hidden"},
+            {Actions::Dismissed, L"dismissed"},
+            {Actions::Timedout, L"timedout"},
+            {Actions::ButtonClicked, L"buttonClicked"},
+            {Actions::TextEntered, L"textEntered"}
+        };
+        return _ActionStrings;
+    }
 };
