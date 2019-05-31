@@ -8,6 +8,11 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5Core)
 find_package(Qt5Network)
+find_package(LibSnoreToast QUIET)
+
+if (NOT TARGET SnoreToast::SnoreToast)
+    message(FATAL_ERROR "LibSnoreToasts is requried")
+endif()
 
 add_executable(${PROJECT_NAME} "main.cpp")
 

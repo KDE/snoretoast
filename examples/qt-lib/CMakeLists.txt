@@ -10,6 +10,8 @@ find_package(Qt5Core)
 find_package(Qt5Gui)
 find_package(Qt5Network)
 
+find_package(LibSnoreToast QUIET)
+
 add_executable(${PROJECT_NAME} "main.cpp")
 
-target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui libsnoretoast)
+target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui SnoreToast::LibSnoreToast SnoreToast::LibSnoreToastActions)
