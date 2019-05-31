@@ -6,11 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5Core)
-find_package(Qt5Gui)
-find_package(Qt5Network)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Network REQUIRED)
 
-find_package(LibSnoreToast QUIET)
+if (NOT TARGET SnoreToast::LibSnoreToast)
+    find_package(LibSnoreToast REQUIRED)
+endif()
 
 add_executable(${PROJECT_NAME} "main.cpp")
 

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4)
 project( snoretoast VERSION 0.5.99)
 
 
-option(BUILD_EXAMPLES "Whether to build the examples" ON)
+option(BUILD_EXAMPLES "Whether to build the examples" OFF)
 
 include(GenerateExportHeader)
 
