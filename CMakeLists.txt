@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.4)
 
 project( snoretoast VERSION 0.5.99)
 
+
+option(BUILD_EXAMPLES "Whether to build the examples" ON)
+
 include(GenerateExportHeader)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -12,4 +15,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 add_subdirectory(data)
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if (BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
