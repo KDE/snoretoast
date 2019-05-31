@@ -618,9 +618,12 @@ HRESULT SnoreToasts::createToast()
 
 std::wstring SnoreToasts::version()
 {
-    // if there are changes to the callback mechanism we need to change the uuid for the activator
-    // TOAST_UUID
-    return L"0.5.99";
+    static std::wstring ver = []{
+        std::wstringstream st;
+        st << SNORETOAST_VERSION_MAJOR << L"." << SNORETOAST_VERSION_MINOR << L"." << SNORETOAST_VERSION_PATCH;
+        return st.str();
+    }();
+    return ver;
 }
 
 HRESULT SnoreToasts::backgroundCallback(const std::wstring &appUserModelId,
