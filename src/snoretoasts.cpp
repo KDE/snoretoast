@@ -586,7 +586,6 @@ HRESULT SnoreToasts::createToast()
                             hr = setEventHandler(d->m_notification);
                         } else {
                             std::wcerr << L"Notifications are disabled" << std::endl << L"Reason: ";
-
                             switch (setting) {
                             case NotificationSetting_DisabledForApplication:
                                 std::wcerr << L"DisabledForApplication" << std::endl;
@@ -600,10 +599,14 @@ HRESULT SnoreToasts::createToast()
                             case NotificationSetting_DisabledByManifest:
                                 std::wcerr << L"DisabledByManifest" << std::endl;
                                 break;
+                            case NotificationSetting_Enabled:
+                                // unreachable
+                                break;
                             }
                             std::wcerr << L"Please make sure that the app id is set correctly."
                                        << std::endl;
                             std::wcerr << L"Command Line: " << GetCommandLineW() << std::endl;
+                            hr = S_FALSE;
                         }
                     }
                     if (SUCCEEDED(hr)) {
