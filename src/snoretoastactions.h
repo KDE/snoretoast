@@ -35,7 +35,7 @@ public:
         Error = -1
     };
 
-    static const inline std::wstring& getActionString(const Actions &a)
+    static const inline std::wstring &getActionString(const Actions &a)
     {
         return actionMap().at(a);
     }
@@ -51,17 +51,16 @@ public:
         return SnoreToastActions::Actions::Error;
     }
 
-
-
 private:
-    static const std::map<Actions, std::wstring> &actionMap(){
+    static const std::map<Actions, std::wstring> &actionMap()
+    {
         static const std::map<Actions, std::wstring> _ActionStrings = {
-            {Actions::Clicked, L"clicked"},
-            {Actions::Hidden, L"hidden"},
-            {Actions::Dismissed, L"dismissed"},
-            {Actions::Timedout, L"timedout"},
-            {Actions::ButtonClicked, L"buttonClicked"},
-            {Actions::TextEntered, L"textEntered"}
+            { Actions::Clicked, L"clicked" },
+            { Actions::Hidden, L"hidden" },
+            { Actions::Dismissed, L"dismissed" },
+            { Actions::Timedout, L"timedout" },
+            { Actions::ButtonClicked, L"buttonClicked" },
+            { Actions::TextEntered, L"textEntered" }
         };
         return _ActionStrings;
     }

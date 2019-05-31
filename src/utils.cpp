@@ -133,7 +133,7 @@ bool startProcess(const std::filesystem::path &app)
 std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view>> &data)
 {
     std::wstringstream out;
-    const auto add = [&](const std::pair<std::wstring_view, std::wstring_view>& p){
+    const auto add = [&](const std::pair<std::wstring_view, std::wstring_view> &p) {
         if (!p.second.empty()) {
             out << p.first << L"=" << p.second << L";";
         }
@@ -144,7 +144,6 @@ std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstr
     add({ L"version", SnoreToasts::version() });
     return out.str();
 }
-
 }
 
 ToastLog::ToastLog()

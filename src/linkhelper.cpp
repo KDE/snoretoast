@@ -111,8 +111,7 @@ HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath,
                     if (SUCCEEDED(hr) && !callbackUUID.empty()) {
                         GUID guid;
                         hr = CLSIDFromString(callbackUUID.c_str(), &guid);
-                        if (SUCCEEDED(hr))
-                        {
+                        if (SUCCEEDED(hr)) {
                             tLog << guid.Data1;
                             PROPVARIANT toastActivatorPropVar = {};
                             toastActivatorPropVar.vt = VT_CLSID;

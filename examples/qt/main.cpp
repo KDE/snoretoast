@@ -25,7 +25,6 @@
 
 #include <iostream>
 
-
 #include "../../src/snoretoastactions.h"
 
 int main(int argc, char *argv[])
@@ -40,9 +39,8 @@ int main(int argc, char *argv[])
                 QString::fromWCharArray(reinterpret_cast<const wchar_t *>(rawData.constData()),
                                         rawData.size() / sizeof(wchar_t));
         QMap<QString, QString> map;
-        for (const auto &str : data.split(";"))
-        {
-            const auto index  = str.indexOf("=");
+        for (const auto &str : data.split(";")) {
+            const auto index = str.indexOf("=");
             map[str.mid(0, index)] = str.mid(index + 1);
         }
         const auto action = map["action"];
@@ -50,7 +48,8 @@ int main(int argc, char *argv[])
         action.toWCharArray(waction.data());
 
         std::wcout << qPrintable(data) << std::endl;
-        std::wcout << "Action: " << waction << " " <<  static_cast<int>(SnoreToastActions::getAction(waction)) << std::endl;
+        std::wcout << "Action: " << waction << " "
+                   << static_cast<int>(SnoreToastActions::getAction(waction)) << std::endl;
 
         // TODO: parse data
     });
