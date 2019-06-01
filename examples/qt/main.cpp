@@ -25,7 +25,7 @@
 
 #include <iostream>
 
-#include "../../src/snoretoastactions.h"
+#include <snoretoastactions.h>
 
 int main(int argc, char *argv[])
 {
