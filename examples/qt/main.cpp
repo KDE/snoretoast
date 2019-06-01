@@ -44,12 +44,11 @@ int main(int argc, char *argv[])
             map[str.mid(0, index)] = str.mid(index + 1);
         }
         const auto action = map["action"];
-        std::wstring waction(action.size(), 0);
-        action.toWCharArray(waction.data());
+        const auto snoreAction = SnoreToastActions::getAction(action.toStdWString());
 
         std::wcout << qPrintable(data) << std::endl;
-        std::wcout << "Action: " << waction << " "
-                   << static_cast<int>(SnoreToastActions::getAction(waction)) << std::endl;
+        std::wcout << "Action: " << qPrintable(action) << " " << static_cast<int>(snoreAction)
+                   << std::endl;
 
         // TODO: parse data
     });
