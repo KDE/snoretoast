@@ -239,6 +239,17 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
             return SnoreToastActions::Actions::Error;
         }
     }
+    if (appID.empty()) {
+        std::wstringstream _appID;
+        _appID << L"Snore.DesktopToasts." << SnoreToasts::version();
+        appID = _appID.str();
+        hr = LinkHelper::tryCreateShortcut(std::filesystem::path(L"SnoreToast")
+                                                   / SnoreToasts::version() / L"SnoreToast",
+                                           appID, SnoreToastActionCenterIntegration::uuid());
+        if (!SUCCEEDED(hr)) {
+            return SnoreToastActions::Actions::Error;
+        }
+    }
     if (closeNotify) {
         if (!id.empty()) {
             SnoreToasts app(appID);
@@ -252,35 +263,24 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
     } else {
         hr = (title.length() > 0 && body.length() > 0) ? S_OK : E_FAIL;
         if (SUCCEEDED(hr)) {
-            if (appID.empty()) {
-                std::wstringstream _appID;
-                _appID << L"Snore.DesktopToasts." << SnoreToasts::version();
-                appID = _appID.str();
-                hr = LinkHelper::tryCreateShortcut(std::filesystem::path(L"SnoreToast")
-                                                           / SnoreToasts::version() / L"SnoreToast",
-                                                   appID,
-                                                   SnoreToastActionCenterIntegration::uuid());
-            }
-            if (SUCCEEDED(hr)) {
-                if (isTextBoxEnabled) {
-                    if (pipe.empty()) {
-                        std::wcerr << L"TextBox notifications only work if a pipe for the result "
-                                      L"was provided"
-                                   << std::endl;
-                        return SnoreToastActions::Actions::Error;
-                    };
+            if (isTextBoxEnabled) {
+                if (pipe.empty()) {
+                    std::wcerr << L"TextBox notifications only work if a pipe for the result "
+                                  L"was provided"
+                               << std::endl;
+                    return SnoreToastActions::Actions::Error;
                 }
-                SnoreToasts app(appID);
-                app.setPipeName(pipe);
-                app.setApplication(application);
-                app.setSilent(silent);
-                app.setSound(sound);
-                app.setId(id);
-                app.setButtons(buttons);
-                app.setTextBoxEnabled(isTextBoxEnabled);
-                app.displayToast(title, body, image, wait);
-                return app.userAction();
             }
+            SnoreToasts app(appID);
+            app.setPipeName(pipe);
+            app.setApplication(application);
+            app.setSilent(silent);
+            app.setSound(sound);
+            app.setId(id);
+            app.setButtons(buttons);
+            app.setTextBoxEnabled(isTextBoxEnabled);
+            app.displayToast(title, body, image, wait);
+            return app.userAction();
         } else {
             help(L"");
             return SnoreToastActions::Actions::Clicked;

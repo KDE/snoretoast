@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <comdef.h>
 #include <filesystem>
 #include <sstream>
 #include <unordered_map>
@@ -55,6 +56,16 @@ private:
 template<typename T>
 ToastLog &operator<<(ToastLog &log, const T &t)
 {
-    log.m_log << t;
+    log.m_log << L" " << t;
+    return log;
+}
+
+template<>
+inline ToastLog &operator<<(ToastLog &log, const HRESULT &hr)
+{
+    if (hr) {
+        _com_error err(hr);
+        log.m_log << L" Error: " << hr << L" " << err.ErrorMessage();
+    }
     return log;
 }

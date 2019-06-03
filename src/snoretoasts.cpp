@@ -36,6 +36,18 @@ public:
     SnoreToastsPrivate(SnoreToasts *parent, const std::wstring &appID)
         : m_parent(parent), m_appID(appID), m_id(std::to_wstring(GetCurrentProcessId()))
     {
+
+        HRESULT hr = GetActivationFactory(
+                StringReferenceWrapper(
+                        RuntimeClass_Windows_UI_Notifications_ToastNotificationManager)
+                        .Get(),
+                &m_toastManager);
+        if (!SUCCEEDED(hr)) {
+            std::wcerr << L"SnoreToasts: Failed to register com Factory, please make sure you "
+                          L"correctly initialised with RO_INIT_MULTITHREADED"
+                       << std::endl;
+            m_action = SnoreToastActions::Actions::Error;
+        }
     }
     SnoreToasts *m_parent;
 
@@ -71,6 +83,23 @@ public:
         }();
         return _event;
     }
+
+    ComPtr<IToastNotificationHistory> getHistory()
+    {
+        // TODO: refactor
+
+        HRESULT hr = S_OK;
+        ComPtr<IToastNotificationManagerStatics2> toastStatics2;
+        hr = m_toastManager.As(&toastStatics2);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IToastNotificationHistory> nativeHistory;
+            hr = toastStatics2->get_History(&nativeHistory);
+            if (SUCCEEDED(hr)) {
+                return nativeHistory;
+            }
+        }
+        return {};
+    }
 };
 
 SnoreToasts::SnoreToasts(const std::wstring &appID) : d(new SnoreToastsPrivate(this, appID))
@@ -92,18 +121,6 @@ void SnoreToasts::displayToast(const std::wstring &title, const std::wstring &bo
     d->m_body = body;
     d->m_image = image;
     d->m_wait = wait;
-
-    hr = GetActivationFactory(
-            StringReferenceWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager)
-                    .Get(),
-            &d->m_toastManager);
-    if (!SUCCEEDED(hr)) {
-        std::wcerr << L"SnoreToasts: Failed to register com Factory, please make sure you "
-                      L"correctly initialised with RO_INIT_MULTITHREADED"
-                   << std::endl;
-        d->m_action = SnoreToastActions::Actions::Error;
-        return;
-    }
 
     if (!d->m_image.empty()) {
         hr = d->m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText02,
@@ -204,6 +221,17 @@ bool SnoreToasts::closeNotification()
     if (event) {
         SetEvent(event);
         return true;
+    }
+    auto history = d->getHistory();
+    if (history.Get()) {
+        HRESULT hr = S_OK;
+        hr = history->RemoveGroupedTagWithId(StringReferenceWrapper(d->m_id).Get(),
+                                             StringReferenceWrapper(L"SnoreToast").Get(),
+                                             StringReferenceWrapper(d->m_appID).Get());
+        if (SUCCEEDED(hr)) {
+            return true;
+        }
+        tLog << hr;
     }
     tLog << "Notification " << d->m_id << " does not exist";
     return false;
@@ -579,6 +607,14 @@ HRESULT SnoreToasts::createToast()
             if (SUCCEEDED(hr)) {
                 hr = factory->CreateToastNotification(d->m_toastXml.Get(), &d->m_notification);
                 if (SUCCEEDED(hr)) {
+                    ComPtr<Notifications::IToastNotification2> toastV2;
+                    hr = d->m_notification.As(&toastV2);
+                    if (SUCCEEDED(hr)) {
+                        hr = toastV2->put_Tag(StringReferenceWrapper(d->m_id).Get());
+                        tLog << "Put Tag:" << d->m_id << hr;
+                        hr = toastV2->put_Group(StringReferenceWrapper(L"SnoreToast").Get());
+                        tLog << "Put Group: SnoreToast" << hr;
+                    }
                     if (d->m_wait) {
                         NotificationSetting setting = NotificationSetting_Enabled;
                         d->m_notifier->get_Setting(&setting);
@@ -641,7 +677,6 @@ HRESULT SnoreToasts::backgroundCallback(const std::wstring &appUserModelId,
     if (action == SnoreToastActions::Actions::TextEntered) {
         std::wstringstream sMsg;
         sMsg << invokedArgs << L"text=" << msg;
-        ;
         dataString = sMsg.str();
     } else {
         dataString = invokedArgs;
