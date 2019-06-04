@@ -486,50 +486,53 @@ std::wstring SnoreToasts::formatAction(
 // Create and display the toast
 HRESULT SnoreToasts::createToast()
 {
-    ReturnOnErrorHr(d->m_toastManager->CreateToastNotifierWithId(StringRef(d->m_appID).Get(),
-                                                                 &d->m_notifier));
+    ReturnOnErrorHr(d->m_toastManager->CreateToastNotifierWithId(
+            HStringReference(d->m_appID.data()).Get(), &d->m_notifier));
 
     ComPtr<IToastNotificationFactory> factory;
     ReturnOnErrorHr(GetActivationFactory(
-            StringRef(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &factory));
+            HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
+            &factory));
     ReturnOnErrorHr(factory->CreateToastNotification(d->m_toastXml.Get(), &d->m_notification));
 
     ComPtr<Notifications::IToastNotification2> toastV2;
     if (SUCCEEDED(d->m_notification.As(&toastV2))) {
-        ReturnOnErrorHr(toastV2->put_Tag(StringRef(d->m_id).Get()));
-        ReturnOnErrorHr(toastV2->put_Group(StringRef(L"SnoreToast").Get()));
+        ReturnOnErrorHr(toastV2->put_Tag(HStringReference(d->m_id.data()).Get()));
+        ReturnOnErrorHr(toastV2->put_Group(HStringReference(L"SnoreToast").Get()));
     }
 
-    if (d->m_wait) {
-        NotificationSetting setting = NotificationSetting_Enabled;
-        d->m_notifier->get_Setting(&setting);
-        if (setting == NotificationSetting_Enabled) {
+    std::wstring error;
+    NotificationSetting setting;
+    ReturnOnErrorHr(d->m_notifier->get_Setting(&setting));
+
+    switch (setting) {
+    case NotificationSetting_DisabledForApplication:
+        error = L"DisabledForApplication";
+        break;
+    case NotificationSetting_DisabledForUser:
+        error = L"DisabledForUser";
+        break;
+    case NotificationSetting_DisabledByGroupPolicy:
+        error = L"DisabledByGroupPolicy";
+        break;
+    case NotificationSetting_DisabledByManifest:
+        error = L"DisabledByManifest";
+        break;
+    case NotificationSetting_Enabled:
+        if (d->m_wait) {
             ReturnOnErrorHr(setEventHandler(d->m_notification));
-        } else {
-            std::wcerr << L"Notifications are disabled" << std::endl << L"Reason: ";
-            switch (setting) {
-            case NotificationSetting_DisabledForApplication:
-                std::wcerr << L"DisabledForApplication" << std::endl;
-                break;
-            case NotificationSetting_DisabledForUser:
-                std::wcerr << L"DisabledForUser" << std::endl;
-                break;
-            case NotificationSetting_DisabledByGroupPolicy:
-                std::wcerr << L"DisabledByGroupPolicy" << std::endl;
-                break;
-            case NotificationSetting_DisabledByManifest:
-                std::wcerr << L"DisabledByManifest" << std::endl;
-                break;
-            case NotificationSetting_Enabled:
-                // unreachable
-                break;
-            }
-            std::wcerr << L"Please make sure that the app id is set correctly." << std::endl;
-            std::wcerr << L"Command Line: " << GetCommandLineW() << std::endl;
-            return S_FALSE;
         }
+        break;
     }
-
+    if (!error.empty()) {
+        std::wstringstream err;
+        err << L"Notifications are disabled\n"
+            << L"Reason: " << error << L"Please make sure that the app id is set correctly.\n"
+            << L"Command Line: " << GetCommandLineW();
+        tLog << err.str();
+        std::wcerr << err.str() << std::endl;
+        return S_FALSE;
+    }
     return d->m_notifier->Show(d->m_notification.Get());
 }
 
