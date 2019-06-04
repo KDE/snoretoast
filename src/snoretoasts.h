@@ -55,8 +55,8 @@ public:
     SnoreToasts(const std::wstring &appID);
     ~SnoreToasts();
 
-    void displayToast(const std::wstring &title, const std::wstring &body,
-                      const std::filesystem::path &image, bool wait);
+    HRESULT displayToast(const std::wstring &title, const std::wstring &body,
+                         const std::filesystem::path &image, bool wait);
     SnoreToastActions::Actions userAction();
     bool closeNotification();
 

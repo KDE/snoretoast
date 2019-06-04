@@ -2,7 +2,7 @@
 #include <winstring.h>
 #include <hstring.h>
 
-class StringReferenceWrapper
+class StringRef
 {
 public:
     // Constructor which takes an existing string buffer and its length as the parameters.
@@ -10,7 +10,7 @@ public:
     // Warning: The caller must ensure the lifetime of the buffer outlives this
     // object as it does not make a copy of the wide string memory.
 
-    StringReferenceWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw()
+    StringRef(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw()
     {
         HRESULT hr = WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
 
@@ -20,7 +20,7 @@ public:
         }
     }
 
-    StringReferenceWrapper(const std::wstring &stringRef) throw() : m_data(stringRef)
+    StringRef(const std::wstring &stringRef) throw() : m_data(stringRef)
     {
         HRESULT hr = WindowsCreateStringReference(
                 m_data.c_str(), static_cast<UINT32>(m_data.length()), &_header, &_hstring);
@@ -31,10 +31,10 @@ public:
         }
     }
 
-    ~StringReferenceWrapper() { WindowsDeleteString(_hstring); }
+    ~StringRef() { WindowsDeleteString(_hstring); }
 
     template<size_t N>
-    StringReferenceWrapper(_In_reads_(N) wchar_t const (&stringRef)[N]) throw()
+    StringRef(_In_reads_(N) wchar_t const (&stringRef)[N]) throw()
     {
         UINT32 length = N - 1;
         HRESULT hr = WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
@@ -46,7 +46,7 @@ public:
     }
 
     template<size_t _>
-    StringReferenceWrapper(_In_reads_(_) wchar_t (&stringRef)[_]) throw()
+    StringRef(_In_reads_(_) wchar_t (&stringRef)[_]) throw()
     {
         UINT32 length;
         HRESULT hr = SizeTToUInt32(wcslen(stringRef), &length);

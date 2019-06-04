@@ -23,19 +23,7 @@
 #include <sstream>
 #include <unordered_map>
 
-namespace Utils {
-bool registerActivator();
-void unregisterActivator();
-
-std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::wstring_view &data);
-
-const std::filesystem::path &selfLocate();
-
-std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view>> &data);
-
-bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait = false);
-bool startProcess(const std::filesystem::path &app);
-};
+class ToastLog;
 
 class ToastLog
 {
@@ -51,8 +39,6 @@ private:
     friend ToastLog &operator<<(ToastLog &, const T &);
 };
 
-#define tLog ToastLog().log() << __FUNCSIG__ << L"\n\t\t"
-
 template<typename T>
 ToastLog &operator<<(ToastLog &log, const T &t)
 {
@@ -63,9 +49,42 @@ ToastLog &operator<<(ToastLog &log, const T &t)
 template<>
 inline ToastLog &operator<<(ToastLog &log, const HRESULT &hr)
 {
-    if (hr) {
+    if (FAILED(hr)) {
         _com_error err(hr);
         log.m_log << L" Error: " << hr << L" " << err.ErrorMessage();
     }
     return log;
 }
+
+#define tLog ToastLog().log() << __FUNCSIG__ << L"\n\t\t"
+
+#define ReturnOnErrorHr(hr)                                                                        \
+    do {                                                                                           \
+        if (!SUCCEEDED(hr)) {                                                                      \
+            tLog << hr;                                                                            \
+            return hr;                                                                             \
+        }                                                                                          \
+    } while (false)
+
+namespace Utils {
+bool registerActivator();
+void unregisterActivator();
+
+std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::wstring_view &data);
+
+const std::filesystem::path &selfLocate();
+
+std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstring_view>> &data);
+
+bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait = false);
+bool startProcess(const std::filesystem::path &app);
+
+inline bool checkResult(const HRESULT &hr)
+{
+    if (FAILED(hr)) {
+        tLog << hr;
+        return false;
+    }
+    return true;
+}
+};
