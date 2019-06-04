@@ -61,7 +61,7 @@ inline ToastLog &operator<<(ToastLog &log, const HRESULT &hr)
 #define ReturnOnErrorHr(hr)                                                                        \
     do {                                                                                           \
         HRESULT _tmp = hr;                                                                         \
-        if (!SUCCEEDED(_tmp)) {                                                                    \
+        if (FAILED(_tmp)) {                                                                        \
             tLog << ##hr << _tmp;                                                                  \
             return _tmp;                                                                           \
         }                                                                                          \

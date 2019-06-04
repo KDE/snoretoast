@@ -148,7 +148,7 @@ std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstr
 
 ToastLog::ToastLog()
 {
-    *this << Utils::selfLocate() << L" v" << SnoreToasts::version() << L"\n\t";
+    *this << Utils::selfLocate() << L"v" << SnoreToasts::version() << L"\n\t";
 }
 
 ToastLog::~ToastLog()

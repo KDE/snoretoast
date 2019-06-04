@@ -74,8 +74,7 @@ void help(const std::wstring &error)
             << L"[-application] <C:\\foo.exe>\t| Provide a application that might be started if "
                L"the pipe does not exist."
             << std::endl
-            << L"-close <id>\t\t| Closes a currently displayed notification."
-            << std::endl
+            << L"-close <id>\t\t| Closes a currently displayed notification." << std::endl
             << std::endl
             << L"-install <name> <application> <appID>| Creates a shortcut <name> in the start "
                L"menu which point to the executable <application>, appID used for the "

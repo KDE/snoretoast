@@ -398,7 +398,8 @@ HRESULT SnoreToasts::setNodeValueString(const HSTRING &inputString, IXmlNode *no
 HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *attributeMap)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
-    HRESULT hr = d->m_toastXml->CreateAttribute(HStringReference(name.c_str()).Get(), &srcAttribute);
+    HRESULT hr =
+            d->m_toastXml->CreateAttribute(HStringReference(name.c_str()).Get(), &srcAttribute);
 
     if (SUCCEEDED(hr)) {
         ComPtr<IXmlNode> node;

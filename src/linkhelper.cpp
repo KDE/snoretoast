@@ -40,7 +40,7 @@ HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
                                       const std::filesystem::path &exePath,
                                       const std::wstring &appID, const std::wstring &callbackUUID)
 {
-    if (!std::filesystem::path(shortcutPath).is_relative()) {
+    if (!shortcutPath.is_relative()) {
         std::wcerr << L"The shortcut path must be relative" << std::endl;
         return S_FALSE;
     }
@@ -68,7 +68,6 @@ HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath,
                                     const std::filesystem::path &exePath, const std::wstring &appID,
                                     const std::wstring &callbackUUID)
 {
-    HRESULT hr = S_OK;
     std::wcout << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID
                << std::endl;
     tLog << L"Installing shortcut: " << shortcutPath << L" " << exePath << L" " << appID << L" "
@@ -80,65 +79,47 @@ HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath,
          * interactions. windows.ui.notifications does not support user interaction from cpp
          */
         const std::wstring locPath = Utils::selfLocate().wstring();
-        std::wstringstream url;
-        url << L"SOFTWARE\\Classes\\CLSID\\" << callbackUUID << L"\\LocalServer32";
-        hr = HRESULT_FROM_WIN32(::RegSetKeyValueW(
-                HKEY_CURRENT_USER, url.str().c_str(), nullptr, REG_SZ, locPath.c_str(),
-                static_cast<DWORD>(locPath.size() * sizeof(wchar_t))));
+        const std::wstring url = [&callbackUUID] {
+            std::wstringstream url;
+            url << L"SOFTWARE\\Classes\\CLSID\\" << callbackUUID << L"\\LocalServer32";
+            return url.str();
+        }();
+        tLog << url;
+        ReturnOnErrorHr(HRESULT_FROM_WIN32(
+                ::RegSetKeyValueW(HKEY_CURRENT_USER, url.c_str(), nullptr, REG_SZ, locPath.c_str(),
+                                  static_cast<DWORD>(locPath.size() * sizeof(wchar_t)))));
     }
 
-    if (SUCCEEDED(hr)) {
-        ComPtr<IShellLink> shellLink;
-        hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
-                              IID_PPV_ARGS(&shellLink));
+    ComPtr<IShellLink> shellLink;
+    ReturnOnErrorHr(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
+                                     IID_PPV_ARGS(&shellLink)));
+    ReturnOnErrorHr(shellLink->SetPath(exePath.c_str()));
+    ReturnOnErrorHr(shellLink->SetArguments(L""));
 
-        if (SUCCEEDED(hr)) {
-            hr = shellLink->SetPath(exePath.c_str());
-            if (SUCCEEDED(hr)) {
-                hr = shellLink->SetArguments(L"");
-                if (SUCCEEDED(hr)) {
-                    ComPtr<IPropertyStore> propertyStore;
+    ComPtr<IPropertyStore> propertyStore;
+    ReturnOnErrorHr(shellLink.As(&propertyStore));
 
-                    hr = shellLink.As(&propertyStore);
-                    if (SUCCEEDED(hr)) {
-                        PROPVARIANT appIdPropVar;
-                        hr = InitPropVariantFromString(appID.c_str(), &appIdPropVar);
-                        if (SUCCEEDED(hr)) {
-                            hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
-                            PropVariantClear(&appIdPropVar);
-                        }
-                    }
-                    if (SUCCEEDED(hr) && !callbackUUID.empty()) {
-                        GUID guid;
-                        hr = CLSIDFromString(callbackUUID.c_str(), &guid);
-                        if (SUCCEEDED(hr)) {
-                            tLog << guid.Data1;
-                            PROPVARIANT toastActivatorPropVar = {};
-                            toastActivatorPropVar.vt = VT_CLSID;
-                            toastActivatorPropVar.puuid = &guid;
-                            hr = propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
-                                                         toastActivatorPropVar);
-                        }
-                    }
-                    if (SUCCEEDED(hr)) {
-                        hr = propertyStore->Commit();
-                        if (SUCCEEDED(hr)) {
-                            ComPtr<IPersistFile> persistFile;
-                            hr = shellLink.As(&persistFile);
-                            if (SUCCEEDED(hr)) {
-                                hr = persistFile->Save(shortcutPath.c_str(), TRUE);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    PROPVARIANT appIdPropVar;
+    ReturnOnErrorHr(InitPropVariantFromString(appID.c_str(), &appIdPropVar));
+    ReturnOnErrorHr(propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar));
+    PropVariantClear(&appIdPropVar);
+
+    if (!callbackUUID.empty()) {
+        GUID guid;
+        ReturnOnErrorHr(CLSIDFromString(callbackUUID.c_str(), &guid));
+
+        tLog << guid.Data1;
+        PROPVARIANT toastActivatorPropVar = {};
+        toastActivatorPropVar.vt = VT_CLSID;
+        toastActivatorPropVar.puuid = &guid;
+        ReturnOnErrorHr(propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
+                                                toastActivatorPropVar));
     }
-    if (FAILED(hr)) {
-        std::wcerr << "Failed to install shortcut " << shortcutPath
-                   << "  error: " << _com_error(hr).ErrorMessage() << std::endl;
-    }
-    return hr;
+    ReturnOnErrorHr(propertyStore->Commit());
+
+    ComPtr<IPersistFile> persistFile;
+    ReturnOnErrorHr(shellLink.As(&persistFile));
+    return persistFile->Save(shortcutPath.c_str(), true);
 }
 
 std::filesystem::path LinkHelper::startmenuPath()
