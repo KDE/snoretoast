@@ -15,12 +15,13 @@
     You should have received a copy of the GNU Lesser General Public License
     along with SnoreToast.  If not, see <http://www.gnu.org/licenses/>.
     */
+
 #include "snoretoasts.h"
 #include "toasteventhandler.h"
 #include "linkhelper.h"
 #include "utils.h"
-#include "stringreferencewrapper.h"
 
+#include <wrl\wrappers\corewrappers.h>
 #include <sstream>
 #include <iostream>
 
@@ -29,6 +30,7 @@ using namespace ABI::Windows::UI;
 using namespace ABI::Windows::UI::Notifications;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace Windows::Foundation;
+using namespace Wrappers;
 
 class SnoreToastsPrivate
 {
@@ -38,7 +40,8 @@ public:
     {
 
         HRESULT hr = GetActivationFactory(
-                StringRef(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
+                HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager)
+                        .Get(),
                 &m_toastManager);
         if (!SUCCEEDED(hr)) {
             std::wcerr << L"SnoreToasts: Failed to register com Factory, please make sure you "
@@ -124,7 +127,8 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
                                                               &d->m_toastXml));
     }
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNodeList> rootList;
-    ReturnOnErrorHr(d->m_toastXml->GetElementsByTagName(StringRef(L"toast").Get(), &rootList));
+    ReturnOnErrorHr(
+            d->m_toastXml->GetElementsByTagName(HStringReference(L"toast").Get(), &rootList));
 
     ComPtr<IXmlNode> root;
     ReturnOnErrorHr(rootList->Item(0, &root));
@@ -140,7 +144,7 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
         setTextBox(root);
     }
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> audioElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(StringRef(L"audio").Get(), &audioElement));
+    ReturnOnErrorHr(d->m_toastXml->CreateElement(HStringReference(L"audio").Get(), &audioElement));
 
     ComPtr<IXmlNode> audioNodeTmp;
     ReturnOnErrorHr(audioElement.As(&audioNodeTmp));
@@ -173,6 +177,8 @@ SnoreToastActions::Actions SnoreToasts::userAction()
         HANDLE event = d->m_eventHanlder.Get()->event();
         WaitForSingleObject(event, INFINITE);
         d->m_action = d->m_eventHanlder.Get()->userAction();
+        // the initial value is SnoreToastActions::Actions::Hidden so if no action happend when we
+        // end up here, a hide was requested
         if (d->m_action == SnoreToastActions::Actions::Hidden) {
             d->m_notifier->Hide(d->m_notification.Get());
             tLog << L"The application hid the toast using ToastNotifier.hide()";
@@ -192,11 +198,10 @@ bool SnoreToasts::closeNotification()
         SetEvent(event);
         return true;
     }
-
     if (auto history = d->getHistory()) {
-        if (Utils::checkResult(history->RemoveGroupedTagWithId(StringRef(d->m_id).Get(),
-                                                               StringRef(L"SnoreToast").Get(),
-                                                               StringRef(d->m_appID).Get()))) {
+        if (Utils::checkResult(history->RemoveGroupedTagWithId(
+                    HStringReference(d->m_id.data()).Get(), HStringReference(L"SnoreToast").Get(),
+                    HStringReference(d->m_appID.data()).Get()))) {
             return true;
         }
     }
@@ -240,7 +245,8 @@ void SnoreToasts::setTextBoxEnabled(bool textBoxEnabled)
 HRESULT SnoreToasts::setImage()
 {
     ComPtr<IXmlNodeList> nodeList;
-    ReturnOnErrorHr(d->m_toastXml->GetElementsByTagName(StringRef(L"image").Get(), &nodeList));
+    ReturnOnErrorHr(
+            d->m_toastXml->GetElementsByTagName(HStringReference(L"image").Get(), &nodeList));
 
     ComPtr<IXmlNode> imageNode;
     ReturnOnErrorHr(nodeList->Item(0, &imageNode));
@@ -249,14 +255,16 @@ HRESULT SnoreToasts::setImage()
     ReturnOnErrorHr(imageNode->get_Attributes(&attributes));
 
     ComPtr<IXmlNode> srcAttribute;
-    ReturnOnErrorHr(attributes->GetNamedItem(StringRef(L"src").Get(), &srcAttribute));
-    return setNodeValueString(StringRef(d->m_image).Get(), srcAttribute.Get());
+    ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"src").Get(), &srcAttribute));
+    return setNodeValueString(HStringReference(d->m_image.wstring().data()).Get(),
+                              srcAttribute.Get());
 }
 
 HRESULT SnoreToasts::setSound()
 {
     ComPtr<IXmlNodeList> nodeList;
-    ReturnOnErrorHr(d->m_toastXml->GetElementsByTagName(StringRef(L"audio").Get(), &nodeList));
+    ReturnOnErrorHr(
+            d->m_toastXml->GetElementsByTagName(HStringReference(L"audio").Get(), &nodeList));
 
     ComPtr<IXmlNode> audioNode;
     ReturnOnErrorHr(nodeList->Item(0, &audioNode));
@@ -266,7 +274,7 @@ HRESULT SnoreToasts::setSound()
     ReturnOnErrorHr(audioNode->get_Attributes(&attributes));
     ComPtr<IXmlNode> srcAttribute;
 
-    ReturnOnErrorHr(attributes->GetNamedItem(StringRef(L"src").Get(), &srcAttribute));
+    ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"src").Get(), &srcAttribute));
     std::wstring sound;
     if (d->m_sound.find(L"ms-winsoundevent:") == std::wstring::npos) {
         sound = L"ms-winsoundevent:";
@@ -275,9 +283,9 @@ HRESULT SnoreToasts::setSound()
         sound = d->m_sound;
     }
 
-    ReturnOnErrorHr(setNodeValueString(StringRef(sound).Get(), srcAttribute.Get()));
-    ReturnOnErrorHr(attributes->GetNamedItem(StringRef(L"silent").Get(), &srcAttribute));
-    return setNodeValueString(StringRef(d->m_silent ? L"true" : L"false").Get(),
+    ReturnOnErrorHr(setNodeValueString(HStringReference(sound.data()).Get(), srcAttribute.Get()));
+    ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"silent").Get(), &srcAttribute));
+    return setNodeValueString(HStringReference(d->m_silent ? L"true" : L"false").Get(),
                               srcAttribute.Get());
 }
 
@@ -285,19 +293,21 @@ HRESULT SnoreToasts::setSound()
 HRESULT SnoreToasts::setTextValues()
 {
     ComPtr<IXmlNodeList> nodeList;
-    ReturnOnErrorHr(d->m_toastXml->GetElementsByTagName(StringRef(L"text").Get(), &nodeList));
+    ReturnOnErrorHr(
+            d->m_toastXml->GetElementsByTagName(HStringReference(L"text").Get(), &nodeList));
     // create the title
     ComPtr<IXmlNode> textNode;
     ReturnOnErrorHr(nodeList->Item(0, &textNode));
-    ReturnOnErrorHr(setNodeValueString(StringRef(d->m_title).Get(), textNode.Get()));
+    ReturnOnErrorHr(setNodeValueString(HStringReference(d->m_title.data()).Get(), textNode.Get()));
     ReturnOnErrorHr(nodeList->Item(1, &textNode));
-    return setNodeValueString(StringRef(d->m_body).Get(), textNode.Get());
+    return setNodeValueString(HStringReference(d->m_body.data()).Get(), textNode.Get());
 }
 
 HRESULT SnoreToasts::setButtons(ComPtr<IXmlNode> root)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionsElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(StringRef(L"actions").Get(), &actionsElement));
+    ReturnOnErrorHr(
+            d->m_toastXml->CreateElement(HStringReference(L"actions").Get(), &actionsElement));
 
     ComPtr<IXmlNode> actionsNodeTmp;
     ReturnOnErrorHr(actionsElement.As(&actionsNodeTmp));
@@ -316,7 +326,8 @@ HRESULT SnoreToasts::setButtons(ComPtr<IXmlNode> root)
 HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionsElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(StringRef(L"actions").Get(), &actionsElement));
+    ReturnOnErrorHr(
+            d->m_toastXml->CreateElement(HStringReference(L"actions").Get(), &actionsElement));
 
     ComPtr<IXmlNode> actionsNodeTmp;
     ReturnOnErrorHr(actionsElement.As(&actionsNodeTmp));
@@ -325,7 +336,7 @@ HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
     ReturnOnErrorHr(root->AppendChild(actionsNodeTmp.Get(), &actionsNode));
 
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> inputElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(StringRef(L"input").Get(), &inputElement));
+    ReturnOnErrorHr(d->m_toastXml->CreateElement(HStringReference(L"input").Get(), &inputElement));
 
     ComPtr<IXmlNode> inputNodeTmp;
     ReturnOnErrorHr(inputElement.As(&inputNodeTmp));
@@ -341,7 +352,8 @@ HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
     ReturnOnErrorHr(addAttribute(L"placeHolderContent", inputAttributes.Get(), L"Type a reply"));
 
     ComPtr<IXmlElement> actionElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(StringRef(L"action").Get(), &actionElement));
+    ReturnOnErrorHr(
+            d->m_toastXml->CreateElement(HStringReference(L"action").Get(), &actionElement));
 
     ComPtr<IXmlNode> actionNodeTmp;
     ReturnOnErrorHr(actionElement.As(&actionNodeTmp));
@@ -388,7 +400,7 @@ HRESULT SnoreToasts::setNodeValueString(const HSTRING &inputString, IXmlNode *no
 HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *attributeMap)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
-    HRESULT hr = d->m_toastXml->CreateAttribute(StringRef(name).Get(), &srcAttribute);
+    HRESULT hr = d->m_toastXml->CreateAttribute(HStringReference(name.data()).Get(), &srcAttribute);
 
     if (SUCCEEDED(hr)) {
         ComPtr<IXmlNode> node;
@@ -405,20 +417,22 @@ HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *at
                                   const std::wstring &value)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
-    ReturnOnErrorHr(d->m_toastXml->CreateAttribute(StringRef(name).Get(), &srcAttribute));
+    ReturnOnErrorHr(
+            d->m_toastXml->CreateAttribute(HStringReference(name.data()).Get(), &srcAttribute));
 
     ComPtr<IXmlNode> node;
     ReturnOnErrorHr(srcAttribute.As(&node));
 
     ComPtr<IXmlNode> pNode;
     ReturnOnErrorHr(attributeMap->SetNamedItem(node.Get(), &pNode));
-    return setNodeValueString(StringRef(value).Get(), node.Get());
+    return setNodeValueString(HStringReference(value.data()).Get(), node.Get());
 }
 
 HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const std::wstring &value)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(StringRef(L"action").Get(), &actionElement));
+    ReturnOnErrorHr(
+            d->m_toastXml->CreateElement(HStringReference(L"action").Get(), &actionElement));
     ComPtr<IXmlNode> actionNodeTmp;
     ReturnOnErrorHr(actionElement.As(&actionNodeTmp));
 
