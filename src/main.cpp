@@ -59,7 +59,6 @@ void help(const std::wstring &error)
                L"presented."
             << std::endl
             << L"[-p] <image URI>\t| Display toast with an image, local files only." << std::endl
-            << L"[-w] \t\t\t| Wait for toast to expire or activate." << std::endl
             << L"[-id] <id>\t\t| sets the id for a notification to be able to close it later."
             << std::endl
             << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see "
@@ -75,8 +74,7 @@ void help(const std::wstring &error)
             << L"[-application] <C:\\foo.exe>\t| Provide a application that might be started if "
                L"the pipe does not exist."
             << std::endl
-            << L"-close <id>\t\t| Closes a currently displayed notification, in order to be able "
-               L"to close a notification the parameter -w must be used to create the notification."
+            << L"-close <id>\t\t| Closes a currently displayed notification."
             << std::endl
             << std::endl
             << L"-install <name> <application> <appID>| Creates a shortcut <name> in the start "
@@ -133,7 +131,6 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
     std::wstring sound(L"Notification.Default");
     std::wstring buttons;
     bool silent = false;
-    bool wait = false;
     bool closeNotify = false;
     bool isTextBoxEnabled = false;
 
@@ -169,8 +166,6 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                 path = _wfullpath(nullptr, path.c_str(), MAX_PATH);
             }
             image.append(path);
-        } else if (arg == L"-w") {
-            wait = true;
         } else if (arg == L"-s") {
             sound = nextArg(it,
                             L"Missing argument to -s.\n"
@@ -279,7 +274,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
             app.setId(id);
             app.setButtons(buttons);
             app.setTextBoxEnabled(isTextBoxEnabled);
-            app.displayToast(title, body, image, wait);
+            app.displayToast(title, body, image);
             return app.userAction();
         } else {
             help(L"");
