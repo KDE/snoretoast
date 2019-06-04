@@ -200,8 +200,8 @@ bool SnoreToasts::closeNotification()
     }
     if (auto history = d->getHistory()) {
         if (Utils::checkResult(history->RemoveGroupedTagWithId(
-                    HStringReference(d->m_id.data()).Get(), HStringReference(L"SnoreToast").Get(),
-                    HStringReference(d->m_appID.data()).Get()))) {
+                    HStringReference(d->m_id.c_str()).Get(), HStringReference(L"SnoreToast").Get(),
+                    HStringReference(d->m_appID.c_str()).Get()))) {
             return true;
         }
     }
@@ -256,7 +256,7 @@ HRESULT SnoreToasts::setImage()
 
     ComPtr<IXmlNode> srcAttribute;
     ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"src").Get(), &srcAttribute));
-    return setNodeValueString(HStringReference(d->m_image.wstring().data()).Get(),
+    return setNodeValueString(HStringReference(d->m_image.wstring().c_str()).Get(),
                               srcAttribute.Get());
 }
 
@@ -283,7 +283,7 @@ HRESULT SnoreToasts::setSound()
         sound = d->m_sound;
     }
 
-    ReturnOnErrorHr(setNodeValueString(HStringReference(sound.data()).Get(), srcAttribute.Get()));
+    ReturnOnErrorHr(setNodeValueString(HStringReference(sound.c_str()).Get(), srcAttribute.Get()));
     ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"silent").Get(), &srcAttribute));
     return setNodeValueString(HStringReference(d->m_silent ? L"true" : L"false").Get(),
                               srcAttribute.Get());
@@ -298,9 +298,9 @@ HRESULT SnoreToasts::setTextValues()
     // create the title
     ComPtr<IXmlNode> textNode;
     ReturnOnErrorHr(nodeList->Item(0, &textNode));
-    ReturnOnErrorHr(setNodeValueString(HStringReference(d->m_title.data()).Get(), textNode.Get()));
+    ReturnOnErrorHr(setNodeValueString(HStringReference(d->m_title.c_str()).Get(), textNode.Get()));
     ReturnOnErrorHr(nodeList->Item(1, &textNode));
-    return setNodeValueString(HStringReference(d->m_body.data()).Get(), textNode.Get());
+    return setNodeValueString(HStringReference(d->m_body.c_str()).Get(), textNode.Get());
 }
 
 HRESULT SnoreToasts::setButtons(ComPtr<IXmlNode> root)
@@ -400,7 +400,7 @@ HRESULT SnoreToasts::setNodeValueString(const HSTRING &inputString, IXmlNode *no
 HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *attributeMap)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
-    HRESULT hr = d->m_toastXml->CreateAttribute(HStringReference(name.data()).Get(), &srcAttribute);
+    HRESULT hr = d->m_toastXml->CreateAttribute(HStringReference(name.c_str()).Get(), &srcAttribute);
 
     if (SUCCEEDED(hr)) {
         ComPtr<IXmlNode> node;
@@ -418,14 +418,14 @@ HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *at
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
     ReturnOnErrorHr(
-            d->m_toastXml->CreateAttribute(HStringReference(name.data()).Get(), &srcAttribute));
+            d->m_toastXml->CreateAttribute(HStringReference(name.c_str()).Get(), &srcAttribute));
 
     ComPtr<IXmlNode> node;
     ReturnOnErrorHr(srcAttribute.As(&node));
 
     ComPtr<IXmlNode> pNode;
     ReturnOnErrorHr(attributeMap->SetNamedItem(node.Get(), &pNode));
-    return setNodeValueString(HStringReference(value.data()).Get(), node.Get());
+    return setNodeValueString(HStringReference(value.c_str()).Get(), node.Get());
 }
 
 HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const std::wstring &value)
@@ -501,7 +501,7 @@ std::wstring SnoreToasts::formatAction(
 HRESULT SnoreToasts::createToast()
 {
     ReturnOnErrorHr(d->m_toastManager->CreateToastNotifierWithId(
-            HStringReference(d->m_appID.data()).Get(), &d->m_notifier));
+            HStringReference(d->m_appID.c_str()).Get(), &d->m_notifier));
 
     ComPtr<IToastNotificationFactory> factory;
     ReturnOnErrorHr(GetActivationFactory(
@@ -511,7 +511,7 @@ HRESULT SnoreToasts::createToast()
 
     ComPtr<Notifications::IToastNotification2> toastV2;
     if (SUCCEEDED(d->m_notification.As(&toastV2))) {
-        ReturnOnErrorHr(toastV2->put_Tag(HStringReference(d->m_id.data()).Get()));
+        ReturnOnErrorHr(toastV2->put_Tag(HStringReference(d->m_id.c_str()).Get()));
         ReturnOnErrorHr(toastV2->put_Group(HStringReference(L"SnoreToast").Get()));
     }
 
