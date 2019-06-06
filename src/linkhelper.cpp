@@ -40,11 +40,13 @@ HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
                                       const std::filesystem::path &exePath,
                                       const std::wstring &appID, const std::wstring &callbackUUID)
 {
-    if (!shortcutPath.is_relative()) {
-        std::wcerr << L"The shortcut path must be relative" << std::endl;
-        return S_FALSE;
+    std::filesystem::path path = shortcutPath;
+    if (path.is_relative()) {
+        path = startmenuPath() / path;
     }
-    const std::filesystem::path path = (startmenuPath() / shortcutPath).replace_extension(L".lnk");
+	// make sure the extension is set
+    path.replace_extension(L".lnk");
+
     if (std::filesystem::exists(path)) {
         tLog << L"Path: " << path << L" already exists, skip creation of shortcut";
         return S_OK;
