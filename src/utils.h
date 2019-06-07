@@ -62,7 +62,7 @@ inline ToastLog &operator<<(ToastLog &log, const HRESULT &hr)
     do {                                                                                           \
         HRESULT _tmp = hr;                                                                         \
         if (FAILED(_tmp)) {                                                                        \
-            tLog << ##hr << _tmp;                                                                  \
+            tLog << __LINE__ << #hr << _tmp;                                                       \
             return _tmp;                                                                           \
         }                                                                                          \
     } while (false)
