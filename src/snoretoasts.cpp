@@ -515,14 +515,14 @@ HRESULT SnoreToasts::createToast()
     }
 
     std::wstring error;
-    NotificationSetting setting;
-    ReturnOnErrorHr(d->m_notifier->get_Setting(&setting));
-
+    NotificationSetting setting = NotificationSetting_Enabled;
+    if (FAILED(d->m_notifier->get_Setting(&setting))) {
+        tLog << "Failed to retreive NotificationSettings ensure your appId is registered";
+    }
     switch (setting) {
     case NotificationSetting_Enabled:
         ReturnOnErrorHr(setEventHandler(d->m_notification));
         return d->m_notifier->Show(d->m_notification.Get());
-        break;
     case NotificationSetting_DisabledForApplication:
         error = L"DisabledForApplication";
         break;
