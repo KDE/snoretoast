@@ -87,9 +87,9 @@ public:
     ComPtr<IToastNotificationHistory> getHistory()
     {
         ComPtr<IToastNotificationManagerStatics2> toastStatics2;
-        if (Utils::checkResult(m_toastManager.As(&toastStatics2))) {
+        if (ST_CHECK_RESULT(m_toastManager.As(&toastStatics2))) {
             ComPtr<IToastNotificationHistory> nativeHistory;
-            Utils::checkResult(toastStatics2->get_History(&nativeHistory));
+            ST_CHECK_RESULT(toastStatics2->get_History(&nativeHistory));
             return nativeHistory;
         }
         return {};
@@ -118,23 +118,23 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
     d->m_image = image;
 
     if (!d->m_image.empty()) {
-        ReturnOnErrorHr(d->m_toastManager->GetTemplateContent(ToastTemplateType_ToastImageAndText02,
-                                                              &d->m_toastXml));
+        ST_RETURN_ON_ERROR(d->m_toastManager->GetTemplateContent(
+                ToastTemplateType_ToastImageAndText02, &d->m_toastXml));
     } else {
-        ReturnOnErrorHr(d->m_toastManager->GetTemplateContent(ToastTemplateType_ToastText02,
-                                                              &d->m_toastXml));
+        ST_RETURN_ON_ERROR(d->m_toastManager->GetTemplateContent(ToastTemplateType_ToastText02,
+                                                                 &d->m_toastXml));
     }
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNodeList> rootList;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->GetElementsByTagName(HStringReference(L"toast").Get(), &rootList));
 
     ComPtr<IXmlNode> root;
-    ReturnOnErrorHr(rootList->Item(0, &root));
+    ST_RETURN_ON_ERROR(rootList->Item(0, &root));
     ComPtr<IXmlNamedNodeMap> rootAttributes;
-    ReturnOnErrorHr(root->get_Attributes(&rootAttributes));
+    ST_RETURN_ON_ERROR(root->get_Attributes(&rootAttributes));
 
     const auto data = formatAction(SnoreToastActions::Actions::Clicked);
-    ReturnOnErrorHr(addAttribute(L"launch", rootAttributes.Get(), data));
+    ST_RETURN_ON_ERROR(addAttribute(L"launch", rootAttributes.Get(), data));
     // Adding buttons
     if (!d->m_buttons.empty()) {
         setButtons(root);
@@ -142,29 +142,30 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
         setTextBox(root);
     }
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> audioElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(HStringReference(L"audio").Get(), &audioElement));
+    ST_RETURN_ON_ERROR(
+            d->m_toastXml->CreateElement(HStringReference(L"audio").Get(), &audioElement));
 
     ComPtr<IXmlNode> audioNodeTmp;
-    ReturnOnErrorHr(audioElement.As(&audioNodeTmp));
+    ST_RETURN_ON_ERROR(audioElement.As(&audioNodeTmp));
 
     ComPtr<IXmlNode> audioNode;
-    ReturnOnErrorHr(root->AppendChild(audioNodeTmp.Get(), &audioNode));
+    ST_RETURN_ON_ERROR(root->AppendChild(audioNodeTmp.Get(), &audioNode));
 
     ComPtr<IXmlNamedNodeMap> attributes;
-    ReturnOnErrorHr(audioNode->get_Attributes(&attributes));
-    ReturnOnErrorHr(addAttribute(L"src", attributes.Get()));
-    ReturnOnErrorHr(addAttribute(L"silent", attributes.Get()));
+    ST_RETURN_ON_ERROR(audioNode->get_Attributes(&attributes));
+    ST_RETURN_ON_ERROR(addAttribute(L"src", attributes.Get()));
+    ST_RETURN_ON_ERROR(addAttribute(L"silent", attributes.Get()));
     //    printXML();
 
     if (!d->m_image.empty()) {
-        ReturnOnErrorHr(setImage());
+        ST_RETURN_ON_ERROR(setImage());
     }
-    ReturnOnErrorHr(setSound());
+    ST_RETURN_ON_ERROR(setSound());
 
-    ReturnOnErrorHr(setTextValues());
+    ST_RETURN_ON_ERROR(setTextValues());
 
     printXML();
-    ReturnOnErrorHr(createToast());
+    ST_RETURN_ON_ERROR(createToast());
     d->m_action = SnoreToastActions::Actions::Clicked;
     return S_OK;
 }
@@ -197,7 +198,7 @@ bool SnoreToasts::closeNotification()
         return true;
     }
     if (auto history = d->getHistory()) {
-        if (Utils::checkResult(history->RemoveGroupedTagWithId(
+        if (ST_CHECK_RESULT(history->RemoveGroupedTagWithId(
                     HStringReference(d->m_id.c_str()).Get(), HStringReference(L"SnoreToast").Get(),
                     HStringReference(d->m_appID.c_str()).Get()))) {
             return true;
@@ -243,17 +244,17 @@ void SnoreToasts::setTextBoxEnabled(bool textBoxEnabled)
 HRESULT SnoreToasts::setImage()
 {
     ComPtr<IXmlNodeList> nodeList;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->GetElementsByTagName(HStringReference(L"image").Get(), &nodeList));
 
     ComPtr<IXmlNode> imageNode;
-    ReturnOnErrorHr(nodeList->Item(0, &imageNode));
+    ST_RETURN_ON_ERROR(nodeList->Item(0, &imageNode));
 
     ComPtr<IXmlNamedNodeMap> attributes;
-    ReturnOnErrorHr(imageNode->get_Attributes(&attributes));
+    ST_RETURN_ON_ERROR(imageNode->get_Attributes(&attributes));
 
     ComPtr<IXmlNode> srcAttribute;
-    ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"src").Get(), &srcAttribute));
+    ST_RETURN_ON_ERROR(attributes->GetNamedItem(HStringReference(L"src").Get(), &srcAttribute));
     return setNodeValueString(HStringReference(d->m_image.wstring().c_str()).Get(),
                               srcAttribute.Get());
 }
@@ -261,18 +262,18 @@ HRESULT SnoreToasts::setImage()
 HRESULT SnoreToasts::setSound()
 {
     ComPtr<IXmlNodeList> nodeList;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->GetElementsByTagName(HStringReference(L"audio").Get(), &nodeList));
 
     ComPtr<IXmlNode> audioNode;
-    ReturnOnErrorHr(nodeList->Item(0, &audioNode));
+    ST_RETURN_ON_ERROR(nodeList->Item(0, &audioNode));
 
     ComPtr<IXmlNamedNodeMap> attributes;
 
-    ReturnOnErrorHr(audioNode->get_Attributes(&attributes));
+    ST_RETURN_ON_ERROR(audioNode->get_Attributes(&attributes));
     ComPtr<IXmlNode> srcAttribute;
 
-    ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"src").Get(), &srcAttribute));
+    ST_RETURN_ON_ERROR(attributes->GetNamedItem(HStringReference(L"src").Get(), &srcAttribute));
     std::wstring sound;
     if (d->m_sound.find(L"ms-winsoundevent:") == std::wstring::npos) {
         sound = L"ms-winsoundevent:";
@@ -281,8 +282,9 @@ HRESULT SnoreToasts::setSound()
         sound = d->m_sound;
     }
 
-    ReturnOnErrorHr(setNodeValueString(HStringReference(sound.c_str()).Get(), srcAttribute.Get()));
-    ReturnOnErrorHr(attributes->GetNamedItem(HStringReference(L"silent").Get(), &srcAttribute));
+    ST_RETURN_ON_ERROR(
+            setNodeValueString(HStringReference(sound.c_str()).Get(), srcAttribute.Get()));
+    ST_RETURN_ON_ERROR(attributes->GetNamedItem(HStringReference(L"silent").Get(), &srcAttribute));
     return setNodeValueString(HStringReference(d->m_silent ? L"true" : L"false").Get(),
                               srcAttribute.Get());
 }
@@ -291,32 +293,33 @@ HRESULT SnoreToasts::setSound()
 HRESULT SnoreToasts::setTextValues()
 {
     ComPtr<IXmlNodeList> nodeList;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->GetElementsByTagName(HStringReference(L"text").Get(), &nodeList));
     // create the title
     ComPtr<IXmlNode> textNode;
-    ReturnOnErrorHr(nodeList->Item(0, &textNode));
-    ReturnOnErrorHr(setNodeValueString(HStringReference(d->m_title.c_str()).Get(), textNode.Get()));
-    ReturnOnErrorHr(nodeList->Item(1, &textNode));
+    ST_RETURN_ON_ERROR(nodeList->Item(0, &textNode));
+    ST_RETURN_ON_ERROR(
+            setNodeValueString(HStringReference(d->m_title.c_str()).Get(), textNode.Get()));
+    ST_RETURN_ON_ERROR(nodeList->Item(1, &textNode));
     return setNodeValueString(HStringReference(d->m_body.c_str()).Get(), textNode.Get());
 }
 
 HRESULT SnoreToasts::setButtons(ComPtr<IXmlNode> root)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionsElement;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->CreateElement(HStringReference(L"actions").Get(), &actionsElement));
 
     ComPtr<IXmlNode> actionsNodeTmp;
-    ReturnOnErrorHr(actionsElement.As(&actionsNodeTmp));
+    ST_RETURN_ON_ERROR(actionsElement.As(&actionsNodeTmp));
 
     ComPtr<IXmlNode> actionsNode;
-    ReturnOnErrorHr(root->AppendChild(actionsNodeTmp.Get(), &actionsNode));
+    ST_RETURN_ON_ERROR(root->AppendChild(actionsNodeTmp.Get(), &actionsNode));
 
     std::wstring buttonText;
     std::wstringstream wss(d->m_buttons);
     while (std::getline(wss, buttonText, L';')) {
-        ReturnOnErrorHr(createNewActionButton(actionsNode, buttonText));
+        ST_RETURN_ON_ERROR(createNewActionButton(actionsNode, buttonText));
     }
     return S_OK;
 }
@@ -324,49 +327,50 @@ HRESULT SnoreToasts::setButtons(ComPtr<IXmlNode> root)
 HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionsElement;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->CreateElement(HStringReference(L"actions").Get(), &actionsElement));
 
     ComPtr<IXmlNode> actionsNodeTmp;
-    ReturnOnErrorHr(actionsElement.As(&actionsNodeTmp));
+    ST_RETURN_ON_ERROR(actionsElement.As(&actionsNodeTmp));
 
     ComPtr<IXmlNode> actionsNode;
-    ReturnOnErrorHr(root->AppendChild(actionsNodeTmp.Get(), &actionsNode));
+    ST_RETURN_ON_ERROR(root->AppendChild(actionsNodeTmp.Get(), &actionsNode));
 
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> inputElement;
-    ReturnOnErrorHr(d->m_toastXml->CreateElement(HStringReference(L"input").Get(), &inputElement));
+    ST_RETURN_ON_ERROR(
+            d->m_toastXml->CreateElement(HStringReference(L"input").Get(), &inputElement));
 
     ComPtr<IXmlNode> inputNodeTmp;
-    ReturnOnErrorHr(inputElement.As(&inputNodeTmp));
+    ST_RETURN_ON_ERROR(inputElement.As(&inputNodeTmp));
 
     ComPtr<IXmlNode> inputNode;
-    ReturnOnErrorHr(actionsNode->AppendChild(inputNodeTmp.Get(), &inputNode));
+    ST_RETURN_ON_ERROR(actionsNode->AppendChild(inputNodeTmp.Get(), &inputNode));
 
     ComPtr<IXmlNamedNodeMap> inputAttributes;
-    ReturnOnErrorHr(inputNode->get_Attributes(&inputAttributes));
+    ST_RETURN_ON_ERROR(inputNode->get_Attributes(&inputAttributes));
 
-    ReturnOnErrorHr(addAttribute(L"id", inputAttributes.Get(), L"textBox"));
-    ReturnOnErrorHr(addAttribute(L"type", inputAttributes.Get(), L"text"));
-    ReturnOnErrorHr(addAttribute(L"placeHolderContent", inputAttributes.Get(), L"Type a reply"));
+    ST_RETURN_ON_ERROR(addAttribute(L"id", inputAttributes.Get(), L"textBox"));
+    ST_RETURN_ON_ERROR(addAttribute(L"type", inputAttributes.Get(), L"text"));
+    ST_RETURN_ON_ERROR(addAttribute(L"placeHolderContent", inputAttributes.Get(), L"Type a reply"));
 
     ComPtr<IXmlElement> actionElement;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->CreateElement(HStringReference(L"action").Get(), &actionElement));
 
     ComPtr<IXmlNode> actionNodeTmp;
-    ReturnOnErrorHr(actionElement.As(&actionNodeTmp));
+    ST_RETURN_ON_ERROR(actionElement.As(&actionNodeTmp));
 
     ComPtr<IXmlNode> actionNode;
-    ReturnOnErrorHr(actionsNode->AppendChild(actionNodeTmp.Get(), &actionNode));
+    ST_RETURN_ON_ERROR(actionsNode->AppendChild(actionNodeTmp.Get(), &actionNode));
 
     ComPtr<IXmlNamedNodeMap> actionAttributes;
-    ReturnOnErrorHr(actionNode->get_Attributes(&actionAttributes));
+    ST_RETURN_ON_ERROR(actionNode->get_Attributes(&actionAttributes));
 
-    ReturnOnErrorHr(addAttribute(L"content", actionAttributes.Get(), L"Send"));
+    ST_RETURN_ON_ERROR(addAttribute(L"content", actionAttributes.Get(), L"Send"));
 
     const auto data = formatAction(SnoreToastActions::Actions::ButtonClicked);
 
-    ReturnOnErrorHr(addAttribute(L"arguments", actionAttributes.Get(), data));
+    ST_RETURN_ON_ERROR(addAttribute(L"arguments", actionAttributes.Get(), data));
     return addAttribute(L"hint-inputId", actionAttributes.Get(), L"textBox");
 }
 
@@ -376,9 +380,9 @@ HRESULT SnoreToasts::setEventHandler(ComPtr<IToastNotification> toast)
     EventRegistrationToken activatedToken, dismissedToken, failedToken;
     ComPtr<ToastEventHandler> eventHandler(new ToastEventHandler(*this));
 
-    ReturnOnErrorHr(toast->add_Activated(eventHandler.Get(), &activatedToken));
-    ReturnOnErrorHr(toast->add_Dismissed(eventHandler.Get(), &dismissedToken));
-    ReturnOnErrorHr(toast->add_Failed(eventHandler.Get(), &failedToken));
+    ST_RETURN_ON_ERROR(toast->add_Activated(eventHandler.Get(), &activatedToken));
+    ST_RETURN_ON_ERROR(toast->add_Dismissed(eventHandler.Get(), &dismissedToken));
+    ST_RETURN_ON_ERROR(toast->add_Failed(eventHandler.Get(), &failedToken));
     d->m_eventHanlder = eventHandler;
     return S_OK;
 }
@@ -386,10 +390,10 @@ HRESULT SnoreToasts::setEventHandler(ComPtr<IToastNotification> toast)
 HRESULT SnoreToasts::setNodeValueString(const HSTRING &inputString, IXmlNode *node)
 {
     ComPtr<IXmlText> inputText;
-    ReturnOnErrorHr(d->m_toastXml->CreateTextNode(inputString, &inputText));
+    ST_RETURN_ON_ERROR(d->m_toastXml->CreateTextNode(inputString, &inputText));
 
     ComPtr<IXmlNode> inputTextNode;
-    ReturnOnErrorHr(inputText.As(&inputTextNode));
+    ST_RETURN_ON_ERROR(inputText.As(&inputTextNode));
 
     ComPtr<IXmlNode> pAppendedChild;
     return node->AppendChild(inputTextNode.Get(), &pAppendedChild);
@@ -416,36 +420,36 @@ HRESULT SnoreToasts::addAttribute(const std::wstring &name, IXmlNamedNodeMap *at
                                   const std::wstring &value)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->CreateAttribute(HStringReference(name.c_str()).Get(), &srcAttribute));
 
     ComPtr<IXmlNode> node;
-    ReturnOnErrorHr(srcAttribute.As(&node));
+    ST_RETURN_ON_ERROR(srcAttribute.As(&node));
 
     ComPtr<IXmlNode> pNode;
-    ReturnOnErrorHr(attributeMap->SetNamedItem(node.Get(), &pNode));
+    ST_RETURN_ON_ERROR(attributeMap->SetNamedItem(node.Get(), &pNode));
     return setNodeValueString(HStringReference(value.c_str()).Get(), node.Get());
 }
 
 HRESULT SnoreToasts::createNewActionButton(ComPtr<IXmlNode> actionsNode, const std::wstring &value)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> actionElement;
-    ReturnOnErrorHr(
+    ST_RETURN_ON_ERROR(
             d->m_toastXml->CreateElement(HStringReference(L"action").Get(), &actionElement));
     ComPtr<IXmlNode> actionNodeTmp;
-    ReturnOnErrorHr(actionElement.As(&actionNodeTmp));
+    ST_RETURN_ON_ERROR(actionElement.As(&actionNodeTmp));
 
     ComPtr<IXmlNode> actionNode;
-    ReturnOnErrorHr(actionsNode->AppendChild(actionNodeTmp.Get(), &actionNode));
+    ST_RETURN_ON_ERROR(actionsNode->AppendChild(actionNodeTmp.Get(), &actionNode));
 
     ComPtr<IXmlNamedNodeMap> actionAttributes;
-    ReturnOnErrorHr(actionNode->get_Attributes(&actionAttributes));
+    ST_RETURN_ON_ERROR(actionNode->get_Attributes(&actionAttributes));
 
-    ReturnOnErrorHr(addAttribute(L"content", actionAttributes.Get(), value));
+    ST_RETURN_ON_ERROR(addAttribute(L"content", actionAttributes.Get(), value));
 
     const auto data =
             formatAction(SnoreToastActions::Actions::ButtonClicked, { { L"button", value } });
-    ReturnOnErrorHr(addAttribute(L"arguments", actionAttributes.Get(), data));
+    ST_RETURN_ON_ERROR(addAttribute(L"arguments", actionAttributes.Get(), data));
     return addAttribute(L"activationType", actionAttributes.Get(), L"foreground");
 }
 
@@ -499,29 +503,29 @@ std::wstring SnoreToasts::formatAction(
 // Create and display the toast
 HRESULT SnoreToasts::createToast()
 {
-    ReturnOnErrorHr(d->m_toastManager->CreateToastNotifierWithId(
+    ST_RETURN_ON_ERROR(d->m_toastManager->CreateToastNotifierWithId(
             HStringReference(d->m_appID.c_str()).Get(), &d->m_notifier));
 
     ComPtr<IToastNotificationFactory> factory;
-    ReturnOnErrorHr(GetActivationFactory(
+    ST_RETURN_ON_ERROR(GetActivationFactory(
             HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
             &factory));
-    ReturnOnErrorHr(factory->CreateToastNotification(d->m_toastXml.Get(), &d->m_notification));
+    ST_RETURN_ON_ERROR(factory->CreateToastNotification(d->m_toastXml.Get(), &d->m_notification));
 
     ComPtr<Notifications::IToastNotification2> toastV2;
     if (SUCCEEDED(d->m_notification.As(&toastV2))) {
-        ReturnOnErrorHr(toastV2->put_Tag(HStringReference(d->m_id.c_str()).Get()));
-        ReturnOnErrorHr(toastV2->put_Group(HStringReference(L"SnoreToast").Get()));
+        ST_RETURN_ON_ERROR(toastV2->put_Tag(HStringReference(d->m_id.c_str()).Get()));
+        ST_RETURN_ON_ERROR(toastV2->put_Group(HStringReference(L"SnoreToast").Get()));
     }
 
     std::wstring error;
     NotificationSetting setting = NotificationSetting_Enabled;
-    if (FAILED(d->m_notifier->get_Setting(&setting))) {
+    if (!ST_CHECK_RESULT(d->m_notifier->get_Setting(&setting))) {
         tLog << "Failed to retreive NotificationSettings ensure your appId is registered";
     }
     switch (setting) {
     case NotificationSetting_Enabled:
-        ReturnOnErrorHr(setEventHandler(d->m_notification));
+        ST_RETURN_ON_ERROR(setEventHandler(d->m_notification));
         return d->m_notifier->Show(d->m_notification.Get());
     case NotificationSetting_DisabledForApplication:
         error = L"DisabledForApplication";

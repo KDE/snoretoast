@@ -44,7 +44,7 @@ HRESULT LinkHelper::tryCreateShortcut(const std::filesystem::path &shortcutPath,
     if (path.is_relative()) {
         path = startmenuPath() / path;
     }
-	// make sure the extension is set
+    // make sure the extension is set
     path.replace_extension(L".lnk");
 
     if (std::filesystem::exists(path)) {
@@ -87,40 +87,40 @@ HRESULT LinkHelper::installShortcut(const std::filesystem::path &shortcutPath,
             return url.str();
         }();
         tLog << url;
-        ReturnOnErrorHr(HRESULT_FROM_WIN32(
+        ST_RETURN_ON_ERROR(HRESULT_FROM_WIN32(
                 ::RegSetKeyValueW(HKEY_CURRENT_USER, url.c_str(), nullptr, REG_SZ, locPath.c_str(),
                                   static_cast<DWORD>(locPath.size() * sizeof(wchar_t)))));
     }
 
     ComPtr<IShellLink> shellLink;
-    ReturnOnErrorHr(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
-                                     IID_PPV_ARGS(&shellLink)));
-    ReturnOnErrorHr(shellLink->SetPath(exePath.c_str()));
-    ReturnOnErrorHr(shellLink->SetArguments(L""));
+    ST_RETURN_ON_ERROR(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
+                                        IID_PPV_ARGS(&shellLink)));
+    ST_RETURN_ON_ERROR(shellLink->SetPath(exePath.c_str()));
+    ST_RETURN_ON_ERROR(shellLink->SetArguments(L""));
 
     ComPtr<IPropertyStore> propertyStore;
-    ReturnOnErrorHr(shellLink.As(&propertyStore));
+    ST_RETURN_ON_ERROR(shellLink.As(&propertyStore));
 
     PROPVARIANT appIdPropVar;
-    ReturnOnErrorHr(InitPropVariantFromString(appID.c_str(), &appIdPropVar));
-    ReturnOnErrorHr(propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar));
+    ST_RETURN_ON_ERROR(InitPropVariantFromString(appID.c_str(), &appIdPropVar));
+    ST_RETURN_ON_ERROR(propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar));
     PropVariantClear(&appIdPropVar);
 
     if (!callbackUUID.empty()) {
         GUID guid;
-        ReturnOnErrorHr(CLSIDFromString(callbackUUID.c_str(), &guid));
+        ST_RETURN_ON_ERROR(CLSIDFromString(callbackUUID.c_str(), &guid));
 
         tLog << guid.Data1;
         PROPVARIANT toastActivatorPropVar = {};
         toastActivatorPropVar.vt = VT_CLSID;
         toastActivatorPropVar.puuid = &guid;
-        ReturnOnErrorHr(propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
-                                                toastActivatorPropVar));
+        ST_RETURN_ON_ERROR(propertyStore->SetValue(PKEY_AppUserModel_ToastActivatorCLSID,
+                                                   toastActivatorPropVar));
     }
-    ReturnOnErrorHr(propertyStore->Commit());
+    ST_RETURN_ON_ERROR(propertyStore->Commit());
 
     ComPtr<IPersistFile> persistFile;
-    ReturnOnErrorHr(shellLink.As(&persistFile));
+    ST_RETURN_ON_ERROR(shellLink.As(&persistFile));
     return persistFile->Save(shortcutPath.c_str(), true);
 }
 
