@@ -9,33 +9,6 @@ This appID then needs to be passed to snoretoast.exe with the `--appID`` paramet
 # Releases and Binaries
 Releases and binaries can be found [here](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64/).
 
-# Installing icons with nsis
-```
-!include LogicLib.nsh
-!include WordFunc.nsh
-
-Function SnoreWinVer
-    ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
-    ${VersionCompare} "6.2" $R0 $R0
-    ${If} $R0 == 1
-        Push "NotWin8"
-    ${Else}
-        Push "AtLeastWin8"
-    ${EndIf}
-FunctionEnd
-
-!macro SnoreShortcut path exe appID
-    Call SnoreWinVer
-    Pop $0
-    ${If} $0 == "AtLeastWin8"
-        nsExec::ExecToLog '"${SnoreToastExe}" -install "${path}" "${exe}" "${appID}"'
-    ${Else}
-        CreateShortCut "${path}" "${exe}"
-    ${EndIf}
-!macroend
-
-```
-
 
 ----------------------------------------------------------
 ```
@@ -78,4 +51,32 @@ Images must be .png with:
         maximum dimensions of 1024x1024
         size <= 200kb
 These limitations are due to the Toast notification system.
+```
+----------------------------------------------------------
+
+# Shortcut creation with Nsis
+```
+!include LogicLib.nsh
+!include WordFunc.nsh
+
+Function SnoreWinVer
+    ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
+    ${VersionCompare} "6.2" $R0 $R0
+    ${If} $R0 == 1
+        Push "NotWin8"
+    ${Else}
+        Push "AtLeastWin8"
+    ${EndIf}
+FunctionEnd
+
+!macro SnoreShortcut path exe appID
+    Call SnoreWinVer
+    Pop $0
+    ${If} $0 == "AtLeastWin8"
+        nsExec::ExecToLog '"${SnoreToastExe}" -install "${path}" "${exe}" "${appID}"'
+    ${Else}
+        CreateShortCut "${path}" "${exe}"
+    ${EndIf}
+!macroend
+
 ```
