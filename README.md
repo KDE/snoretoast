@@ -1,6 +1,6 @@
 Snoretoast
 ==========
-A command line application which is capable of creating Windows Toast notifications on Windows 8 or later.
+A command line application capable of creating Windows Toast notifications on Windows 8 or later.
 If SnoreToast is used without the parameter --appID an default appID is used and a shortcut to SnoreToast.exe is created in the startmenu, notifications created that way will be asigned to SnoreToast.
 
 If you wan't to brand your notifications you need to create the application startmenu entry with `snoretoast.exe --install "MyApp\MyApp.lnk" "C:\myApp.exe" "My.APP_ID"`.
@@ -13,7 +13,7 @@ Releases and binaries can be found [here](https://binary-factory.kde.org/job/Sno
 ----------------------------------------------------------
 ```
 Welcome to SnoreToast 0.5.99.
-A command line application which is capable of creating Windows Toast notifications.
+A command line application capable of creating Windows Toast notifications.
 
 ---- Usage ----
 SnoreToast [Options]

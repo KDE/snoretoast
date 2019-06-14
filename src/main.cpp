@@ -40,8 +40,7 @@ void help(const std::wstring &error)
         std::wcerr << error << std::endl;
     } else {
         std::wcerr << L"Welcome to SnoreToast " << SnoreToasts::version() << "." << std::endl
-                   << L"A command line application which is capable of creating Windows Toast "
-                      L"notifications."
+                   << L"A command line application capable of creating Windows Toast notifications."
                    << std::endl;
     }
     std::wcerr
