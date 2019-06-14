@@ -27,58 +27,100 @@
 
 #include <snoretoastactions.h>
 
+namespace  {
+constexpr int NOTIFICATION_COUNT = 10;
+}
+
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QCoreApplication app(argc, argv);
     QLocalServer *server = new QLocalServer();
     QObject::connect(server, &QLocalServer::newConnection, server, [server]() {
         auto sock = server->nextPendingConnection();
         sock->waitForReadyRead();
+        sock->deleteLater();
+
         const QByteArray rawData = sock->readAll();
         const QString data =
                 QString::fromWCharArray(reinterpret_cast<const wchar_t *>(rawData.constData()),
-                                        rawData.size() / sizeof(wchar_t));
+                                        rawData.size() / static_cast<int>(sizeof(wchar_t)));
+
         QMap<QString, QString> map;
-        for (const auto &str : data.split(";")) {
-            const auto index = str.indexOf("=");
-            map[str.mid(0, index)] = str.mid(index + 1);
+        for (const auto &str : data.split(QLatin1Char(';'))) {
+            const auto index = str.indexOf(QLatin1Char('='));
+            if (index > 0)
+            {
+                map[str.mid(0, index)] = str.mid(index + 1);
+            }
         }
         const auto action = map["action"];
-        const auto snoreAction = SnoreToastActions::getAction(action.toStdWString());
+
+        // with msvc2019 there seems to be an issue with QString::toStdWString()
+        std::wstring waction(action.size(), 0);
+        action.toWCharArray(waction.data());
+
+        const auto snoreAction = SnoreToastActions::getAction(waction);
 
         std::wcout << qPrintable(data) << std::endl;
         std::wcout << "Action: " << qPrintable(action) << " " << static_cast<int>(snoreAction)
                    << std::endl;
 
-        // TODO: parse data
+        switch (snoreAction) {
+        case SnoreToastActions::Actions::Clicked:
+            break;
+        case SnoreToastActions::Actions::Hidden:
+            break;
+        case SnoreToastActions::Actions::Dismissed:
+            break;
+        case SnoreToastActions::Actions::Timedout:
+            break;
+        case SnoreToastActions::Actions::ButtonClicked:
+            break;
+        case SnoreToastActions::Actions::TextEntered:
+            break;
+        case SnoreToastActions::Actions::Error:
+            break;
+        }
+
     });
     server->listen("foo");
     std::wcout << qPrintable(server->fullServerName()) << std::endl;
 
     const QString appId = "SnoreToast.Qt.Example";
-    QProcess proc(&a);
+    QProcess proc(&app);
     proc.start("SnoreToast.exe",
-               { "-install", "SnoreToastTestQt", a.applicationFilePath(), appId });
+               { "-install", "SnoreToastTestQt", app.applicationFilePath(), appId });
     proc.waitForFinished();
     std::wcout << proc.exitCode() << std::endl;
-    std::wcout << qPrintable(proc.readAll()) << std::endl;
+    std::wcout << qPrintable(proc.readAllStandardOutput()) << std::endl;
+    std::wcout << qPrintable(proc.readAllStandardError()) << std::endl;
 
-    QTimer *timer = new QTimer(&a);
-    a.connect(timer, &QTimer::timeout, timer, [&] {
+    QTimer *timer = new QTimer(&app);
+    app.connect(timer, &QTimer::timeout, timer, [&] {
         static int id = 0;
-        if (id >= 10) {
+        if (id >= NOTIFICATION_COUNT) {
             timer->stop();
         }
-        auto proc = new QProcess(&a);
+        auto proc = new QProcess(&app);
         proc->start("SnoreToast.exe",
-                    { "-t", "test", "-m", "message", "-pipename", server->fullServerName(), "-w",
+                    { "-t", "test", "-m", "message", "-pipename", server->fullServerName(),
                       "-id", QString::number(id++), "-appId", appId, "-application",
-                      a.applicationFilePath() });
-        proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc] {
-            std::wcout << qPrintable(proc->readAll()) << std::endl;
-            std::wcout << proc->exitCode() << std::endl;
+                      app.applicationFilePath() });
+
+        int currentId = id;
+        proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc, currentId, &app] {
+            std::wcout << qPrintable(proc->readAllStandardOutput()) << std::endl;
+            std::wcout << qPrintable(proc->readAllStandardError()) << std::endl;
+            std::wcout << qPrintable(proc->errorString()) << std::endl;
+            std::wcout << qPrintable(proc->program()) <<  L" Notification: " << currentId << L" exited with: " << proc->exitCode() << std::endl;
+            if (currentId >= NOTIFICATION_COUNT)
+            {
+                app.quit();
+            }
+            proc->deleteLater();
         });
     });
     timer->start(1000);
-    return a.exec();
+
+    return app.exec();
 }

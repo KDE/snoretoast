@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         SnoreToasts toast(appId);
         //  app.setPipeName(pipe);
         //  app.setApplication(app.applicationDirPath().);
-        toast.displayToast(L"Test", L"Message", L"", true);
+        toast.displayToast(L"Test", L"Message", L"");
         std::wcout << "Result" << SnoreToastActions::getActionString(toast.userAction())
                    << std::endl;
         a.quit();
