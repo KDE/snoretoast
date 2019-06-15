@@ -38,13 +38,13 @@ int main(int argc, char *argv[])
     QObject::connect(server, &QLocalServer::newConnection, server, [server]() {
         auto sock = server->nextPendingConnection();
         sock->waitForReadyRead();
+        const QByteArray rawData = sock->readAll();
         sock->deleteLater();
 
-        const QByteArray rawData = sock->readAll();
         const QString data =
                 QString::fromWCharArray(reinterpret_cast<const wchar_t *>(rawData.constData()),
                                         rawData.size() / static_cast<int>(sizeof(wchar_t)));
-
+        qDebug() << data;
         QMap<QString, QString> map;
         for (const auto &str : data.split(QLatin1Char(';'))) {
             const auto index = str.indexOf(QLatin1Char('='));
@@ -53,11 +53,15 @@ int main(int argc, char *argv[])
                 map[str.mid(0, index)] = str.mid(index + 1);
             }
         }
-        const auto action = map["action"];
+        const QString action = map["action"];
 
+#if 1
         // with msvc2019 there seems to be an issue with QString::toStdWString()
         std::wstring waction(action.size(), 0);
-        action.toWCharArray(waction.data());
+        action.toWCharArray(const_cast<wchar_t*>(waction.data()));
+#else
+        std::wstring waction = action.toStdWString();
+#endif
 
         const auto snoreAction = SnoreToastActions::getAction(waction);
 
@@ -111,7 +115,10 @@ int main(int argc, char *argv[])
         proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc, currentId, &app] {
             std::wcout << qPrintable(proc->readAllStandardOutput()) << std::endl;
             std::wcout << qPrintable(proc->readAllStandardError()) << std::endl;
-            std::wcout << qPrintable(proc->errorString()) << std::endl;
+            if (proc->error())
+            {
+                std::wcout << qPrintable(proc->errorString()) << std::endl;
+            }
             std::wcout << qPrintable(proc->program()) <<  L" Notification: " << currentId << L" exited with: " << proc->exitCode() << std::endl;
             if (currentId >= NOTIFICATION_COUNT)
             {
