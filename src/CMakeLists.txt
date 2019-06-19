@@ -2,7 +2,7 @@
 add_library(SnoreToastActions INTERFACE)
 target_include_directories(SnoreToastActions INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/includes/snoretoast>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/snoretoast>
 )
 add_library(SnoreToast::SnoreToastActions ALIAS SnoreToastActions)
 
@@ -33,5 +33,5 @@ target_compile_definitions(SnoreToast PRIVATE
 add_executable(SnoreToast::SnoreToast ALIAS SnoreToast)
 
 install(TARGETS libsnoretoast SnoreToast SnoreToastActions EXPORT LibSnoreToastConfig RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES snoretoastactions.h DESTINATION includes/snoretoast)
+install(FILES snoretoastactions.h DESTINATION include/snoretoast)
 install(EXPORT LibSnoreToastConfig DESTINATION lib/cmake/libsnoretoast NAMESPACE SnoreToast::)
