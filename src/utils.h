@@ -86,7 +86,7 @@ inline bool checkResult(const char *file, const long line, const char *func, con
 #define ST_RETURN_ON_ERROR(hr)                                                                     \
     do {                                                                                           \
         HRESULT _tmp = hr;                                                                         \
-        if (!ST_CHECK_RESULT(_tmp)) {                                                               \
+        if (!ST_CHECK_RESULT(_tmp)) {                                                              \
             return _tmp;                                                                           \
         }                                                                                          \
     } while (false)

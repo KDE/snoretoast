@@ -27,7 +27,7 @@
 
 #include <snoretoastactions.h>
 
-namespace  {
+namespace {
 constexpr int NOTIFICATION_COUNT = 10;
 }
 
@@ -48,8 +48,7 @@ int main(int argc, char *argv[])
         QMap<QString, QString> map;
         for (const auto &str : data.split(QLatin1Char(';'))) {
             const auto index = str.indexOf(QLatin1Char('='));
-            if (index > 0)
-            {
+            if (index > 0) {
                 map[str.mid(0, index)] = str.mid(index + 1);
             }
         }
@@ -58,7 +57,7 @@ int main(int argc, char *argv[])
 #if 1
         // with msvc2019 there seems to be an issue with QString::toStdWString()
         std::wstring waction(action.size(), 0);
-        action.toWCharArray(const_cast<wchar_t*>(waction.data()));
+        action.toWCharArray(const_cast<wchar_t *>(waction.data()));
 #else
         std::wstring waction = action.toStdWString();
 #endif
@@ -85,7 +84,6 @@ int main(int argc, char *argv[])
         case SnoreToastActions::Actions::Error:
             break;
         }
-
     });
     server->listen("foo");
     std::wcout << qPrintable(server->fullServerName()) << std::endl;
@@ -107,21 +105,20 @@ int main(int argc, char *argv[])
         }
         auto proc = new QProcess(&app);
         proc->start("SnoreToast.exe",
-                    { "-t", "test", "-m", "message", "-pipename", server->fullServerName(),
-                      "-id", QString::number(id++), "-appId", appId, "-application",
+                    { "-t", "test", "-m", "message", "-pipename", server->fullServerName(), "-id",
+                      QString::number(id++), "-appId", appId, "-application",
                       app.applicationFilePath() });
 
         int currentId = id;
         proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc, currentId, &app] {
             std::wcout << qPrintable(proc->readAllStandardOutput()) << std::endl;
             std::wcout << qPrintable(proc->readAllStandardError()) << std::endl;
-            if (proc->error())
-            {
+            if (proc->error()) {
                 std::wcout << qPrintable(proc->errorString()) << std::endl;
             }
-            std::wcout << qPrintable(proc->program()) <<  L" Notification: " << currentId << L" exited with: " << proc->exitCode() << std::endl;
-            if (currentId >= NOTIFICATION_COUNT)
-            {
+            std::wcout << qPrintable(proc->program()) << L" Notification: " << currentId
+                       << L" exited with: " << proc->exitCode() << std::endl;
+            if (currentId >= NOTIFICATION_COUNT) {
                 app.quit();
             }
             proc->deleteLater();

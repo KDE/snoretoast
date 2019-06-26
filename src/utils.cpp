@@ -63,8 +63,7 @@ std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::ws
         }
         const std::wstring_view tmp(data.data() + start, end - start);
         const auto pos = tmp.find(L"=");
-        if (pos > 0)
-        {
+        if (pos > 0) {
             out[tmp.substr(0, pos)] = tmp.substr(pos + 1);
         }
         // tLog << L"'" << tmp.substr(0, pos) << L"' = '" << tmp.substr(pos + 1) << L"'";
