@@ -32,6 +32,10 @@ using namespace ABI::Windows::Data::Xml::Dom;
 using namespace Windows::Foundation;
 using namespace Wrappers;
 
+namespace {
+constexpr DWORD EVENT_TIMEOUT = 60 * 1000; // one minute should be more than enough
+}
+
 class SnoreToastsPrivate
 {
 public:
@@ -174,8 +178,11 @@ SnoreToastActions::Actions SnoreToasts::userAction()
 {
     if (d->m_eventHanlder.Get()) {
         HANDLE event = d->m_eventHanlder.Get()->event();
-        WaitForSingleObject(event, INFINITE);
-        d->m_action = d->m_eventHanlder.Get()->userAction();
+        if (WaitForSingleObject(event, EVENT_TIMEOUT) == WAIT_TIMEOUT) {
+            d->m_action = SnoreToastActions::Actions::Error;
+        } else {
+            d->m_action = d->m_eventHanlder.Get()->userAction();
+        }
         // the initial value is SnoreToastActions::Actions::Hidden so if no action happend when we
         // end up here, a hide was requested
         if (d->m_action == SnoreToastActions::Actions::Hidden) {
@@ -597,6 +604,6 @@ HRESULT SnoreToasts::backgroundCallback(const std::wstring &appUserModelId,
 void SnoreToasts::waitForCallbackActivation()
 {
     Utils::registerActivator();
-    WaitForSingleObject(SnoreToastsPrivate::ctoastEvent(), INFINITE);
+    WaitForSingleObject(SnoreToastsPrivate::ctoastEvent(), EVENT_TIMEOUT);
     Utils::unregisterActivator();
 }
