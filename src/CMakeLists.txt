@@ -31,8 +31,9 @@ add_library(SnoreToast::LibSnoreToast ALIAS libsnoretoast)
 
 generate_export_header(libsnoretoast)
 
-add_executable(SnoreToast WIN32 main.cpp ${SNORE_TOAST_DEPS})
-target_link_libraries(SnoreToast SnoreToast::LibSnoreToast)
+create_icon_rc(${PROJECT_SOURCE_DIR}/data/zzz.ico TOAST_ICON)
+add_executable(SnoreToast WIN32 main.cpp ${TOAST_ICON})
+target_link_libraries(SnoreToast PRIVATE SnoreToast::LibSnoreToast)
 target_compile_definitions(SnoreToast PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
 # if there are changes to the callback mechanism we need to change the uuid for the activator SNORETOAST_CALLBACK_UUID
 target_compile_definitions(SnoreToast PRIVATE
