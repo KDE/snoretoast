@@ -32,6 +32,6 @@ target_compile_definitions(SnoreToast PRIVATE
 )
 add_executable(SnoreToast::SnoreToast ALIAS SnoreToast)
 
-install(TARGETS libsnoretoast SnoreToast SnoreToastActions EXPORT LibSnoreToastConfig RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(TARGETS SnoreToast SnoreToastActions EXPORT LibSnoreToastConfig RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 install(FILES snoretoastactions.h DESTINATION include/snoretoast)
 install(EXPORT LibSnoreToastConfig DESTINATION lib/cmake/libsnoretoast NAMESPACE SnoreToast::)
