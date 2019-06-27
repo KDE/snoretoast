@@ -1,3 +1,11 @@
+if (BUILD_STATIC_RUNTIME)
+	#link runtime static
+	if(MSVC)
+		foreach(_bt DEBUG RELEASE RELWITHDEBINFO)
+			string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
+		endforeach(_bt DEBUG RELEASE RELWITHDEBINFO)
+	endif(MSVC)
+endif()
 
 add_library(SnoreToastActions INTERFACE)
 target_include_directories(SnoreToastActions INTERFACE

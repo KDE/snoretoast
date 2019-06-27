@@ -4,6 +4,7 @@ project( snoretoast VERSION 0.5.99)
 
 
 option(BUILD_EXAMPLES "Whether to build the examples" OFF)
+option(BUILD_STATIC_RUNTIME "Whether link statically to the msvc runtime" ON)
 
 include(GenerateExportHeader)
 
