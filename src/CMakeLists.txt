@@ -1,12 +1,3 @@
-if (BUILD_STATIC_RUNTIME)
-	#link runtime static
-	if(MSVC)
-		foreach(_bt DEBUG RELEASE RELWITHDEBINFO)
-			string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
-		endforeach(_bt DEBUG RELEASE RELWITHDEBINFO)
-	endif(MSVC)
-endif()
-
 add_library(SnoreToastActions INTERFACE)
 target_include_directories(SnoreToastActions INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -33,7 +24,7 @@ generate_export_header(libsnoretoast)
 
 create_icon_rc(${PROJECT_SOURCE_DIR}/data/zzz.ico TOAST_ICON)
 add_executable(SnoreToast WIN32 main.cpp ${TOAST_ICON})
-target_link_libraries(SnoreToast PRIVATE SnoreToast::LibSnoreToast)
+target_link_libraries(SnoreToast PRIVATE SnoreToast::LibSnoreToast snoreretoastsources)
 target_compile_definitions(SnoreToast PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
 # if there are changes to the callback mechanism we need to change the uuid for the activator SNORETOAST_CALLBACK_UUID
 target_compile_definitions(SnoreToast PRIVATE

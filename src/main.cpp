@@ -22,17 +22,20 @@
 
 #include "linkhelper.h"
 
+#include <cmrc/cmrc.hpp>
+
 #include <shellapi.h>
 #include <roapi.h>
 
-#include <string>
-#include <iostream>
-#include <sstream>
 #include <algorithm>
 #include <functional>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 
-using namespace Windows::Foundation;
+CMRC_DECLARE(SnoreToastResource);
 
 void help(const std::wstring &error)
 {
@@ -264,6 +267,16 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                     return SnoreToastActions::Actions::Error;
                 }
             }
+            if (image.empty()) {
+                image = std::filesystem::temp_directory_path() / "snoretoast"
+                        / SnoreToasts::version() / "logo.png";
+                std::filesystem::create_directories(image.parent_path());
+                const auto filesystem = cmrc::SnoreToastResource::get_filesystem();
+                const auto img = filesystem.open("256-256-snoretoast.png");
+                std::ofstream out(image, std::ios::binary);
+                out.write(const_cast<char *>(img.begin()), img.size());
+                out.close();
+            }
             SnoreToasts app(appID);
             app.setPipeName(pipe);
             app.setApplication(application);
@@ -305,14 +318,14 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t *, int)
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
     SnoreToastActions::Actions action = SnoreToastActions::Actions::Clicked;
 
-    HRESULT hr = Initialize(RO_INIT_MULTITHREADED);
+    HRESULT hr = Windows::Foundation::Initialize(RO_INIT_MULTITHREADED);
     if (SUCCEEDED(hr)) {
         if (std::wstring(commandLine).find(L"-Embedding") != std::wstring::npos) {
             action = handleEmbedded();
         } else {
             action = parse(std::vector<wchar_t *>(argv, argv + argc));
         }
-        Uninitialize();
+        Windows::Foundation::Uninitialize();
     }
 
     return static_cast<int>(action);
