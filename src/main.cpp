@@ -174,14 +174,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                             L"Missing argument to -t.\n"
                             L"Supply argument as -t \"bold title string\"");
         } else if (arg == L"-p") {
-            std::wstring path = nextArg(it,
-                                        L"Missing argument to -p."
-                                        L"Supply argument as -p \"image path\"");
-            if (path.substr(0, 8) != L"file:///") {
-                image = L"file:///";
-                path = _wfullpath(nullptr, path.c_str(), MAX_PATH);
-            }
-            image.append(path);
+            image = nextArg(it, L"Missing argument to -p. Supply argument as -p \"image path\"");
         } else if (arg == L"-s") {
             sound = nextArg(it,
                             L"Missing argument to -s.\n"

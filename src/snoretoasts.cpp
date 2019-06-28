@@ -119,7 +119,7 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
 
     d->m_title = title;
     d->m_body = body;
-    d->m_image = image;
+    d->m_image = std::filesystem::absolute(image);
 
     if (!d->m_image.empty()) {
         ST_RETURN_ON_ERROR(d->m_toastManager->GetTemplateContent(
