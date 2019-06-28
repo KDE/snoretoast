@@ -54,15 +54,7 @@ int main(int argc, char *argv[])
         }
         const QString action = map["action"];
 
-#if 1
-        // with msvc2019 there seems to be an issue with QString::toStdWString()
-        std::wstring waction(action.size(), 0);
-        action.toWCharArray(const_cast<wchar_t *>(waction.data()));
-#else
-        std::wstring waction = action.toStdWString();
-#endif
-
-        const auto snoreAction = SnoreToastActions::getAction(waction);
+        const auto snoreAction = SnoreToastActions::getAction(action.toStdWString());
 
         std::wcout << qPrintable(data) << std::endl;
         std::wcout << "Action: " << qPrintable(action) << " " << static_cast<int>(snoreAction)
