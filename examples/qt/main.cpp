@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
         proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc, currentId, &app] {
             std::wcout << qPrintable(proc->readAllStandardOutput()) << std::endl;
             std::wcout << qPrintable(proc->readAllStandardError()) << std::endl;
-            if (proc->error()) {
+            if (proc->error() != QProcess::UnknownError) {
                 std::wcout << qPrintable(proc->errorString()) << std::endl;
             }
             std::wcout << qPrintable(proc->program()) << L" Notification: " << currentId
