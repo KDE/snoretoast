@@ -118,6 +118,21 @@ void version()
                << L"(at your option) any later version." << std::endl;
 }
 
+std::filesystem::path getIcon()
+{
+    auto image = std::filesystem::temp_directory_path() / "snoretoast" / SnoreToasts::version()
+            / "logo.png";
+    if (!std::filesystem::exists(image)) {
+        std::filesystem::create_directories(image.parent_path());
+        const auto filesystem = cmrc::SnoreToastResource::get_filesystem();
+        const auto img = filesystem.open("256-256-snoretoast.png");
+        std::ofstream out(image, std::ios::binary);
+        out.write(const_cast<char *>(img.begin()), img.size());
+        out.close();
+    }
+    return image;
+}
+
 SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
 {
     HRESULT hr = S_OK;
@@ -268,14 +283,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                 }
             }
             if (image.empty()) {
-                image = std::filesystem::temp_directory_path() / "snoretoast"
-                        / SnoreToasts::version() / "logo.png";
-                std::filesystem::create_directories(image.parent_path());
-                const auto filesystem = cmrc::SnoreToastResource::get_filesystem();
-                const auto img = filesystem.open("256-256-snoretoast.png");
-                std::ofstream out(image, std::ios::binary);
-                out.write(const_cast<char *>(img.begin()), img.size());
-                out.close();
+                image = getIcon();
             }
             SnoreToasts app(appID);
             app.setPipeName(pipe);
