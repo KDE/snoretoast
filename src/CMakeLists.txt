@@ -23,15 +23,15 @@ add_library(SnoreToast::LibSnoreToast ALIAS libsnoretoast)
 generate_export_header(libsnoretoast)
 
 create_icon_rc(${PROJECT_SOURCE_DIR}/data/zzz.ico TOAST_ICON)
-add_executable(SnoreToast WIN32 main.cpp ${TOAST_ICON})
-target_link_libraries(SnoreToast PRIVATE SnoreToast::LibSnoreToast snoreretoastsources)
-target_compile_definitions(SnoreToast PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
+add_executable(snoretoast WIN32 main.cpp ${TOAST_ICON})
+target_link_libraries(snoretoast PRIVATE SnoreToast::LibSnoreToast snoreretoastsources)
+target_compile_definitions(snoretoast PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
 # if there are changes to the callback mechanism we need to change the uuid for the activator SNORETOAST_CALLBACK_UUID
-target_compile_definitions(SnoreToast PRIVATE
+target_compile_definitions(snoretoast PRIVATE
     SNORETOAST_CALLBACK_UUID="{383803B6-AFDA-4220-BFC3-0DBF810106BF}"
 )
-add_executable(SnoreToast::SnoreToast ALIAS SnoreToast)
+add_executable(SnoreToast::SnoreToast ALIAS snoretoast)
 
-install(TARGETS SnoreToast SnoreToastActions EXPORT LibSnoreToastConfig RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(TARGETS snoretoast SnoreToastActions EXPORT LibSnoreToastConfig RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 install(FILES snoretoastactions.h DESTINATION include/snoretoast)
 install(EXPORT LibSnoreToastConfig DESTINATION lib/cmake/libsnoretoast NAMESPACE SnoreToast::)
