@@ -1,4 +1,7 @@
-Snoretoast
+![binary-factory-status](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64/badge/icon)
+
+
+Snoretoast![Logo](data/96-96-snoretoast.png)
 ==========
 A command line application capable of creating Windows Toast notifications on Windows 8 or later.
 If SnoreToast is used without the parameter --appID an default appID is used and a shortcut to SnoreToast.exe is created in the startmenu, notifications created that way will be asigned to SnoreToast.
@@ -7,7 +10,7 @@ If you want to brand your notifications you need to create the application start
 This appID then needs to be passed to snoretoast.exe with the `--appID`` parameter.
 
 # Releases and Binaries
-Releases and binaries can be found [here](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64/).
+Releases and binaries can be found [here](https://download.kde.org/stable/snoretoast/).
 
 # Contact us
 - [Repot Bugs](https://bugs.kde.org/enter_bug.cgi?product=Snoretoast)
