@@ -19,7 +19,7 @@ Releases and binaries can be found [here](https://download.kde.org/stable/snoret
 
 ----------------------------------------------------------
 ```
-Welcome to SnoreToast 0.5.99.
+Welcome to SnoreToast 0.6.0.
 A command line application capable of creating Windows Toast notifications.
 
 ---- Usage ----

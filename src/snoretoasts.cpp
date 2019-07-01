@@ -14,12 +14,13 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with SnoreToast.  If not, see <http://www.gnu.org/licenses/>.
-    */
+*/
 
 #include "snoretoasts.h"
 #include "toasteventhandler.h"
 #include "linkhelper.h"
 #include "utils.h"
+#include "config.h"
 
 #include <wrl\wrappers\corewrappers.h>
 #include <sstream>

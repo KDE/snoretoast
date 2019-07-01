@@ -16,6 +16,8 @@
     along with SnoreToast.  If not, see <http://www.gnu.org/licenses/>.
     */
 #include "snoretoasts.h"
+#include "config.h"
+
 #include "toasteventhandler.h"
 
 #include "snoretoastactioncenterintegration.h"

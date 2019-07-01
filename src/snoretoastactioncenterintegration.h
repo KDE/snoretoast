@@ -39,7 +39,7 @@ public:
 };
 
 // The COM server which implements the callback notifcation from Action Center
-class DECLSPEC_UUID(SNORETOAST_CALLBACK_UUID) SnoreToastActionCenterIntegration
+class DECLSPEC_UUID(SNORETOAST_CALLBACK_GUID) SnoreToastActionCenterIntegration
     : public Microsoft::WRL::RuntimeClass<
               Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
               INotificationActivationCallback>
@@ -49,7 +49,7 @@ public:
     {
         static std::wstring _uuid = [] {
             std::wstringstream out;
-            out << SNORETOAST_CALLBACK_UUID;
+            out << SNORETOAST_CALLBACK_GUID;
             return out.str();
         }();
         return _uuid;
