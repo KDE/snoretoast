@@ -1,4 +1,4 @@
-![binary-factory-status](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64/badge/icon)
+[![binary-factory-status](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64/badge/icon)](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64)
 
 
 Snoretoast![Logo](data/96-96-snoretoast.png)
@@ -10,7 +10,9 @@ If you want to brand your notifications you need to create the application start
 This appID then needs to be passed to snoretoast.exe with the `--appID`` parameter.
 
 # Releases and Binaries
-Releases and binaries can be found [here](https://download.kde.org/stable/snoretoast/).
+[Get releases and binaries](https://download.kde.org/stable/snoretoast/)
+
+[Get the latest nightly](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64)
 
 # Contact us
 - [Repot Bugs](https://bugs.kde.org/enter_bug.cgi?product=Snoretoast)
