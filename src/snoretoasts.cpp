@@ -534,7 +534,7 @@ HRESULT SnoreToasts::createToast()
     switch (setting) {
     case NotificationSetting_Enabled:
         ST_RETURN_ON_ERROR(setEventHandler(d->m_notification));
-        return d->m_notifier->Show(d->m_notification.Get());
+        break;
     case NotificationSetting_DisabledForApplication:
         error = L"DisabledForApplication";
         break;
@@ -548,13 +548,15 @@ HRESULT SnoreToasts::createToast()
         error = L"DisabledByManifest";
         break;
     }
-    std::wstringstream err;
-    err << L"Notifications are disabled\n"
-        << L"Reason: " << error << L"Please make sure that the app id is set correctly.\n"
-        << L"Command Line: " << GetCommandLineW();
-    tLog << err.str();
-    std::wcerr << err.str() << std::endl;
-    return S_FALSE;
+    if (!error.empty()) {
+		std::wstringstream err;
+		err << L"Notifications are disabled\n"
+			<< L"Reason: " << error << L" Please make sure that the app id is set correctly.\n"
+			<< L"Command Line: " << GetCommandLineW();
+		tLog << err.str();
+		std::wcerr << err.str() << std::endl;
+    }
+    return d->m_notifier->Show(d->m_notification.Get());
 }
 
 std::wstring SnoreToasts::version()
