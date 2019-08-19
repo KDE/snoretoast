@@ -549,12 +549,12 @@ HRESULT SnoreToasts::createToast()
         break;
     }
     if (!error.empty()) {
-		std::wstringstream err;
-		err << L"Notifications are disabled\n"
-			<< L"Reason: " << error << L" Please make sure that the app id is set correctly.\n"
-			<< L"Command Line: " << GetCommandLineW();
-		tLog << err.str();
-		std::wcerr << err.str() << std::endl;
+        std::wstringstream err;
+        err << L"Notifications are disabled\n"
+            << L"Reason: " << error << L" Please make sure that the app id is set correctly.\n"
+            << L"Command Line: " << GetCommandLineW();
+        tLog << err.str();
+        std::wcerr << err.str() << std::endl;
     }
     return d->m_notifier->Show(d->m_notification.Get());
 }
