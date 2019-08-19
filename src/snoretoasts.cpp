@@ -561,13 +561,7 @@ HRESULT SnoreToasts::createToast()
 
 std::wstring SnoreToasts::version()
 {
-    static std::wstring ver = [] {
-        std::wstringstream st;
-        st << SNORETOAST_VERSION_MAJOR << L"." << SNORETOAST_VERSION_MINOR << L"."
-           << SNORETOAST_VERSION_PATCH;
-        return st.str();
-    }();
-    return ver;
+    return SNORETOAST_VERSION;
 }
 
 HRESULT SnoreToasts::backgroundCallback(const std::wstring &appUserModelId,
