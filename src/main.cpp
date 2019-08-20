@@ -99,7 +99,7 @@ void help(const std::wstring &error)
             << std::endl
             << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id."
             << std::endl
-            << L"[-pid] <pid>\t\t| Query the appid for the process <pid>, use -appID as fallback."
+            << L"[-pid] <pid>\t\t| Query the appid for the process <pid>, use -appID as fallback. (Only relevant for applications that might be packaged for the store)"
             << std::endl
             << L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for "
                L"callbacks."
