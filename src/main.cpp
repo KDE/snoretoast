@@ -23,9 +23,11 @@
 #include "snoretoastactioncenterintegration.h"
 
 #include "linkhelper.h"
+#include "utils.h"
 
 #include <cmrc/cmrc.hpp>
 
+#include <appmodel.h>
 #include <shellapi.h>
 #include <roapi.h>
 
@@ -38,6 +40,31 @@
 #include <vector>
 
 CMRC_DECLARE(SnoreToastResource);
+
+std::wstring getAppId(const std::wstring &pid, const std::wstring &fallbackAppID)
+{
+    if (pid.empty()) {
+        return fallbackAppID;
+    }
+    const int _pid = std::stoi(pid);
+    const HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, _pid);
+    uint32_t size = 0;
+    long rc = GetApplicationUserModelId(process, &size, nullptr);
+    if (rc != ERROR_INSUFFICIENT_BUFFER) {
+        tLog << "Failed to retreive appid for " << _pid << " Error: " << rc;
+        return fallbackAppID;
+    }
+    std::wstring out(size, 0);
+    rc = GetApplicationUserModelId(process, &size, out.data());
+    if (rc != ERROR_SUCCESS) {
+        tLog << "Failed to retreive appid for " << _pid << " Error: " << rc;
+        return fallbackAppID;
+    }
+    // strip 0
+    out.resize(out.size() - 1);
+    tLog << "AppId from pid" << out;
+    return out;
+}
 
 void help(const std::wstring &error)
 {
@@ -57,7 +84,7 @@ void help(const std::wstring &error)
             << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
             << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
             << L"[-b] <button1;button2 string>| Displayed on the bottom line, can list multiple "
-               L"buttons separated by ;"
+               L"buttons separated by \";\""
             << std::endl
             << L"[-tb]\t\t\t| Displayed a textbox on the bottom line, only if buttons are not "
                L"presented."
@@ -71,6 +98,8 @@ void help(const std::wstring &error)
             << L"[-silent] \t\t| Don't play a sound file when showing the notifications."
             << std::endl
             << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id."
+            << std::endl
+            << L"[-pid] <pid>\t\t| Query the appid for the process <pid>, use -appID as fallback."
             << std::endl
             << L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for "
                L"callbacks."
@@ -140,6 +169,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
     HRESULT hr = S_OK;
 
     std::wstring appID;
+    std::wstring pid;
     std::filesystem::path pipe;
     std::filesystem::path application;
     std::wstring title;
@@ -191,6 +221,10 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
             appID = nextArg(it,
                             L"Missing argument to -appID.\n"
                             L"Supply argument as -appID \"Your.APP.ID\"");
+        } else if (arg == L"-pid") {
+            pid = nextArg(it,
+                         L"Missing argument to -pid.\n"
+                         L"Supply argument as -pid \"pid\"");
         } else if (arg == L"-pipename") {
             pipe = nextArg(it,
                            L"Missing argument to -pipeName.\n"
@@ -245,6 +279,8 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
             return SnoreToastActions::Actions::Error;
         }
     }
+
+    appID = getAppId(pid, appID);
     if (appID.empty()) {
         std::wstringstream _appID;
         _appID << L"Snore.DesktopToasts." << SnoreToasts::version();
