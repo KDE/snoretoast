@@ -79,6 +79,8 @@ inline bool checkResult(const char *file, const long line, const char *func, con
     }
     return true;
 }
+
+std::wstring formatWinError(unsigned long errorCode);
 };
 
 #define ST_CHECK_RESULT(hr) Utils::checkResult(__FILE__, __LINE__, __FUNCSIG__, hr)

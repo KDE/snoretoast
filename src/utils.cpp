@@ -74,6 +74,8 @@ std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::ws
 const std::filesystem::path &selfLocate()
 {
     static const std::filesystem::path path = [] {
+        // don't modify the lasterror
+        const auto lastError = GetLastError();
         std::wstring buf;
         size_t size;
         do {
@@ -82,6 +84,7 @@ const std::filesystem::path &selfLocate()
                                       static_cast<DWORD>(buf.size()));
         } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
         buf.resize(size);
+        SetLastError(lastError);
         return buf;
     }();
     return path;
@@ -145,6 +148,18 @@ std::wstring formatData(const std::vector<std::pair<std::wstring_view, std::wstr
     }
     add({ L"version", SnoreToasts::version() });
     return out.str();
+}
+
+std::wstring formatWinError(unsigned long errorCode)
+{
+    wchar_t *error = nullptr;
+    size_t len = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
+                                       | FORMAT_MESSAGE_IGNORE_INSERTS,
+                               nullptr, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                               reinterpret_cast<LPWSTR>(&error), 0, nullptr);
+    const auto out = std::wstring(error, len);
+    LocalFree(error);
+    return out;
 }
 }
 

@@ -47,17 +47,29 @@ std::wstring getAppId(const std::wstring &pid, const std::wstring &fallbackAppID
         return fallbackAppID;
     }
     const int _pid = std::stoi(pid);
-    const HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, _pid);
+    const HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, _pid);
+    if (!process) {
+        tLog << "Failed to retreive appid for " << _pid
+             << " Failed to retrive process hanlde: " << Utils::formatWinError(GetLastError());
+        return fallbackAppID;
+    }
     uint32_t size = 0;
     long rc = GetApplicationUserModelId(process, &size, nullptr);
     if (rc != ERROR_INSUFFICIENT_BUFFER) {
-        tLog << "Failed to retreive appid for " << _pid << " Error: " << rc;
+        if (rc == APPMODEL_ERROR_NO_APPLICATION) {
+            tLog << "Failed to retreive appid for " << _pid << " Process is a desktop application";
+        } else {
+            tLog << "Failed to retreive appid for " << _pid
+                 << " Error: " << Utils::formatWinError(rc);
+        }
+        CloseHandle(process);
         return fallbackAppID;
     }
     std::wstring out(size, 0);
     rc = GetApplicationUserModelId(process, &size, out.data());
+    CloseHandle(process);
     if (rc != ERROR_SUCCESS) {
-        tLog << "Failed to retreive appid for " << _pid << " Error: " << rc;
+        tLog << "Failed to retreive appid for " << _pid << " Error: " << Utils::formatWinError(rc);
         return fallbackAppID;
     }
     // strip 0
@@ -99,7 +111,8 @@ void help(const std::wstring &error)
             << std::endl
             << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id."
             << std::endl
-            << L"[-pid] <pid>\t\t| Query the appid for the process <pid>, use -appID as fallback. (Only relevant for applications that might be packaged for the store)"
+            << L"[-pid] <pid>\t\t| Query the appid for the process <pid>, use -appID as fallback. "
+               L"(Only relevant for applications that might be packaged for the store)"
             << std::endl
             << L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for "
                L"callbacks."
@@ -223,8 +236,8 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                             L"Supply argument as -appID \"Your.APP.ID\"");
         } else if (arg == L"-pid") {
             pid = nextArg(it,
-                         L"Missing argument to -pid.\n"
-                         L"Supply argument as -pid \"pid\"");
+                          L"Missing argument to -pid.\n"
+                          L"Supply argument as -pid \"pid\"");
         } else if (arg == L"-pipename") {
             pipe = nextArg(it,
                            L"Missing argument to -pipeName.\n"
