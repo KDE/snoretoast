@@ -22,6 +22,9 @@
 #include <sstream>
 #include <wrl.h>
 
+#define ST_WSTRINGIFY(X) L##X
+#define ST_STRINGIFY(X) ST_WSTRINGIFY(X)
+
 typedef struct NOTIFICATION_USER_INPUT_DATA
 {
     LPCWSTR Key;
@@ -47,12 +50,7 @@ class DECLSPEC_UUID(SNORETOAST_CALLBACK_GUID) SnoreToastActionCenterIntegration
 public:
     static std::wstring uuid()
     {
-        static std::wstring _uuid = [] {
-            std::wstringstream out;
-            out << SNORETOAST_CALLBACK_GUID;
-            return out.str();
-        }();
-        return _uuid;
+        return ST_STRINGIFY(SNORETOAST_CALLBACK_GUID);
     }
 
     SnoreToastActionCenterIntegration() {}

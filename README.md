@@ -21,8 +21,46 @@ This appID then needs to be passed to snoretoast.exe with the `--appID`` paramet
 
 ----------------------------------------------------------
 ```
-Welcome to SnoreToast 0.7.0.                                                                                                                                                        A command line application capable of creating Windows Toast notifications.                                                                                                                                                                                                                                                                                             ---- Usage ----                                                                                                                                                                     SnoreToast [Options]                                                                                                                                                                                                                                                                                                                                                    ---- Options ----                                                                                                                                                                   [-t] <title string>     | Displayed on the first line of the toast.                                                                                                                 [-m] <message string>   | Displayed on the remaining lines, wrapped.                                                                                                                [-b] <button1;button2 string>| Displayed on the bottom line, can list multiple buttons separated by ";"                                                                             [-tb]                   | Displayed a textbox on the bottom line, only if buttons are not presented.                                                                                [-p] <image URI>        | Display toast with an image, local files only.                                                                                                            [-id] <id>              | sets the id for a notification to be able to close it later.                                                                                              [-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.                          [-silent]               | Don't play a sound file when showing the notifications.                                                                                                   [-appID] <App.ID>       | Don't create a shortcut but use the provided app id.                                                                                                      [-pid] <pid>            | Query the appid for the process <pid>, use -appID as fallback. (Only relevant for applications that might be packaged for the store)                      [-pipeName] <\.\pipe\pipeName\> | Provide a name pipe which is used for callbacks.                                                                                                  [-application] <C:\foo.exe>     | Provide a application that might be started if the pipe does not exist.                                                                           -close <id>             | Closes a currently displayed notification.                                                                                                                                                                                                                                                                                                    -install <name> <application> <appID>| Creates a shortcut <name> in the start menu which point to the executable <application>, appID used for the notifications.                                                                                                                                                                                                       -v                      | Print the version and copying information.
--h                      | Print these instructions. Same as no args.                                                                                                                Exit Status     :  Exit Code                                                                                                                                                        Failed          : -1                                                                                                                                                                                                                                                                                                                                                    Success         :  0                                                                                                                                                                Hidden          :  1                                                                                                                                                                Dismissed       :  2                                                                                                                                                                TimedOut        :  3                                                                                                                                                                ButtonPressed   :  4                                                                                                                                                                TextEntered     :  5                                                                                                                                                                                                                                                                                                                                                    ---- Image Notes ----                                                                                                                                                               Images must be .png with:                                                                                                                                                                   maximum dimensions of 1024x1024                                                                                                                                                     size <= 200kb                                                                                                                                                               These limitations are due to the Toast notification system.
+Welcome to SnoreToast 0.7.0.
+A command line application capable of creating Windows Toast notifications.
+Dismissed       :  2
+---- Usage ---- :  3
+SnoreToast [Options]
+TextEntered     :  5
+---- Options ----
+[-t] <title string>--   | Displayed on the first line of the toast.
+[-m] <message string>ith| Displayed on the remaining lines, wrapped.
+[-b] <button1;button2 string>| Displayed on the bottom line, can list multiple buttons separated by ";"
+[-tb]   size <= 200kb   | Displayed a textbox on the bottom line, only if buttons are not presented.
+[-p] <image URI>s are du| Display toast with an image, local files only.
+[-id] <id>              | sets the id for a notification to be able to close it later.
+[-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
+[-silent]               | Don't play a sound file when showing the notifications.
+[-appID] <App.ID>       | Don't create a shortcut but use the provided app id.
+[-pid] <pid>            | Query the appid for the process <pid>, use -appID as fallback. (Only relevant for applications that might be packaged for the store)
+[-pipeName] <\.\pipe\pipeName\> | Provide a name pipe which is used for callbacks.
+[-application] <C:\foo.exe>     | Provide a application that might be started if the pipe does not exist.
+-close <id>             | Closes a currently displayed notification.
+
+-install <name> <application> <appID>| Creates a shortcut <name> in the start menu which point to the executable <application>, appID used for the notifications.
+
+-v                      | Print the version and copying information.
+-h                      | Print these instructions. Same as no args.
+Exit Status     :  Exit Code
+Failed          : -1
+
+Success         :  0
+Hidden          :  1
+Dismissed       :  2
+TimedOut        :  3
+ButtonPressed   :  4
+TextEntered     :  5
+
+---- Image Notes ----
+Images must be .png with:
+        maximum dimensions of 1024x1024
+        size <= 200kb
+These limitations are due to the Toast notification system.
 ```
 ----------------------------------------------------------
 
