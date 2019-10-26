@@ -23,16 +23,16 @@ This appID then needs to be passed to snoretoast.exe with the `--appID`` paramet
 ```
 Welcome to SnoreToast 0.7.0.
 A command line application capable of creating Windows Toast notifications.
-Dismissed       :  2
----- Usage ---- :  3
+
+---- Usage ----
 SnoreToast [Options]
-TextEntered     :  5
+
 ---- Options ----
-[-t] <title string>--   | Displayed on the first line of the toast.
-[-m] <message string>ith| Displayed on the remaining lines, wrapped.
+[-t] <title string>     | Displayed on the first line of the toast.
+[-m] <message string>   | Displayed on the remaining lines, wrapped.
 [-b] <button1;button2 string>| Displayed on the bottom line, can list multiple buttons separated by ";"
-[-tb]   size <= 200kb   | Displayed a textbox on the bottom line, only if buttons are not presented.
-[-p] <image URI>s are du| Display toast with an image, local files only.
+[-tb]                   | Displayed a textbox on the bottom line, only if buttons are not presented.
+[-p] <image URI>        | Display toast with an image, local files only.
 [-id] <id>              | sets the id for a notification to be able to close it later.
 [-s] <sound URI>        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
 [-silent]               | Don't play a sound file when showing the notifications.
