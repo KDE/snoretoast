@@ -7,7 +7,7 @@ handle = ctypes.windll.kernel32.CreateNamedPipeW(PIPE_NAME, 0x00000001, 0, 1, bu
 if handle == -1:
     print("Error")
     exit(-1)
-subprocess.run(["snoretoast", "-t", "Snore loves python♥", "-m", "This rocks", "-b", "Rock;This", "-pipeName", PIPE_NAME])
+subprocess.run(["snoretoast", "-t", "Snoretoast ❤ python", "-m", "This rocks", "-b", "🎸;This;❤", "-pipeName", PIPE_NAME])
 
 ctypes.windll.kernel32.ConnectNamedPipe(handle, None)
 
