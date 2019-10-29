@@ -92,6 +92,9 @@ const std::filesystem::path &selfLocate()
 
 bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool wait)
 {
+    if (wait) {
+        WaitNamedPipe(pipe.wstring().c_str(), 20000);
+    }
     HANDLE hPipe = CreateFile(pipe.wstring().c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0,
                               nullptr);
     if (hPipe != INVALID_HANDLE_VALUE) {
@@ -103,10 +106,6 @@ bool writePipe(const std::filesystem::path &pipe, const std::wstring &data, bool
         WriteFile(hPipe, nullptr, sizeof(wchar_t), &written, nullptr);
         CloseHandle(hPipe);
         return success;
-    } else if (wait) {
-        // wait and retry
-        Sleep(20000);
-        return writePipe(pipe, data);
     }
     tLog << L"Failed to open pipe: " << pipe << L" data: " << data;
     return false;
