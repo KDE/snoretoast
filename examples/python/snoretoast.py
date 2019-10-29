@@ -6,7 +6,7 @@ import time
 import threading
 
 PIPE_NAME = r"\\.\PIPE\snorepy"
-APP_ID = "SoreToast.Example.Python"
+APP_ID = "SnoreToast.Example.Python"
 BUF_SIZE = 1024
 
 def server():
