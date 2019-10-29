@@ -1,13 +1,23 @@
-import subprocess
 import ctypes
+import os
+import subprocess
+import sys
 
 PIPE_NAME = r"\\.\PIPE\snorepy"
+APP_ID = "SoreToast.Example.Python"
+
+# install a shortcut with a app id, this will change the displayed origin of the notification, in the notification and the action center
+# for different ways how to provide such an app id, have a look at the readme
+subprocess.run(["snoretoast", "-install", "Snoretoast Python Example", sys.executable, APP_ID])
+
+
 bufsize = 1024
 handle = ctypes.windll.kernel32.CreateNamedPipeW(PIPE_NAME, 0x00000001, 0, 1, bufsize, bufsize, 0, None)
 if handle == -1:
     print("Error")
     exit(-1)
-subprocess.run(["snoretoast", "-t", "Snoretoast ❤ python", "-m", "This rocks", "-b", "🎸;This;❤", "-pipeName", PIPE_NAME])
+subprocess.run(["snoretoast", "-t", "Snoretoast ❤ python", "-m", "This rocks", "-b", "🎸;This;❤", "-p", os.path.join(os.path.dirname(__file__), "snoretoast-python.png"),
+                 "-pipeName", PIPE_NAME, "-appID", APP_ID])
 
 ctypes.windll.kernel32.ConnectNamedPipe(handle, None)
 
