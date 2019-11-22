@@ -87,68 +87,9 @@ void help(const std::wstring &error)
                    << L"A command line application capable of creating Windows Toast notifications."
                    << std::endl;
     }
-    std::wcerr
-            << std::endl
-            << L"---- Usage ----" << std::endl
-            << L"SnoreToast [Options]" << std::endl
-            << std::endl
-            << L"---- Options ----" << std::endl
-            << L"[-t] <title string>\t| Displayed on the first line of the toast." << std::endl
-            << L"[-m] <message string>\t| Displayed on the remaining lines, wrapped." << std::endl
-            << L"[-b] <button1;button2 string>| Displayed on the bottom line, can list multiple "
-               L"buttons separated by \";\""
-            << std::endl
-            << L"[-tb]\t\t\t| Displayed a textbox on the bottom line, only if buttons are not "
-               L"presented."
-            << std::endl
-            << L"[-p] <image URI>\t| Display toast with an image, local files only." << std::endl
-            << L"[-id] <id>\t\t| sets the id for a notification to be able to close it later."
-            << std::endl
-            << L"[-s] <sound URI> \t| Sets the sound of the notifications, for possible values see "
-               L"http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx."
-            << std::endl
-            << L"[-silent] \t\t| Don't play a sound file when showing the notifications."
-            << std::endl
-            << L"[-appID] <App.ID>\t| Don't create a shortcut but use the provided app id."
-            << std::endl
-            << L"[-pid] <pid>\t\t| Query the appid for the process <pid>, use -appID as fallback. "
-               L"(Only relevant for applications that might be packaged for the store)"
-            << std::endl
-            << L"[-pipeName] <\\.\\pipe\\pipeName\\>\t| Provide a name pipe which is used for "
-               L"callbacks."
-            << std::endl
-            << L"[-application] <C:\\foo.exe>\t| Provide a application that might be started if "
-               L"the pipe does not exist."
-            << std::endl
-            << L"-close <id>\t\t| Closes a currently displayed notification." << std::endl
-            << std::endl
-            << L"-install <name> <application> <appID>| Creates a shortcut <name> in the start "
-               L"menu which point to the executable <application>, appID used for the "
-               L"notifications."
-            << std::endl
-            << std::endl
-            << L"-v \t\t\t| Print the version and copying information." << std::endl
-            << L"-h\t\t\t| Print these instructions. Same as no args." << std::endl
-            << L"Exit Status\t:  Exit Code" << std::endl
-            << L"Failed\t\t: " << static_cast<int>(SnoreToastActions::Actions::Error) << std::endl
-            << std::endl
-            << "Success\t\t:  " << static_cast<int>(SnoreToastActions::Actions::Clicked)
-            << std::endl
-            << "Hidden\t\t:  " << static_cast<int>(SnoreToastActions::Actions::Hidden) << std::endl
-            << "Dismissed\t:  " << static_cast<int>(SnoreToastActions::Actions::Dismissed)
-            << std::endl
-            << "TimedOut\t:  " << static_cast<int>(SnoreToastActions::Actions::Timedout)
-            << std::endl
-            << "ButtonPressed\t:  " << static_cast<int>(SnoreToastActions::Actions::ButtonClicked)
-            << std::endl
-            << "TextEntered\t:  " << static_cast<int>(SnoreToastActions::Actions::TextEntered)
-            << std::endl
-            << std::endl
-            << L"---- Image Notes ----" << std::endl
-            << L"Images must be .png with:" << std::endl
-            << L"\tmaximum dimensions of 1024x1024" << std::endl
-            << L"\tsize <= 200kb" << std::endl
-            << L"These limitations are due to the Toast notification system." << std::endl;
+    const auto filesystem = cmrc::SnoreToastResource::get_filesystem();
+    const auto help = filesystem.open("help.txt");
+    std::wcerr << help.begin() << std::endl;
 }
 
 void version()
