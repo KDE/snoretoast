@@ -44,6 +44,11 @@
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 
+enum class Duration {
+    Short, // default 7s
+    Long // 25s
+};
+
 class LIBSNORETOAST_EXPORT SnoreToasts
 {
 public:
@@ -73,6 +78,9 @@ public:
 
     std::filesystem::path application() const;
     void setApplication(const std::filesystem::path &application);
+
+    Duration duration() const;
+    void setDuration(Duration duration);
 
     std::wstring formatAction(const SnoreToastActions::Actions &action,
                               const std::vector<std::pair<std::wstring_view, std::wstring_view>>

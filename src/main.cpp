@@ -132,6 +132,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
     std::wstring id;
     std::wstring sound(L"Notification.Default");
     std::wstring buttons;
+    Duration duration = Duration::Short;
     bool silent = false;
     bool closeNotify = false;
     bool isTextBoxEnabled = false;
@@ -165,6 +166,18 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
             sound = nextArg(it,
                             L"Missing argument to -s.\n"
                             L"Supply argument as -s \"sound name\"");
+        } else if (arg == L"-d") {
+            std::wstring _d = nextArg(it,
+                                      L"Missing argument to -d.\n"
+                                      L"Supply argument as -d (short |long)");
+            if (_d == L"short") {
+                duration = Duration::Short;
+            } else if (_d == L"long") {
+                duration = Duration::Long;
+            } else {
+                help(_d + L" is not a valid");
+                return SnoreToastActions::Actions::Error;
+            }
         } else if (arg == L"-id") {
             id = nextArg(it,
                          L"Missing argument to -id.\n"
@@ -278,6 +291,7 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
             app.setId(id);
             app.setButtons(buttons);
             app.setTextBoxEnabled(isTextBoxEnabled);
+            app.setDuration(duration);
             app.displayToast(title, body, image);
             return app.userAction();
         } else {

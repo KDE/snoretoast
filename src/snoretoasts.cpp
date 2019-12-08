@@ -70,6 +70,8 @@ public:
     bool m_silent = false;
     bool m_textbox = false;
 
+    Duration m_duration = Duration::Short;
+
     SnoreToastActions::Actions m_action = SnoreToastActions::Actions::Clicked;
 
     ComPtr<IXmlDocument> m_toastXml;
@@ -140,6 +142,8 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
 
     const auto data = formatAction(SnoreToastActions::Actions::Clicked);
     ST_RETURN_ON_ERROR(addAttribute(L"launch", rootAttributes.Get(), data));
+    ST_RETURN_ON_ERROR(addAttribute(L"duration", rootAttributes.Get(),
+                                    d->m_duration == Duration::Short ? L"short" : L"long"));
     // Adding buttons
     if (!d->m_buttons.empty()) {
         setButtons(root);
@@ -490,6 +494,16 @@ std::filesystem::path SnoreToasts::application() const
 void SnoreToasts::setApplication(const std::filesystem::path &application)
 {
     d->m_application = application;
+}
+
+void SnoreToasts::setDuration(Duration duration)
+{
+    d->m_duration = duration;
+}
+
+Duration SnoreToasts::duration() const
+{
+    return d->m_duration;
 }
 
 std::wstring SnoreToasts::formatAction(
