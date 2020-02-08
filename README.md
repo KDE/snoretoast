@@ -36,6 +36,7 @@ SnoreToast [Options]
 [-id] <id>                              | sets the id for a notification to be able to close it later.
 [-s] <sound URI>                        | Sets the sound of the notifications, for possible values see http://msdn.microsoft.com/en-us/library/windows/apps/hh761492.aspx.
 [-silent]                               | Don't play a sound file when showing the notifications.
+[-d] (short | long)                     | Set the duration default is "short" 7s, "long" is 25s.
 [-appID] <App.ID>                       | Don't create a shortcut but use the provided app id.
 [-pid] <pid>                            | Query the appid for the process <pid>, use -appID as fallback. (Only relevant for applications that might be packaged for the store)
 [-pipeName] <\.\pipe\pipeName\>         | Provide a name pipe which is used for callbacks.
