@@ -198,8 +198,8 @@ SnoreToastActions::Actions parse(std::vector<wchar_t *> args)
                            L"Supply argument as -pipeName \"\\.\\pipe\\foo\\\"");
         } else if (arg == L"-application") {
             application = nextArg(it,
-                                  L"Missing argument to -pipeName.\n"
-                                  L"Supply argument as -applicatzion \"C:\\foo.exe\"");
+                                  L"Missing argument to -application.\n"
+                                  L"Supply argument as -application \"C:\\foo.exe\"");
         } else if (arg == L"-b") {
             buttons = nextArg(it,
                               L"Missing argument to -b.\n"
