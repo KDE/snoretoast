@@ -15,7 +15,7 @@ This appID then needs to be passed to snoretoast.exe with the `--appID`` paramet
 [Get the latest nightly](https://binary-factory.kde.org/job/SnoreToast_Nightly_win64)
 
 # Contact us
-- [Repot Bugs](https://bugs.kde.org/enter_bug.cgi?product=Snoretoast)
+- [Report Bugs](https://bugs.kde.org/enter_bug.cgi?product=Snoretoast)
 - [Find us on Irc](http://webchat.freenode.net/?channels=%23kde-windows)
 - [Send us a mail](mailto:kde-windows@kde.org)
 
