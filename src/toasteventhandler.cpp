@@ -79,6 +79,13 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/,
             std::wcout << dataMap.at(L"button") << std::endl;
             m_userAction = SnoreToastActions::Actions::ButtonClicked;
         }
+        if (!m_toast.pipeName().empty()) {
+            if (m_userAction == SnoreToastActions::Actions::ButtonClicked) {
+                Utils::writePipe(m_toast.pipeName(), m_toast.formatAction(m_userAction, { { L"button", dataMap.at(L"button") } }));
+            } else {
+                Utils::writePipe(m_toast.pipeName(), m_toast.formatAction(m_userAction));
+            }
+        }
     }
     SetEvent(m_event);
     return S_OK;
