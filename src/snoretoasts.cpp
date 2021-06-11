@@ -380,7 +380,7 @@ HRESULT SnoreToasts::setTextBox(ComPtr<IXmlNode> root)
 
     ST_RETURN_ON_ERROR(addAttribute(L"content", actionAttributes.Get(), L"Send"));
 
-    const auto data = formatAction(SnoreToastActions::Actions::ButtonClicked);
+    const auto data = formatAction(SnoreToastActions::Actions::TextEntered);
 
     ST_RETURN_ON_ERROR(addAttribute(L"arguments", actionAttributes.Get(), data));
     return addAttribute(L"hint-inputId", actionAttributes.Get(), L"textBox");
