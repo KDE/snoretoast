@@ -1,7 +1,7 @@
 add_library(SnoreToastActions INTERFACE)
 target_include_directories(SnoreToastActions INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/snoretoast>
+    $<INSTALL_INTERFACE:include/snoretoast>
 )
 add_library(SnoreToast::SnoreToastActions ALIAS SnoreToastActions)
 
