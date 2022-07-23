@@ -16,7 +16,7 @@ This appID then needs to be passed to snoretoast.exe with the `--appID`` paramet
 
 # Contact us
 - [Report Bugs](https://bugs.kde.org/enter_bug.cgi?product=Snoretoast)
-- [Find us on Irc](http://webchat.freenode.net/?channels=%23kde-windows)
+- [Find us on Irc](https://web.libera.chat/?channels=#kde-windows)
 - [Send us a mail](mailto:kde-windows@kde.org)
 
 ----------------------------------------------------------
