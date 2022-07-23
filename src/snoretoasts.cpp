@@ -44,6 +44,15 @@ public:
         : m_parent(parent), m_appID(appID), m_id(std::to_wstring(GetCurrentProcessId()))
     {
 
+        ComPtr<IShellItem> app;
+        if (FAILED(SHCreateItemFromParsingName(std::wstring(L"shell:AppsFolder\\" + m_appID).data(),
+                                               nullptr, IID_PPV_ARGS(&app)))) {
+            m_useFallbackMode = true;
+            tLog << "AppUserModelId:" << m_appID
+                 << " is not properly registered. Using fallback mode. Only click actions will be "
+                    "availible";
+        }
+
         HRESULT hr = GetActivationFactory(
                 HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager)
                         .Get(),
@@ -69,6 +78,8 @@ public:
     std::wstring m_buttons;
     bool m_silent = false;
     bool m_textbox = false;
+
+    bool m_useFallbackMode = false;
 
     Duration m_duration = Duration::Short;
 
@@ -617,4 +628,9 @@ void SnoreToasts::waitForCallbackActivation()
     Utils::registerActivator();
     WaitForSingleObject(SnoreToastsPrivate::ctoastEvent(), EVENT_TIMEOUT);
     Utils::unregisterActivator();
+}
+
+bool SnoreToasts::useFalbackMode() const
+{
+    return d->m_useFallbackMode;
 }

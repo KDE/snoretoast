@@ -86,6 +86,13 @@ public:
                               const std::vector<std::pair<std::wstring_view, std::wstring_view>>
                                       &extraData = {}) const;
 
+    /**
+     * Returns true if the appID is not properly registered
+     * This usually means that no shortcut with the appID is installed.
+     * In fallback mode no text replies or buttons are available.
+     */
+    bool useFalbackMode() const;
+
 private:
     HRESULT createToast();
     HRESULT setImage();
