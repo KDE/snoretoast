@@ -94,21 +94,21 @@ FunctionEnd
 
 # Register Snoretoast with Appx
 Be sure to also pass the `-pid` to Snoretoast.
+Replace SNORETOAST_CALLBACK_GUID with the one from https://github.com/KDE/snoretoast/blob/master/CMakeLists.txt#L5
 ```
 # https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/send-local-toast-desktop
-# TODO: get the correct CLSID from snoretoast
 SnoreToast = f"""
     <!--Register COM CLSID LocalServer32 registry key-->
     <com:Extension Category="windows.comServer">
         <com:ComServer>
         <com:ExeServer Executable="bin\snoretoast.exe" DisplayName="SnoreToast activator">
-            <com:Class Id="eb1fdd5b-8f70-4b5a-b230-998a2dc19303" DisplayName="Toast activator"/>
+            <com:Class Id="SNORETOAST_CALLBACK_GUID" DisplayName="Toast activator"/>
         </com:ExeServer>
         </com:ComServer>
     </com:Extension>
 
     <!--Specify which CLSID to activate when toast clicked-->
     <desktop:Extension Category="windows.toastNotificationActivation">
-        <desktop:ToastNotificationActivation ToastActivatorCLSID="eb1fdd5b-8f70-4b5a-b230-998a2dc19303" />
+        <desktop:ToastNotificationActivation ToastActivatorCLSID="SNORETOAST_CALLBACK_GUID" />
     </desktop:Extension>
 ```
