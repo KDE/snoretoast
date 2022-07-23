@@ -95,7 +95,8 @@ void help(const std::wstring &error)
 void version()
 {
     std::wcerr << L"SnoreToast version " << SnoreToasts::version() << std::endl
-               << L"Copyright (C) 2019  Hannah von Reth <vonreth@kde.org>" << std::endl
+               << L"ToastActivatorCLSID: " << SNORETOAST_CALLBACK_GUID << std::endl
+               << L"Copyright (C) 2022  Hannah von Reth <vonreth@kde.org>" << std::endl
                << L"SnoreToast is free software: you can redistribute it and/or modify" << std::endl
                << L"it under the terms of the GNU Lesser General Public License as published by"
                << std::endl
