@@ -313,14 +313,19 @@ SnoreToastActions::Actions handleEmbedded()
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t *, int)
 {
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-        FILE *dummy;
-        _wfreopen_s(&dummy, L"CONOUT$", L"w", stdout);
-        setvbuf(stdout, nullptr, _IONBF, 0);
+        // atache to the parent console output, if its an interactive terminal
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+            FILE *dummy;
+            _wfreopen_s(&dummy, L"CONOUT$", L"w", stdout);
+            setvbuf(stdout, nullptr, _IONBF, 0);
 
-        _wfreopen_s(&dummy, L"CONOUT$", L"w", stderr);
-        setvbuf(stderr, nullptr, _IONBF, 0);
-        std::ios::sync_with_stdio();
+            _wfreopen_s(&dummy, L"CONOUT$", L"w", stderr);
+            setvbuf(stderr, nullptr, _IONBF, 0);
+            std::ios::sync_with_stdio();
+        }
     }
+
     const auto commandLine = GetCommandLineW();
     int argc;
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
