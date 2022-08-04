@@ -329,8 +329,10 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t *, int)
     const auto commandLine = GetCommandLineW();
     int argc;
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
-    SnoreToastActions::Actions action = SnoreToastActions::Actions::Clicked;
 
+    tLog << commandLine;
+
+    SnoreToastActions::Actions action = SnoreToastActions::Actions::Clicked;
     HRESULT hr = Windows::Foundation::Initialize(RO_INIT_MULTITHREADED);
     if (SUCCEEDED(hr)) {
         if (std::wstring(commandLine).find(L"-Embedding") != std::wstring::npos) {
