@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
                       app.applicationFilePath() });
 
         int currentId = id;
-        proc->connect(proc, QOverload<int>::of(&QProcess::finished), proc, [proc, currentId, &app] {
+        proc->connect(proc, &QProcess::finished, proc, [proc, currentId, &app] {
             std::wcout << qPrintable(proc->readAllStandardOutput()) << std::endl;
             std::wcout << qPrintable(proc->readAllStandardError()) << std::endl;
             if (proc->error() != QProcess::UnknownError) {

@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Network REQUIRED)
+find_package(Qt6Core REQUIRED)
+find_package(Qt6Network REQUIRED)
 
 # if  build as part of snoretoast project we don't look it up
 if (NOT TARGET SnoreToast::SnoreToastActions)
@@ -16,4 +16,4 @@ endif()
 
 add_executable(${PROJECT_NAME} "main.cpp")
 
-target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Network SnoreToast::SnoreToastActions)
+target_link_libraries(${PROJECT_NAME} Qt::Core Qt::Network SnoreToast::SnoreToastActions)
