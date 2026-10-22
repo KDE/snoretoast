@@ -18,6 +18,8 @@
 #pragma once
 #include "snoretoasts.h"
 
+#include <atomic>
+
 typedef ABI::Windows::Foundation::ITypedEventHandler<
         ABI::Windows::UI::Notifications::ToastNotification *, ::IInspectable *>
         DesktopToastActivatedEventHandler;
@@ -89,8 +91,11 @@ public:
     }
 
 private:
+    bool tryComplete(SnoreToastActions::Actions action);
+
     ULONG m_ref;
     SnoreToastActions::Actions m_userAction;
+    std::atomic_bool m_completed = false;
     HANDLE m_event;
     const SnoreToasts &m_toast;
 };

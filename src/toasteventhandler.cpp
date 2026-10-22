@@ -50,10 +50,21 @@ SnoreToastActions::Actions &ToastEventHandler::userAction()
     return m_userAction;
 }
 
+bool ToastEventHandler::tryComplete(SnoreToastActions::Actions action)
+{
+    if (m_completed.exchange(true)) {
+        return false;
+    }
+
+    m_userAction = action;
+    return true;
+}
+
 // DesktopToastActivatedEventHandler
 IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/,
                                          _In_ IInspectable *args)
 {
+    SnoreToastActions::Actions action = SnoreToastActions::Actions::Hidden;
     IToastActivatedEventArgs *buttonReply = nullptr;
     args->QueryInterface(&buttonReply);
     if (buttonReply == nullptr) {
@@ -64,26 +75,28 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /*sender*/,
         std::wstring data = WindowsGetStringRawBuffer(args, nullptr);
         tLog << data;
         const auto dataMap = Utils::splitData(data);
-        const auto action = SnoreToastActions::getAction(dataMap.at(L"action"));
+        const auto parsedAction = SnoreToastActions::getAction(dataMap.at(L"action"));
         assert(dataMap.at(L"notificationId") == m_toast.id());
 
-        if (action == SnoreToastActions::Actions::TextEntered) {
+        if (parsedAction == SnoreToastActions::Actions::TextEntered) {
             // The text is only passed to the named pipe
             tLog << L"The user entered a text.";
-            m_userAction = SnoreToastActions::Actions::TextEntered;
-        } else if (action == SnoreToastActions::Actions::Clicked) {
+            action = SnoreToastActions::Actions::TextEntered;
+        } else if (parsedAction == SnoreToastActions::Actions::Clicked) {
             tLog << L"The user clicked on the toast.";
-            m_userAction = SnoreToastActions::Actions::Clicked;
+            action = SnoreToastActions::Actions::Clicked;
         } else {
             tLog << L"The user clicked on a toast button.";
             std::wcout << dataMap.at(L"button") << std::endl;
-            m_userAction = SnoreToastActions::Actions::ButtonClicked;
-        }
-        if (m_toast.useFalbackMode() && !m_toast.pipeName().empty()) {
-            Utils::writePipe(m_toast.pipeName(), m_toast.formatAction(m_userAction));
+            action = SnoreToastActions::Actions::ButtonClicked;
         }
     }
-    SetEvent(m_event);
+    if (tryComplete(action)) {
+        if (m_toast.useFalbackMode() && !m_toast.pipeName().empty()) {
+            Utils::writePipe(m_toast.pipeName(), m_toast.formatAction(action));
+        }
+        SetEvent(m_event);
+    }
     return S_OK;
 }
 
@@ -92,27 +105,29 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
                                          _In_ IToastDismissedEventArgs *e)
 {
     ToastDismissalReason tdr;
+    SnoreToastActions::Actions action = SnoreToastActions::Actions::Hidden;
     HRESULT hr = e->get_Reason(&tdr);
     if (SUCCEEDED(hr)) {
         switch (tdr) {
         case ToastDismissalReason_ApplicationHidden:
             tLog << L"The application hid the toast using ToastNotifier.hide()";
-            m_userAction = SnoreToastActions::Actions::Hidden;
             break;
         case ToastDismissalReason_UserCanceled:
             tLog << L"The user dismissed this toast";
-            m_userAction = SnoreToastActions::Actions::Dismissed;
+            action = SnoreToastActions::Actions::Dismissed;
             break;
         case ToastDismissalReason_TimedOut:
             tLog << L"The toast has timed out";
-            m_userAction = SnoreToastActions::Actions::Timedout;
+            action = SnoreToastActions::Actions::Timedout;
             break;
         }
     }
-    if (!m_toast.pipeName().empty()) {
-        Utils::writePipe(m_toast.pipeName(), m_toast.formatAction(m_userAction));
+    if (tryComplete(action)) {
+        if (!m_toast.pipeName().empty()) {
+            Utils::writePipe(m_toast.pipeName(), m_toast.formatAction(action));
+        }
+        SetEvent(m_event);
     }
-    SetEvent(m_event);
     return S_OK;
 }
 
@@ -123,7 +138,8 @@ IFACEMETHODIMP ToastEventHandler::Invoke(_In_ IToastNotification * /* sender */,
     std::wcerr << L"The toast encountered an error." << std::endl;
     std::wcerr << L"Please make sure that the app id is set correctly." << std::endl;
     std::wcerr << L"Command Line: " << GetCommandLineW() << std::endl;
-    m_userAction = SnoreToastActions::Actions::Error;
-    SetEvent(m_event);
+    if (tryComplete(SnoreToastActions::Actions::Error)) {
+        SetEvent(m_event);
+    }
     return S_OK;
 }
