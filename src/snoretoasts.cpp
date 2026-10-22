@@ -205,7 +205,6 @@ SnoreToastActions::Actions SnoreToasts::userAction()
             d->m_notifier->Hide(d->m_notification.Get());
             tLog << L"The application hid the toast using ToastNotifier.hide()";
         }
-        CloseHandle(event);
     }
     return d->m_action;
 }
