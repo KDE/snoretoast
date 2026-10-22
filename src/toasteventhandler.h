@@ -93,9 +93,9 @@ public:
 private:
     bool tryComplete(SnoreToastActions::Actions action);
 
-    ULONG m_ref;
-    SnoreToastActions::Actions m_userAction;
+    ULONG m_ref = 1;
+    SnoreToastActions::Actions m_userAction = SnoreToastActions::Actions::Hidden;
     std::atomic_bool m_completed = false;
-    HANDLE m_event;
+    HANDLE m_event = INVALID_HANDLE_VALUE;
     const SnoreToasts &m_toast;
 };

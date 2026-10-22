@@ -28,7 +28,7 @@
 using namespace ABI::Windows::UI::Notifications;
 
 ToastEventHandler::ToastEventHandler(const SnoreToasts &toast)
-    : m_ref(1), m_userAction(SnoreToastActions::Actions::Hidden), m_toast(toast)
+    : m_toast(toast)
 {
     std::wstringstream eventName;
     eventName << L"ToastEvent" << m_toast.id();
