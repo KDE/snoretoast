@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(snoretoast VERSION 0.9.1)
+project(snoretoast VERSION 0.9.2)
 # Always change the guid when the version is changed SNORETOAST_CALLBACK_GUID
 set(SNORETOAST_CALLBACK_GUID 849c2549-fe1e-4aa6-bb93-4690993ccb89)
 
