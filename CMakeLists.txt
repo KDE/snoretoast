@@ -7,6 +7,7 @@ set(SNORETOAST_CALLBACK_GUID b6f8834a-3e5b-4137-b39a-23d97d2404e0)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
 option(BUILD_EXAMPLES "Whether to build the examples" OFF)
+option(BUILD_TESTING "Whether to build the tests" ON)
 option(BUILD_STATIC_RUNTIME "Whether link statically to the msvc runtime" ON)
 
 include(GenerateExportHeader)
@@ -34,4 +35,9 @@ add_subdirectory(src)
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if (BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
 endif()

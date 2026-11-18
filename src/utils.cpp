@@ -23,6 +23,8 @@
 #include <wrl/implements.h>
 #include <wrl/module.h>
 
+#include <algorithm>
+
 using namespace Microsoft::WRL;
 
 namespace {
@@ -56,17 +58,14 @@ std::unordered_map<std::wstring_view, std::wstring_view> splitData(const std::ws
 {
     std::unordered_map<std::wstring_view, std::wstring_view> out;
     size_t start = 0;
-    for (size_t end = data.find(L";", start); end != std::wstring::npos;
-         start = end + 1, end = data.find(L";", start)) {
-        if (start == end) {
-            end = data.size();
-        }
-        const std::wstring_view tmp(data.data() + start, end - start);
-        const auto pos = tmp.find(L"=");
-        if (pos > 0) {
+    while (start < data.size()) {
+        const auto end = std::min(data.find(L';', start), data.size());
+        const auto tmp = data.substr(start, end - start);
+        const auto pos = tmp.find(L'=');
+        if (pos != std::wstring_view::npos && pos > 0) {
             out[tmp.substr(0, pos)] = tmp.substr(pos + 1);
         }
-        // tLog << L"'" << tmp.substr(0, pos) << L"' = '" << tmp.substr(pos + 1) << L"'";
+        start = end + 1;
     }
     return out;
 }
