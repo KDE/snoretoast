@@ -130,7 +130,21 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
 {
     // asume that we fail
     d->m_action = SnoreToastActions::Actions::Error;
+    ST_RETURN_ON_ERROR(createToastXml(title, body, image));
+    printXML();
+    ST_RETURN_ON_ERROR(createToast());
+    d->m_action = SnoreToastActions::Actions::Clicked;
+    return S_OK;
+}
 
+ComPtr<IXmlDocument> SnoreToasts::toastXml() const
+{
+    return d->m_toastXml;
+}
+
+HRESULT SnoreToasts::createToastXml(const std::wstring &title, const std::wstring &body,
+                                    const std::filesystem::path &image)
+{
     d->m_title = title;
     d->m_body = body;
     d->m_image = image.empty() ? image : std::filesystem::absolute(image);
@@ -182,12 +196,7 @@ HRESULT SnoreToasts::displayToast(const std::wstring &title, const std::wstring 
     }
     ST_RETURN_ON_ERROR(setSound());
 
-    ST_RETURN_ON_ERROR(setTextValues());
-
-    printXML();
-    ST_RETURN_ON_ERROR(createToast());
-    d->m_action = SnoreToastActions::Actions::Clicked;
-    return S_OK;
+    return setTextValues();
 }
 
 SnoreToastActions::Actions SnoreToasts::userAction()

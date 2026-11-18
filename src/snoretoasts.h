@@ -94,6 +94,9 @@ public:
     bool useFalbackMode() const;
 
 private:
+    HRESULT createToastXml(const std::wstring &title, const std::wstring &body,
+                           const std::filesystem::path &image);
+    ComPtr<IXmlDocument> toastXml() const;
     HRESULT createToast();
     HRESULT setImage();
     HRESULT setSound();
@@ -114,5 +117,6 @@ private:
     void printXML();
 
     friend class SnoreToastsPrivate;
+    friend class SnoreToastsTest;
     SnoreToastsPrivate *d;
 };
