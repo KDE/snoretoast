@@ -6,6 +6,7 @@
 #include "testing.h"
 
 #include <roapi.h>
+#include <shellapi.h>
 
 using namespace Testing;
 
@@ -293,27 +294,40 @@ TEST(toastFormatActionParsesBack)
     CHECK(map.find(L"application") == map.end());
 }
 
+TEST(quoteArgumentRoundTrip)
+{
+    const std::vector<std::wstring> args = {
+        L"plain",
+        L"with space",
+        L"",
+        L"Press the button labeled \"Press me\".",
+        L"\\\\.\\pipe\\foo",
+        L"trailing\\",
+        L"trailing two\\\\",
+        L"backslash before quote\\\"x",
+        L"Ünïcödé ✓ ★ 日本語",
+    };
+    std::wstring commandLine = L"app.exe";
+    for (const auto &arg : args) {
+        commandLine += L" " + quoteArgument(arg);
+    }
+    int argc = 0;
+    wchar_t **argv = CommandLineToArgvW(commandLine.c_str(), &argc);
+    CHECK_EQ(static_cast<size_t>(argc), args.size() + 1);
+    for (size_t i = 0; i < std::min(args.size(), static_cast<size_t>(argc) - 1); ++i) {
+        CHECK_EQ(std::wstring(argv[i + 1]), args[i]);
+    }
+    LocalFree(argv);
+}
+
 int wmain()
 {
+    setupUnicodeConsole();
     if (FAILED(RoInitialize(RO_INIT_MULTITHREADED))) {
         std::wcerr << L"RoInitialize failed" << std::endl;
         return 1;
     }
-    int failedTests = 0;
-    for (const auto &test : registry()) {
-        const int before = failures;
-        try {
-            test.fn();
-        } catch (const std::exception &e) {
-            ++failures;
-            std::wcerr << L"unexpected exception: " << e.what() << std::endl;
-        }
-        const bool ok = before == failures;
-        failedTests += ok ? 0 : 1;
-        std::wcout << (ok ? L"PASS " : L"FAIL ") << test.name << std::endl;
-    }
-    std::wcout << registry().size() - failedTests << L"/" << registry().size() << L" tests passed"
-               << std::endl;
+    const int result = runTests();
     RoUninitialize();
-    return failedTests == 0 ? 0 : 1;
+    return result;
 }

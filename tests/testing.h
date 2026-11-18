@@ -2,6 +2,10 @@
 
 #include "snoretoasts.h"
 
+#include <fcntl.h>
+#include <io.h>
+
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <functional>
@@ -69,13 +73,8 @@ public:
 
     ~PipeServer()
     {
-        if (m_result.valid()
-            && m_result.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
-            HANDLE client = CreateFileW(m_name.c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
-                                        0, nullptr);
-            if (client != INVALID_HANDLE_VALUE) {
-                CloseHandle(client);
-            }
+        if (m_result.valid()) {
+            unblock();
             m_result.wait();
         }
         CloseHandle(m_pipe);
@@ -85,13 +84,93 @@ public:
     const std::wstring &name() const { return m_name; }
     std::wstring received() { return m_result.get(); }
 
+    std::wstring receivedWithin(std::chrono::milliseconds timeout)
+    {
+        if (m_result.wait_for(timeout) != std::future_status::ready) {
+            unblock();
+        }
+        return m_result.get();
+    }
+
 private:
+    void unblock()
+    {
+        if (m_result.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+            HANDLE client = CreateFileW(m_name.c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+                                        0, nullptr);
+            if (client != INVALID_HANDLE_VALUE) {
+                CloseHandle(client);
+            }
+        }
+    }
+
     std::wstring m_name;
     HANDLE m_pipe;
     std::future<std::wstring> m_result;
 };
 
 inline const std::wstring versionEntry = L"version=" + SnoreToasts::version() + L";";
+
+inline std::wstring quoteArgument(const std::wstring &arg)
+{
+    std::wstring out = L"\"";
+    for (auto it = arg.cbegin();; ++it) {
+        size_t backslashes = 0;
+        while (it != arg.cend() && *it == L'\\') {
+            ++it;
+            ++backslashes;
+        }
+        if (it == arg.cend()) {
+            out.append(backslashes * 2, L'\\');
+            break;
+        }
+        if (*it == L'"') {
+            out.append(backslashes * 2 + 1, L'\\');
+        } else {
+            out.append(backslashes, L'\\');
+        }
+        out.push_back(*it);
+    }
+    out.push_back(L'"');
+    return out;
+}
+
+inline void setupUnicodeConsole()
+{
+    for (FILE *stream : { stdout, stderr }) {
+        DWORD mode;
+        const bool isConsole =
+                GetConsoleMode(reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(stream))), &mode);
+        _setmode(_fileno(stream), isConsole ? _O_U16TEXT : _O_U8TEXT);
+    }
+}
+
+inline int runTests(const std::vector<std::wstring> &filter = {})
+{
+    int run = 0;
+    int failedTests = 0;
+    for (const auto &test : registry()) {
+        const std::string name(test.name);
+        if (!filter.empty()
+            && std::find(filter.cbegin(), filter.cend(), std::wstring(name.cbegin(), name.cend()))
+                    == filter.cend()) {
+            continue;
+        }
+        ++run;
+        const int before = failures;
+        try {
+            test.fn();
+        } catch (const std::exception &e) {
+            ++failures;
+            std::wcerr << L"unexpected exception: " << e.what() << std::endl;
+        }
+        const bool ok = before == failures;
+        failedTests += ok ? 0 : 1;
+        std::wcout << (ok ? L"PASS " : L"FAIL ") << test.name << std::endl;
+    }
+    std::wcout << run - failedTests << L"/" << run << L" tests passed" << std::endl;
+    return failedTests == 0 && run > 0 ? 0 : 1;
+}
 
 }
 
